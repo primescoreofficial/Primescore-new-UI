@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>PrimeScore™ — Dynamic Mobile Fintech Experience</title>
+  <!-- Google Fonts: Plus Jakarta Sans -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+
+  <style>
+    :root {
+      --header-blue: #1882FF;
+      --header-blue-dark: #1474E8;
+      --bg-page: #080D1A;
+      --bg-canvas: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --text-main: #0F172A;
+      --text-muted: #64748B;
+      --radius-card: 26px;
+      --radius-pill: 9999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    body {
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px 10px;
+      overflow-x: hidden;
+    }
+
+    .showcase-bar {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      z-index: 100;
+    }
+
+    .toolbar-pill {
+      padding: 8px 18px;
+      border-radius: var(--radius-pill);
+      background: #1E293B;
+      color: #94A3B8;
+      border: 1px solid #334155;
+      font-size: 13px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .toolbar-pill.active {
+      background: var(--header-blue);
+      color: white;
+      border-color: var(--header-blue);
+      box-shadow: 0 4px 16px rgba(24, 130, 255, 0.4);
+    }
+
+    /* iPhone 16 Pro Mockup Frame */
+    .phone-wrapper {
+      width: 416px;
+      height: 890px;
+      background: var(--bg-canvas);
+      border-radius: 56px;
+      box-shadow: 0 30px 80px -15px rgba(0, 0, 0, 0.9), 0 0 0 12px #1E293B, 0 0 0 14px #334155;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .phone-wrapper.full-screen {
+      width: 100vw;
+      height: 100vh;
+      border-radius: 0;
+      box-shadow: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 9999;
+    }
+
+    /* Dynamic Island */
+    .notch-island {
+      width: 124px;
+      height: 32px;
+      background: #000000;
+      border-radius: 20px;
+      position: absolute;
+      left: 50%;
+      top: 10px;
+      transform: translateX(-50%);
+      z-index: 90;
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      padding-right: 12px;
+      pointer-events: none;
+    }
+
+    .camera-lens {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #0c1829;
+      border: 1px solid #1a2a40;
+    }
+
+    /* Scroll Container */
+    .app-screen {
+      flex: 1;
+      background: var(--bg-canvas);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      position: relative;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .app-screen::-webkit-scrollbar {
+      display: none;
+    }
+
+    .ios-status-row {
+      position: absolute;
+      top: 14px;
+      left: 28px;
+      right: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 700;
+      color: white;
+    }
+
+    /* 5-Item Symmetrical Top Bar */
+    .five-item-pill-bar {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 6px;
+      align-items: center;
+      background: rgba(0, 0, 0, 0.15);
+      backdrop-filter: blur(8px);
+      padding: 4px;
+      border-radius: 9999px;
+      margin-top: 16px;
+    }
+
+    .pill-btn {
+      height: 34px;
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 800;
+      border: none;
+      background: transparent;
+      color: rgba(255, 255, 255, 0.85);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .pill-btn.active {
+      background: white;
+      color: #0F172A;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .pill-circle-btn {
+      width: 40px;
+      height: 40px;
+      margin: 0 auto;
+      border-radius: 50% !important;
+      background: rgba(255, 255, 255, 0.25);
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+    }
+
+    .pill-circle-btn.active {
+      background: white;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      transform: scale(1.08);
+    }
+
+    .pill-score-icon {
+      font-size: 16px;
+      color: white;
+    }
+
+    .pill-circle-btn.active .pill-score-icon {
+      color: #0F172A;
+    }
+
+    /* Ask Parth Section */
+    .ask-parth-card {
+      background: #EEF2F6;
+      border-radius: 28px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid #E2E8F0;
+    }
+
+    .parth-marquee-wrapper {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      overflow: hidden;
+      padding: 2px 0;
+    }
+
+    .parth-fade-left {
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 16px;
+      background: linear-gradient(90deg, #EEF2F6, transparent);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .parth-fade-right {
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 16px;
+      background: linear-gradient(270deg, #EEF2F6, transparent);
+      z-index: 2;
+      pointer-events: none;
+    }
+
+    .parth-marquee-track-1 {
+      display: flex;
+      gap: 8px;
+      width: max-content;
+      animation: loopLeft 48s linear infinite;
+    }
+
+    .parth-marquee-track-2 {
+      display: flex;
+      gap: 8px;
+      width: max-content;
+      animation: loopRight 55s linear infinite;
+    }
+
+    .parth-marquee-wrapper:hover .parth-marquee-track-1,
+    .parth-marquee-wrapper:hover .parth-marquee-track-2 {
+      animation-play-state: paused;
+    }
+
+    @keyframes loopLeft {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    @keyframes loopRight {
+      0% { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+
+    .parth-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: white;
+      border-radius: 9999px;
+      padding: 8px 14px;
+      font-size: 11.5px;
+      font-weight: 600;
+      color: #1E293B;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      white-space: nowrap;
+      cursor: pointer;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+      transition: all 0.15s;
+    }
+    .parth-chip:active { transform: scale(0.96); }
+
+    .parth-input-container {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .parth-input-pill {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: white;
+      border-radius: 9999px;
+      padding: 8px 16px;
+      border: 1px solid #CBD5E1;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.03);
+    }
+
+    .parth-input-pill input {
+      width: 100%;
+      border: none;
+      outline: none;
+      font-size: 12px;
+      font-weight: 500;
+      color: #0F172A;
+      background: transparent;
+    }
+
+    .parth-mic-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: #1882FF;
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 15px;
+      box-shadow: 0 4px 10px rgba(24, 130, 255, 0.3);
+      transition: transform 0.15s;
+    }
+    .parth-mic-btn:active { transform: scale(0.9); }
+
+    /* Cards Stack */
+    .body-cards-section {
+      background: var(--bg-canvas);
+      border-radius: 32px 32px 0 0;
+      margin-top: -24px;
+      padding: 20px 16px 140px 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .fintech-card {
+      background: var(--bg-card);
+      border-radius: var(--radius-card);
+      padding: 20px;
+      box-shadow: 0 4px 16px rgba(15, 23, 42, 0.04);
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      border: 1px solid #F1F5F9;
+    }
+
+    /* Bottom Tab Bar */
+    .native-bottom-tabbar {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 74px;
+      background: rgba(255, 255, 255, 0.98);
+      border-top: 1px solid #E2E8F0;
+      display: flex;
+      align-items: center;
+      justify-content: space-around;
+      padding: 0 12px 12px 12px;
+      z-index: 40;
+      box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+    }
+
+    .bottom-nav-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      color: #94A3B8;
+      font-size: 10px;
+      font-weight: 700;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .bottom-nav-item i {
+      font-size: 19px;
+    }
+
+    .bottom-nav-item.active {
+      color: var(--header-blue);
+    }
+
+    .nav-badge-count {
+      position: absolute;
+      top: -2px;
+      right: 2px;
+      background: #EF4444;
+      color: white;
+      font-size: 8px;
+      font-weight: 800;
+      padding: 1px 5px;
+      border-radius: var(--radius-pill);
+      border: 1.5px solid white;
+    }
+
+    /* Notification Tray Popover */
+    .notif-popover {
+      position: absolute;
+      right: 16px;
+      top: 55px;
+      width: 300px;
+      background: white;
+      border-radius: 24px;
+      padding: 16px;
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+      z-index: 100;
+      display: none;
+      animation: popoverAnim 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .notif-popover.show {
+      display: block;
+    }
+
+    @keyframes popoverAnim {
+      from { opacity: 0; transform: scale(0.85) translateY(-8px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="showcase-bar">
+    <button class="toolbar-pill active" id="btnDevice" onclick="switchMode('frame')">
+      <i class="fa-solid fa-mobile-screen"></i> iPhone 16 Frame
+    </button>
+    <button class="toolbar-pill" id="btnFull" onclick="switchMode('full')">
+      <i class="fa-solid fa-expand"></i> Full Screen Mobile App
+    </button>
+  </div>
+
+  <div class="phone-wrapper" id="phoneMockup">
+    <div class="notch-island">
+      <div class="camera-lens"></div>
+    </div>
+
+    <div class="app-screen">
+      
+      <!-- NOTIFICATION POPOVER -->
+      <div class="notif-popover" id="notifTray">
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #F1F5F9; pb-2;">
+          <strong style="font-size: 12px; color: #0F172A;">Notifications</strong>
+          <span style="font-size: 10px; font-weight: 700; color: #2563EB; cursor: pointer;" onclick="toggleNotif()">Mark read</span>
+        </div>
+        <div style="margin-top: 10px; display: flex; flex-direction: column; gap: 8px;">
+          <div style="background: #FFFBEB; border: 1px solid #FDE68A; border-radius: 14px; padding: 10px; font-size: 11px;">
+            <strong style="color: #B45309;">HDFC Status Mismatch</strong>
+            <div style="color: #78350F; margin-top: 2px;">Experian shows Active (₹42k), CIBIL shows Closed.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- BLUE HEADER (HOME TAB) -->
+      <div id="homeHeaderContainer" style="background: linear-gradient(180deg, #1882FF 0%, #1474E8 100%); padding: 50px 20px 40px 20px; color: white;">
+        <div class="ios-status-row">
+          <span>9:41</span>
+          <div style="display: flex; gap: 6px; align-items: center;">
+            <i class="fa-solid fa-signal"></i>
+            <i class="fa-solid fa-wifi"></i>
+            <i class="fa-solid fa-battery-full"></i>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px;">
+          <div style="display: flex; gap: 12px; align-items: center; cursor: pointer;" onclick="alert('Opening Swiggy-style Settings & Account: Sawai Singh (Prime Plus Member)')">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: white; color: #0F172A; font-weight: 800; display: flex; align-items: center; justify-content: center; font-size: 14px;">SS</div>
+            <div style="font-size: 17px; font-weight: 700;">Welcome, Sawai</div>
+          </div>
+          <div style="display: flex; gap: 14px; font-size: 19px;">
+            <i class="fa-solid fa-bell" onclick="toggleNotif()" style="cursor: pointer;"></i>
+            <i class="fa-solid fa-gear" onclick="alert('Opening Swiggy-style Settings & Account: Sawai Singh (Prime Plus Member)')" style="cursor: pointer;"></i>
+          </div>
+        </div>
+
+        <!-- =========================================================
+             5-ITEM SYMMETRICAL BAR: [CIBIL] [CRIF] [⚡ SCORE ICON] [Experian] [Equifax]
+             ========================================================= -->
+        <div class="five-item-pill-bar">
+          <button class="pill-btn" onclick="switchBureau('cibil', 743, this)">CIBIL</button>
+          <button class="pill-btn" onclick="switchBureau('crif', 757, this)">CRIF</button>
+          <button class="pill-circle-btn active" onclick="switchBureau('overview', 771, this)" title="PrimeScore Composite">
+            <i class="fa-solid fa-gauge-high pill-score-icon"></i>
+          </button>
+          <button class="pill-btn" onclick="switchBureau('experian', 770, this)">Experian</button>
+          <button class="pill-btn" onclick="switchBureau('equifax', 817, this)">Equifax</button>
+        </div>
+
+        <!-- Center Score -->
+        <div style="text-align: center; margin-top: 14px;">
+          <span id="scoreBureauLabel" style="font-size: 13px; color: rgba(255,255,255,0.9); font-weight: 600;">PrimeScore Composite ⌵</span>
+          <div style="font-size: 46px; font-weight: 800; letter-spacing: -0.04em; margin-top: 2px;">
+            <span id="heroScoreNumber">771</span> <span style="font-size: 18px; font-weight: 600; color: rgba(255,255,255,0.7);">/ 900</span>
+          </div>
+          <div style="display: inline-flex; align-items: center; gap: 6px; padding: 4px 12px; background: rgba(255,255,255,0.2); backdrop-filter: blur(8px); border-radius: 9999px; font-size: 11px; font-weight: 700; margin-top: 4px;">
+            <i class="fa-solid fa-bolt" style="color: #FCD34D;"></i> +48 Pts Potential via Rectification
+          </div>
+        </div>
+      </div>
+
+      <!-- CARDS BODY -->
+      <div class="body-cards-section" id="mobileBody">
+        <div class="fintech-card">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 14px; font-weight: 700; color: #64748B;">All 4 Credit Bureaus <i class="fa-solid fa-chevron-right" style="font-size: 10px;"></i></span>
+            <span style="font-size: 11px; font-weight: 700; color: #1882FF; background: #EFF6FF; padding: 3px 8px; border-radius: 6px;">Live Synced</span>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: #22C55E; color: white; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-shield-check"></i></div>
+                <div><strong style="font-size: 15px;">TransUnion CIBIL</strong><div style="font-size: 12px; color: #64748B;">16 Accounts • 7 Active</div></div>
+              </div>
+              <div style="text-align: right;"><strong style="font-size: 16px;">743</strong><div style="color: #16A34A; font-size: 12px; font-weight: 700;">+12 pts</div></div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div style="display: flex; gap: 12px; align-items: center;">
+                <div style="width: 44px; height: 44px; border-radius: 50%; background: #EF4444; color: white; display: flex; align-items: center; justify-content: center;"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div><strong style="font-size: 15px;">Experian India</strong><div style="font-size: 12px; color: #DC2626;">1 Missing Record</div></div>
+              </div>
+              <div style="text-align: right;"><strong style="font-size: 16px; color: #DC2626;">770*</strong><div style="color: #DC2626; font-size: 12px; font-weight: 700;">Discrepancy</div></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ASK PARTH AI SECTION -->
+        <div class="ask-parth-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+            <strong style="font-size: 15px; color: #0F172A; font-weight: 800;">Ask Parth</strong>
+          </div>
+
+          <!-- 2 Continuous Looping Tracks -->
+          <div class="parth-marquee-wrapper">
+            <div class="parth-fade-left"></div>
+            <div class="parth-fade-right"></div>
+
+            <!-- Track 1: Loops Left -->
+            <div class="parth-marquee-track-1">
+              <div class="parth-chip" onclick="askParth('Mera credit score 800+ kaise hoga?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-1)" />
+                </svg>
+                <span>Mera credit score 800+ kaise ho...</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('CIBIL me dispute kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-2)" />
+                </svg>
+                <span>CIBIL me dispute kaise kare?</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Negative remarks remove kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-1)" />
+                </svg>
+                <span>Negative remarks remove kaise kare?</span>
+              </div>
+
+              <!-- Duplicate for seamless 100% loop -->
+              <div class="parth-chip" onclick="askParth('Mera credit score 800+ kaise hoga?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-1)" />
+                </svg>
+                <span>Mera credit score 800+ kaise ho...</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('CIBIL me dispute kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-2)" />
+                </svg>
+                <span>CIBIL me dispute kaise kare?</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Negative remarks remove kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-1)" />
+                </svg>
+                <span>Negative remarks remove kaise kare?</span>
+              </div>
+            </div>
+
+            <!-- Track 2: Loops Right -->
+            <div class="parth-marquee-track-2">
+              <div class="parth-chip" onclick="askParth('Loan approval ke chances kaise badhaye?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-3)" />
+                </svg>
+                <span>Loan approval ke chances kaise b...</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Equifax score low kyu hai?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-4)" />
+                </svg>
+                <span>Equifax score low kyu hai?</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Credit limit double kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-3)" />
+                </svg>
+                <span>Credit limit double kaise kare?</span>
+              </div>
+
+              <!-- Duplicate for seamless 100% loop -->
+              <div class="parth-chip" onclick="askParth('Loan approval ke chances kaise badhaye?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-3)" />
+                </svg>
+                <span>Loan approval ke chances kaise b...</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Equifax score low kyu hai?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-4)" />
+                </svg>
+                <span>Equifax score low kyu hai?</span>
+              </div>
+
+              <div class="parth-chip" onclick="askParth('Credit limit double kaise kare?')">
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                  <path d="M12 2L14.4 9.6L22 12L14.4 14.4L12 22L9.6 14.4L2 12L9.6 9.6L12 2Z" fill="url(#p-sparkle-3)" />
+                </svg>
+                <span>Credit limit double kaise kare?</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- SVG Gradient definitions -->
+          <svg width="0" height="0" style="position: absolute;">
+            <defs>
+              <linearGradient id="p-sparkle-1" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#EC4899" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+              <linearGradient id="p-sparkle-2" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#EC4899" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+              <linearGradient id="p-sparkle-3" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#EC4899" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+              <linearGradient id="p-sparkle-4" x1="2" y1="2" x2="22" y2="22" gradientUnits="userSpaceOnUse">
+                <stop stop-color="#EC4899" />
+                <stop offset="0.5" stop-color="#8B5CF6" />
+                <stop offset="1" stop-color="#3B82F6" />
+              </linearGradient>
+            </defs>
+          </svg>
+
+          <!-- Input Row -->
+          <div class="parth-input-container">
+            <div class="parth-input-pill">
+              <input type="text" id="parthMobileInput" placeholder="Ask Anything" onkeydown="if(event.key==='Enter') submitParthText()" />
+              <i class="fa-solid fa-paperclip" style="color: #94A3B8; cursor: pointer;" onclick="alert('Upload Bureau PDF / Statement')"></i>
+            </div>
+            <button class="parth-mic-btn" onclick="submitParthText()">
+              <i class="fa-solid fa-microphone"></i>
+            </button>
+          </div>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #FFFBEB, #FEF3C7); border: 1px solid #FDE68A; border-radius: 26px; padding: 18px 20px; display: flex; flex-direction: column; gap: 10px;">
+          <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="background: #F59E0B; color: #451A03; font-size: 10px; font-weight: 800; padding: 3px 8px; border-radius: 6px;">PRIME RECTIFICATION</span>
+            <span style="font-size: 11px; font-weight: 800; color: #B45309;">4 Issues Found</span>
+          </div>
+          <strong style="font-size: 15px; color: #78350F;">HDFC Card Closed in CIBIL but Active in Experian</strong>
+          <p style="font-size: 12px; color: #92400E;">This data error suppresses your score by ~35 pts. File 1-click dispute now.</p>
+          <button style="width: 100%; padding: 12px; background: #D97706; color: white; border-radius: 9999px; font-weight: 800; border: none; cursor: pointer;">
+            Rectify All 4 Discrepancies →
+          </button>
+        </div>
+      </div>
+
+      <!-- BOTTOM BAR (FINTECH REDESIGNED) -->
+      <div class="bottom-nav" style="display: flex; height: 72px; align-items: center; justify-content: space-around; border-top: 1px solid #E2E8F0; background: rgba(255,255,255,0.95); backdrop-filter: blur(12px); padding: 0 12px 6px 12px; position: absolute; bottom: 0; left: 0; right: 0; z-index: 50;">
+        <div class="bottom-nav-item active" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 800; color: #1882FF; cursor: pointer;">
+          <i class="fa-solid fa-house" style="font-size: 17px;"></i>
+          <span>Home</span>
+        </div>
+        <div class="bottom-nav-item" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: #94A3B8; cursor: pointer;">
+          <i class="fa-solid fa-table-columns" style="font-size: 17px;"></i>
+          <span>Bureaus</span>
+        </div>
+        <div style="flex: 1; display: flex; justify-content: center; align-items: center;">
+          <div onclick="openParthModal()" style="position: relative; top: -12px; width: 48px; height: 48px; border-radius: 16px; background: #0F172A; color: white; display: flex; flex-direction: column; align-items: center; justify-content: center; box-shadow: 0 8px 16px rgba(15,23,42,0.25); border: 3px solid white; cursor: pointer; font-size: 18px; font-weight: 900;">
+            P
+          </div>
+        </div>
+        <div class="bottom-nav-item" style="position: relative; flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: #94A3B8; cursor: pointer;">
+          <i class="fa-solid fa-gavel" style="font-size: 17px;"></i>
+          <span>Disputes</span>
+          <span class="nav-badge-count" style="position: absolute; top: -4px; right: 14px; background: #EF4444; color: white; border-radius: 9999px; font-size: 8px; font-weight: 800; padding: 1px 5px; border: 1.5px solid white;">4</span>
+        </div>
+        <div class="bottom-nav-item" style="flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 10px; font-weight: 600; color: #94A3B8; cursor: pointer;">
+          <i class="fa-solid fa-sliders" style="font-size: 17px;"></i>
+          <span>Simulator</span>
+        </div>
+      </div>
+
+      <!-- PARTH ADVISORY MODAL -->
+      <div id="parthModal" style="position: absolute; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 200; display: none; align-items: flex-end;">
+        <div style="background: #F8FAFC; width: 100%; height: 85%; border-radius: 32px 32px 0 0; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 -20px 40px rgba(0,0,0,0.2);">
+          <div style="width: 44px; height: 5px; background: #CBD5E1; border-radius: 9999px; margin: 12px auto 6px auto;"></div>
+          <div style="background: white; padding: 12px 18px; border-bottom: 1px solid #E2E8F0; display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <div style="width: 38px; height: 38px; border-radius: 12px; background: #1882FF; color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 900;">
+                P
+              </div>
+              <div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <strong style="font-size: 14px; color: #0F172A;">Parth Advisory</strong>
+                  <span style="background: #ECFDF5; color: #059669; font-size: 9px; font-weight: 800; padding: 1px 6px; border-radius: 9999px; border: 1px solid #A7F3D0;">Synced</span>
+                </div>
+                <div style="font-size: 10px; color: #64748B;">4 Bureaus Verified (771 Composite)</div>
+              </div>
+            </div>
+            <i class="fa-solid fa-xmark" style="font-size: 18px; color: #94A3B8; cursor: pointer; padding: 4px;" onclick="closeParthModal()"></i>
+          </div>
+
+          <div id="parthChatArea" style="flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 12px;">
+            <div style="align-self: flex-start; max-width: 85%; background: white; border: 1px solid #E2E8F0; border-radius: 18px 18px 18px 4px; padding: 12px 14px; font-size: 12px; color: #1E293B; line-height: 1.5; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+              Hello Sawai! I have audited your credit reports across TransUnion CIBIL, CRIF, Experian & Equifax (Composite: 771/900). 4 discrepancy opportunities are available to boost your score by +48 points. How can I assist you with your report, disputes, or loan approvals today?
+            </div>
+          </div>
+
+          <div style="background: white; padding: 12px 16px; border-top: 1px solid #E2E8F0; display: flex; gap: 8px;">
+            <input type="text" id="parthModalInput" placeholder="Ask Parth anything..." style="flex: 1; border: 1px solid #CBD5E1; border-radius: 9999px; padding: 10px 16px; font-size: 12px; outline: none;" onkeydown="if(event.key==='Enter') sendParthModalMsg()" />
+            <button onclick="sendParthModalMsg()" style="width: 40px; height: 40px; border-radius: 50%; background: #1882FF; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+              <i class="fa-solid fa-paper-plane"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    function toggleNotif() {
+      const notif = document.getElementById('notifTray');
+      notif.classList.toggle('show');
+    }
+
+    function switchBureau(bureau, score, el) {
+      document.querySelectorAll('.pill-btn, .pill-circle-btn').forEach(b => b.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('heroScoreNumber').innerText = score;
+      const label = document.getElementById('scoreBureauLabel');
+      if (bureau === 'overview') label.innerText = 'PrimeScore Composite ⌵';
+      else if (bureau === 'cibil') label.innerText = 'TransUnion CIBIL ⌵';
+      else if (bureau === 'crif') label.innerText = 'CRIF High Mark ⌵';
+      else if (bureau === 'experian') label.innerText = 'Experian India ⌵';
+      else if (bureau === 'equifax') label.innerText = 'Equifax India ⌵';
+    }
+
+    function switchMode(mode) {
+      const frame = document.getElementById('phoneMockup');
+      const btnDevice = document.getElementById('btnDevice');
+      const btnFull = document.getElementById('btnFull');
+
+      if (mode === 'full') {
+        frame.classList.add('full-screen');
+        btnFull.classList.add('active');
+        btnDevice.classList.remove('active');
+      } else {
+        frame.classList.remove('full-screen');
+        btnDevice.classList.add('active');
+        btnFull.classList.remove('active');
+      }
+    }
+
+    function askParth(query) {
+      document.getElementById('parthModal').style.display = 'flex';
+      const chatArea = document.getElementById('parthChatArea');
+
+      // Add user message
+      const userBubble = document.createElement('div');
+      userBubble.style.cssText = "align-self: flex-end; max-width: 85%; background: #1882FF; color: white; border-radius: 18px 18px 4px 18px; padding: 10px 14px; font-size: 12px; font-weight: 500;";
+      userBubble.innerText = query;
+      chatArea.appendChild(userBubble);
+      chatArea.scrollTop = chatArea.scrollHeight;
+
+      // Simulate AI response
+      setTimeout(() => {
+        let reply = "";
+        const lower = query.toLowerCase();
+        if (lower.includes('800') || lower.includes('score')) {
+          reply = "Aapka current PrimeScore 771 hai. 800+ pahunchne ke liye:\n1. Experian me HDFC card mismatch rectify kijiye (+35 pts)\n2. Credit utilization 28% se 15% tak drop kijiye (+18 pts)\n3. 90 days tak koi nayi hard inquiry mat kijiye.\nTotal projected score: 832/900!";
+        } else if (lower.includes('loan') || lower.includes('approval')) {
+          reply = "Aapke loan approval ke chances currently 88% (High) hain. SBI personal loan active hai bina kisi delay ke. Agar aap HDFC mismatch resolve kar lenge toh Tier-1 banks se pre-approved lowest interest rates milenge.";
+        } else if (lower.includes('dispute') || lower.includes('cibil')) {
+          reply = "PrimeScore ne 4 discrepancies detect ki hain. Sabse critical HDFC card status mismatch hai jo CIBIL me closed hai par Experian me active dikh raha hai. Hamare legal advocates 14-21 days me official bureau filing complete karte hain.";
+        } else {
+          reply = "Sawai, aapke 4-bureau records ke basis par aapka payment track record 100% on-time hai. PrimeScore advocates aapke dispute dossiers par actively kaam kar rahe hain.";
+        }
+
+        const aiBubble = document.createElement('div');
+        aiBubble.style.cssText = "align-self: flex-start; max-width: 85%; background: white; border: 1px solid #E2E8F0; border-radius: 18px 18px 18px 4px; padding: 12px 14px; font-size: 12px; color: #1E293B; line-height: 1.5; white-space: pre-line; box-shadow: 0 1px 3px rgba(0,0,0,0.03);";
+        aiBubble.innerText = reply;
+        chatArea.appendChild(aiBubble);
+        chatArea.scrollTop = chatArea.scrollHeight;
+      }, 600);
+    }
+
+    function submitParthText() {
+      const input = document.getElementById('parthMobileInput');
+      const val = input.value.trim();
+      if (!val) {
+        askParth("Meri credit summary aur suggestions batao");
+      } else {
+        askParth(val);
+        input.value = '';
+      }
+    }
+
+    function sendParthModalMsg() {
+      const input = document.getElementById('parthModalInput');
+      const val = input.value.trim();
+      if (val) {
+        askParth(val);
+        input.value = '';
+      }
+    }
+
+    function closeParthModal() {
+      document.getElementById('parthModal').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

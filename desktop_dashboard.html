@@ -1,0 +1,2363 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PrimeScore™ — 4-Bureau Credit Intelligence & Rectification Dashboard</title>
+  <!-- Google Fonts: Plus Jakarta Sans & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <!-- FontAwesome & Lucide Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+  <!-- Chart.js for high-polish charts -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    :root {
+      --bg-canvas: #F8FAFC;
+      --bg-surface: #FFFFFF;
+      --bg-surface-subtle: #F1F5F9;
+      --bg-card: #FFFFFF;
+      --border-subtle: #E2E8F0;
+      --border-strong: #CBD5E1;
+      
+      --text-primary: #0F172A;
+      --text-secondary: #475569;
+      --text-muted: #94A3B8;
+      
+      --brand-primary: #1E40AF;
+      --brand-electric: #2563EB;
+      --brand-accent: #3B82F6;
+      --brand-dark: #0A0F1D;
+      
+      --cibil-color: #0284C7;
+      --crif-color: #0EA5E9;
+      --experian-color: #2563EB;
+      --equifax-color: #10B981;
+      
+      --success: #10B981;
+      --success-bg: #ECFDF5;
+      --warning: #F59E0B;
+      --warning-bg: #FFFBEB;
+      --danger: #EF4444;
+      --danger-bg: #FEF2F2;
+      
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-2xl: 24px;
+      
+      --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+      --shadow-card: 0 4px 16px -2px rgba(15, 23, 42, 0.04), 0 2px 6px -1px rgba(15, 23, 42, 0.02);
+      --shadow-elevated: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.03);
+      --shadow-glow: 0 0 20px rgba(37, 99, 235, 0.15);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      background-color: var(--bg-canvas);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+      overflow-x: hidden;
+    }
+
+    /* Tabular numbers for fintech stats */
+    .tabular-nums {
+      font-feature-settings: 'tnum' on, 'lnum' on;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* =========================================================
+       SIDEBAR NAVIGATION
+       ========================================================= */
+    aside.sidebar {
+      width: 270px;
+      background: var(--bg-surface);
+      border-right: 1px solid var(--border-subtle);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 50;
+      padding: 24px 16px;
+    }
+
+    .brand-logo-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 8px 24px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .brand-logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background: linear-gradient(135deg, #1E40AF 0%, #0A0F1D 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+    }
+
+    .brand-logo-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .brand-name {
+      font-size: 19px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: var(--brand-dark);
+      line-height: 1.1;
+    }
+
+    .brand-name span {
+      color: var(--brand-electric);
+    }
+
+    .brand-tagline {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .nav-section-title {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      padding: 20px 12px 8px 12px;
+    }
+
+    .nav-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-item a {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: var(--radius-md);
+      color: var(--text-secondary);
+      text-decoration: none;
+      font-size: 14px;
+      font-weight: 600;
+      transition: all 0.15s ease-in-out;
+      cursor: pointer;
+    }
+
+    .nav-item a:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--text-primary);
+    }
+
+    .nav-item.active a {
+      background: #EFF6FF;
+      color: var(--brand-electric);
+      font-weight: 700;
+    }
+
+    .nav-item a i {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-badge {
+      margin-left: auto;
+      background: #FEE2E2;
+      color: #DC2626;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 9999px;
+    }
+
+    .sidebar-footer {
+      margin-top: auto;
+      padding-top: 16px;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    .user-profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px;
+      background: var(--bg-canvas);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+    }
+
+    .user-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0F172A 0%, #334155 100%);
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      border: 2px solid white;
+      box-shadow: var(--shadow-sm);
+    }
+
+    .user-details {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .user-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .user-tier {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 600;
+      color: #D97706;
+    }
+
+    /* =========================================================
+       MAIN CONTENT CONTAINER
+       ========================================================= */
+    main.main-layout {
+      margin-left: 270px;
+      flex: 1;
+      padding-bottom: 60px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Utility Bar */
+    header.top-header {
+      height: 72px;
+      background: var(--bg-surface);
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 32px;
+      position: sticky;
+      top: 0;
+      z-index: 40;
+    }
+
+    .header-user-meta {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+    }
+
+    .meta-chip {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: var(--bg-surface-subtle);
+      border: 1px solid var(--border-subtle);
+      border-radius: 9999px;
+      font-size: 12px;
+    }
+
+    .meta-chip-label {
+      color: var(--text-muted);
+      font-weight: 600;
+      text-transform: uppercase;
+      font-size: 10px;
+      letter-spacing: 0.04em;
+    }
+
+    .meta-chip-value {
+      font-weight: 700;
+      color: var(--text-primary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 9px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      border: none;
+      outline: none;
+      text-decoration: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-surface);
+      color: var(--text-secondary);
+      border: 1px solid var(--border-strong);
+    }
+
+    .btn-secondary:hover {
+      background: var(--bg-surface-subtle);
+      color: var(--text-primary);
+    }
+
+    .btn-primary {
+      background: var(--brand-electric);
+      color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+    }
+
+    .btn-primary:hover {
+      background: var(--brand-primary);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.35);
+    }
+
+    .btn-dark {
+      background: var(--brand-dark);
+      color: white;
+    }
+
+    .btn-dark:hover {
+      background: #1E293B;
+    }
+
+    .btn-pill {
+      border-radius: 9999px;
+    }
+
+    .btn-warning {
+      background: #F59E0B;
+      color: #78350F;
+      font-weight: 700;
+    }
+
+    .btn-warning:hover {
+      background: #D97706;
+      color: white;
+    }
+
+    /* =========================================================
+       PAGE CONTENT AREA
+       ========================================================= */
+    .dashboard-content {
+      padding: 28px 32px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      max-width: 1440px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* Hero Banner: 4-Bureau Consolidated Intelligence */
+    .hero-intelligence-card {
+      background: linear-gradient(135deg, #0A0F1D 0%, #151F33 60%, #1E2E4E 100%);
+      border-radius: var(--radius-2xl);
+      color: white;
+      padding: 28px 32px;
+      position: relative;
+      overflow: hidden;
+      box-shadow: var(--shadow-elevated);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 32px;
+    }
+
+    .hero-bg-shapes {
+      position: absolute;
+      right: -40px;
+      top: -40px;
+      width: 320px;
+      height: 320px;
+      background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(10, 15, 29, 0) 70%);
+      pointer-events: none;
+    }
+
+    .hero-left-content {
+      flex: 1;
+      z-index: 2;
+    }
+
+    .hero-badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: #93C5FD;
+      margin-bottom: 12px;
+    }
+
+    .hero-title {
+      font-size: 26px;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      line-height: 1.2;
+      margin-bottom: 8px;
+    }
+
+    .hero-subtitle {
+      font-size: 14px;
+      color: #94A3B8;
+      max-width: 540px;
+      line-height: 1.5;
+    }
+
+    .hero-action-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-top: 20px;
+    }
+
+    .hero-score-summary {
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: var(--radius-xl);
+      padding: 16px 24px;
+      z-index: 2;
+      backdrop-filter: blur(12px);
+    }
+
+    .score-circle-container {
+      position: relative;
+      width: 90px;
+      height: 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-circle-svg {
+      transform: rotate(-90deg);
+      width: 90px;
+      height: 90px;
+    }
+
+    .score-circle-bg {
+      fill: none;
+      stroke: rgba(255, 255, 255, 0.1);
+      stroke-width: 8;
+    }
+
+    .score-circle-bar {
+      fill: none;
+      stroke: url(#scoreGradient);
+      stroke-width: 8;
+      stroke-dasharray: 251.2;
+      stroke-dashoffset: 45;
+      stroke-linecap: round;
+      transition: stroke-dashoffset 1s ease;
+    }
+
+    .score-text-center {
+      position: absolute;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .score-text-val {
+      font-size: 24px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: white;
+    }
+
+    .score-text-max {
+      font-size: 10px;
+      font-weight: 600;
+      color: #94A3B8;
+    }
+
+    .score-intel-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .intel-title {
+      font-size: 12px;
+      font-weight: 700;
+      color: #93C5FD;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .intel-rating {
+      font-size: 16px;
+      font-weight: 700;
+      color: #10B981;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .intel-sub {
+      font-size: 12px;
+      color: #94A3B8;
+    }
+
+    /* =========================================================
+       FOUR BUREAUS SCORE GRID
+       ========================================================= */
+    .section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+
+    .section-title-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .bureau-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .bureau-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 20px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .bureau-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -3px rgba(15, 23, 42, 0.08);
+      border-color: var(--border-strong);
+    }
+
+    .bureau-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .bureau-brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .bureau-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .bureau-dot.cibil { background: var(--cibil-color); }
+    .bureau-dot.crif { background: var(--crif-color); }
+    .bureau-dot.experian { background: var(--experian-color); }
+    .bureau-dot.equifax { background: var(--equifax-color); }
+
+    .bureau-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: 0.02em;
+    }
+
+    .bureau-trend-badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .trend-up {
+      background: var(--success-bg);
+      color: var(--success);
+    }
+
+    .bureau-score-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .bureau-score-big {
+      font-size: 34px;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--text-primary);
+      line-height: 1;
+    }
+
+    .bureau-score-scale {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    .bureau-status-tag {
+      display: inline-flex;
+      align-items: center;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .tag-very-good {
+      background: #EFF6FF;
+      color: #1D4ED8;
+    }
+
+    .tag-excellent {
+      background: var(--success-bg);
+      color: #047857;
+    }
+
+    .bureau-stats-table {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 10px 0;
+      border-top: 1px dashed var(--border-subtle);
+      border-bottom: 1px dashed var(--border-subtle);
+      margin-bottom: 14px;
+    }
+
+    .bureau-stat-item {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .bureau-stat-item:not(:last-child) {
+      border-right: 1px solid var(--border-subtle);
+      padding-right: 8px;
+    }
+
+    .bureau-stat-item:not(:first-child) {
+      padding-left: 8px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .stat-val {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .bureau-card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .bureau-report-link {
+      color: var(--brand-electric);
+      font-weight: 700;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      cursor: pointer;
+    }
+
+    .bureau-report-link:hover {
+      text-decoration: underline;
+    }
+
+    /* =========================================================
+       SEGMENTED NAVIGATION TABS (Overview, Comparison, etc)
+       ========================================================= */
+    .tab-navigation-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: var(--bg-surface);
+      padding: 6px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-sm);
+    }
+
+    .segmented-tabs {
+      display: flex;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      padding: 8px 18px;
+      border-radius: var(--radius-md);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: var(--bg-surface-subtle);
+    }
+
+    .tab-btn.active {
+      background: var(--brand-dark);
+      color: white;
+      font-weight: 700;
+    }
+
+    .tab-btn.active .tab-chip {
+      background: #3B82F6;
+      color: white;
+    }
+
+    .tab-chip {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 6px;
+      border-radius: 9999px;
+      background: var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    /* =========================================================
+       TWO-COLUMN DASHBOARD GRID
+       ========================================================= */
+    .dashboard-two-col {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 24px;
+    }
+
+    /* Discrepancies Action Center (USP) */
+    .discrepancy-card-widget {
+      background: var(--bg-surface);
+      border: 1px solid #FED7AA;
+      border-radius: var(--radius-2xl);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .discrepancy-top-accent {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, #F59E0B 0%, #EF4444 100%);
+    }
+
+    .discrepancy-header {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .discrepancy-header-left {
+      display: flex;
+      gap: 14px;
+    }
+
+    .alert-icon-square {
+      width: 44px;
+      height: 44px;
+      border-radius: var(--radius-md);
+      background: #FEF3C7;
+      color: #D97706;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+
+    .discrepancy-title {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 4px;
+    }
+
+    .discrepancy-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .discrepancy-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin: 18px 0;
+    }
+
+    .discrepancy-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      background: #FFFDF8;
+      border: 1px solid #FDE68A;
+      border-radius: var(--radius-lg);
+      transition: all 0.15s ease;
+    }
+
+    .discrepancy-item:hover {
+      background: #FFFBEB;
+      border-color: #F59E0B;
+    }
+
+    .item-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .item-icon {
+      color: #D97706;
+      font-size: 14px;
+    }
+
+    .item-text {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .item-bureau-tag {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 6px;
+      background: #FEF2F2;
+      color: #DC2626;
+      border-radius: 4px;
+      margin-left: 6px;
+    }
+
+    .severity-badge {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 7px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    .severity-high {
+      background: #FEE2E2;
+      color: #B91C1C;
+    }
+
+    .severity-medium {
+      background: #FEF3C7;
+      color: #B45309;
+    }
+
+    .item-btn {
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      border-radius: var(--radius-md);
+      background: #F59E0B;
+      color: #451A03;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .item-btn:hover {
+      background: #D97706;
+      color: white;
+    }
+
+    .discrepancy-footer-action {
+      display: flex;
+      gap: 12px;
+    }
+
+    /* Credit Mix Card */
+    .credit-mix-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-2xl);
+      padding: 24px;
+      box-shadow: var(--shadow-card);
+      display: flex;
+      flex-direction: column;
+    }
+
+    .credit-mix-body {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      margin: 16px 0;
+    }
+
+    .chart-box {
+      width: 150px;
+      height: 150px;
+      position: relative;
+    }
+
+    .mix-legend-list {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .legend-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+
+    .legend-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    .legend-pct {
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    /* Key Credit Factors Grid */
+    .factors-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 18px;
+    }
+
+    .factor-card {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-xl);
+      padding: 18px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .factor-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+    }
+
+    .factor-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .factor-impact {
+      font-size: 10px;
+      font-weight: 800;
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      background: #F1F5F9;
+      color: var(--text-secondary);
+    }
+
+    .factor-value-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+
+    .factor-big-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .factor-status-pill {
+      font-size: 11px;
+      font-weight: 700;
+      color: #059669;
+    }
+
+    .factor-bar-bg {
+      height: 6px;
+      background: var(--bg-surface-subtle);
+      border-radius: 9999px;
+      overflow: hidden;
+    }
+
+    .factor-bar-fill {
+      height: 100%;
+      border-radius: 9999px;
+    }
+
+    /* =========================================================
+       MODAL: RECTIFICATION / DISPUTE DRAWER
+       ========================================================= */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(4px);
+      z-index: 100;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-box {
+      background: white;
+      border-radius: var(--radius-2xl);
+      max-width: 680px;
+      width: 100%;
+      box-shadow: var(--shadow-elevated);
+      overflow: hidden;
+      animation: modalSlide 0.2s ease-out;
+    }
+
+    @keyframes modalSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .modal-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .modal-title {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: var(--text-muted);
+    }
+
+    .modal-close:hover {
+      color: var(--text-primary);
+    }
+
+    .modal-body {
+      padding: 24px;
+      max-height: 75vh;
+      overflow-y: auto;
+    }
+
+    .dispute-stepper {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+      position: relative;
+    }
+
+    .step-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      z-index: 2;
+    }
+
+    .step-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--bg-surface-subtle);
+      color: var(--text-muted);
+      font-weight: 700;
+      font-size: 13px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 2px solid white;
+    }
+
+    .step-item.active .step-num {
+      background: var(--brand-electric);
+      color: white;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+    }
+
+    .step-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--text-secondary);
+    }
+
+    /* Comparison Table in Tab 2 */
+    .comparison-table-wrapper {
+      background: white;
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      box-shadow: var(--shadow-card);
+      overflow-x: auto;
+    }
+
+    .comparison-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .comparison-table th {
+      background: var(--bg-surface-subtle);
+      padding: 14px 18px;
+      font-weight: 700;
+      color: var(--text-secondary);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .comparison-table td {
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border-subtle);
+      color: var(--text-primary);
+    }
+
+    .comparison-table tr:hover td {
+      background: #F8FAFC;
+    }
+
+    .mismatch-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      background: #FEF2F2;
+      color: #DC2626;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 4px;
+    }
+
+    /* Simulator Tab */
+    .simulator-container {
+      background: white;
+      border-radius: var(--radius-2xl);
+      border: 1px solid var(--border-subtle);
+      padding: 32px;
+      box-shadow: var(--shadow-card);
+    }
+
+    .slider-group {
+      margin-bottom: 24px;
+    }
+
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .sim-slider {
+      width: 100%;
+      height: 8px;
+      background: #E2E8F0;
+      border-radius: 9999px;
+      outline: none;
+      -webkit-appearance: none;
+    }
+
+    .sim-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: var(--brand-electric);
+      cursor: pointer;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: var(--brand-dark);
+      color: white;
+      padding: 14px 20px;
+      border-radius: var(--radius-lg);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: var(--shadow-elevated);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      z-index: 1000;
+    }
+
+    .toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- SVG Gradients Definition -->
+  <svg width="0" height="0" style="position: absolute;">
+    <defs>
+      <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stop-color="#3B82F6" />
+        <stop offset="50%" stop-color="#10B981" />
+        <stop offset="100%" stop-color="#F59E0B" />
+      </linearGradient>
+    </defs>
+  </svg>
+
+  <!-- =========================================================
+       SIDEBAR NAVIGATION
+       ========================================================= -->
+  <aside class="sidebar">
+    <div class="brand-logo-container">
+      <div class="brand-logo-icon">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12" stroke="#3B82F6" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M12 6V12L16 14" stroke="#10B981" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="3" fill="#F59E0B"/>
+        </svg>
+      </div>
+      <div>
+        <div class="brand-name">Prime<span>Score</span></div>
+        <div class="brand-tagline">Credit Intelligence</div>
+      </div>
+    </div>
+
+    <div class="nav-section-title">Core Platform</div>
+    <ul class="nav-list">
+      <li class="nav-item active" onclick="switchMainTab('overview', this)">
+        <a><i class="fa-solid fa-gauge-high"></i> Dashboard</a>
+      </li>
+      <li class="nav-item" onclick="switchMainTab('comparison', this)">
+        <a><i class="fa-solid fa-table-columns"></i> 4-Bureau Matrix</a>
+      </li>
+      <li class="nav-item" onclick="switchMainTab('accounts', this)">
+        <a><i class="fa-solid fa-credit-card"></i> Accounts & Loans</a>
+      </li>
+      <li class="nav-item" onclick="switchMainTab('disputes', this)">
+        <a>
+          <i class="fa-solid fa-triangle-exclamation"></i> Discrepancies
+          <span class="nav-badge">4 Issues</span>
+        </a>
+      </li>
+      <li class="nav-item" onclick="switchMainTab('simulator', this)">
+        <a><i class="fa-solid fa-wand-magic-sparkles"></i> Score Simulator</a>
+      </li>
+    </ul>
+
+    <div class="nav-section-title">Services & Tools</div>
+    <ul class="nav-list">
+      <li class="nav-item" onclick="openDisputeModal()">
+        <a><i class="fa-solid fa-shield-halved"></i> Credit Rectification</a>
+      </li>
+      <li class="nav-item" onclick="showToast('Prime Concierge booked! An expert will call you shortly.')">
+        <a><i class="fa-solid fa-user-tie"></i> 1-on-1 Expert Call</a>
+      </li>
+      <li class="nav-item" onclick="showToast('Referral code copied to clipboard!')">
+        <a><i class="fa-solid fa-gift"></i> Refer & Earn ₹500</a>
+      </li>
+    </ul>
+
+    <div class="sidebar-footer">
+      <div class="user-profile-badge">
+        <div class="user-avatar">SS</div>
+        <div class="user-details">
+          <div class="user-name">SAWAI SINGH</div>
+          <div class="user-tier"><i class="fa-solid fa-crown"></i> Prime Premium</div>
+        </div>
+        <button class="btn btn-secondary btn-pill" style="padding: 4px 8px; font-size: 11px;" onclick="showToast('Profile settings')">
+          <i class="fa-solid fa-gear"></i>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- =========================================================
+       MAIN CONTENT LAYOUT
+       ========================================================= -->
+  <main class="main-layout">
+    <!-- Top Utility Header -->
+    <header class="top-header">
+      <div class="header-user-meta">
+        <div class="meta-chip">
+          <span class="meta-chip-label">PAN</span>
+          <span class="meta-chip-value">KMMPS••••R</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-chip-label">Phone</span>
+          <span class="meta-chip-value">+91 96805•••••</span>
+        </div>
+        <div class="meta-chip">
+          <span class="meta-chip-label">Status</span>
+          <span style="color: #059669; font-weight: 700; font-size: 11px;"><i class="fa-solid fa-circle-check"></i> 4/4 Bureaus Synced</span>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <button class="btn btn-secondary" onclick="triggerScoreRefresh()">
+          <i class="fa-solid fa-arrows-rotate" id="refreshIcon"></i> Refresh All Bureaus
+        </button>
+        <button class="btn btn-primary" onclick="openDownloadModal()">
+          <i class="fa-solid fa-file-arrow-down"></i> Download Multi-Bureau Report
+        </button>
+      </div>
+    </header>
+
+    <!-- Page Content Container -->
+    <div class="dashboard-content">
+
+      <!-- HERO BANNER: 4-BUREAU CONSOLIDATED HEALTH -->
+      <div class="hero-intelligence-card">
+        <div class="hero-bg-shapes"></div>
+        <div class="hero-left-content">
+          <div class="hero-badge-pill">
+            <i class="fa-solid fa-shield-check"></i> PrimeScore™ Multi-Bureau Engine
+          </div>
+          <h1 class="hero-title">Your Credit Health is <span style="color: #60A5FA;">Strong</span>, with 4 Fixable Discrepancies.</h1>
+          <p class="hero-subtitle">
+            We unified your data across CIBIL, CRIF, Experian & Equifax. Fixing reported discrepancies can boost your composite score by up to <strong style="color: #34D399;">+48 points</strong>.
+          </p>
+          <div class="hero-action-row">
+            <button class="btn btn-warning btn-pill" onclick="openDisputeModal()">
+              <i class="fa-solid fa-bolt"></i> Fix 4 Discrepancies (+48 Pts Potential)
+            </button>
+            <button class="btn btn-secondary btn-pill" style="background: rgba(255,255,255,0.12); color: white; border-color: rgba(255,255,255,0.2);" onclick="switchMainTab('comparison', document.querySelectorAll('.tab-btn')[1])">
+              View Cross-Bureau Differences →
+            </button>
+          </div>
+        </div>
+
+        <div class="hero-score-summary">
+          <div class="score-circle-container">
+            <svg class="score-circle-svg" viewBox="0 0 100 100">
+              <circle class="score-circle-bg" cx="50" cy="50" r="40" />
+              <circle class="score-circle-bar" cx="50" cy="50" r="40" />
+            </svg>
+            <div class="score-text-center">
+              <span class="score-text-val tabular-nums" id="compositeScore">771</span>
+              <span class="score-text-max">/ 900</span>
+            </div>
+          </div>
+          <div class="score-intel-stats">
+            <div class="intel-title">Composite Index</div>
+            <div class="intel-rating"><i class="fa-solid fa-circle-check"></i> Tier 1 Prime</div>
+            <div class="intel-sub">Top 12% in India</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4-BUREAU LIVE SCORE CARDS -->
+      <div>
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <h2 class="section-title">All 4 RBI Credit Bureaus</h2>
+            <span class="meta-chip-label" style="background: #E2E8F0; padding: 2px 8px; border-radius: 4px;">Live Data</span>
+          </div>
+          <span class="section-desc">Last synchronized: Today, 10:01 AM IST</span>
+        </div>
+
+        <div class="bureau-grid">
+          <!-- CIBIL -->
+          <div class="bureau-card">
+            <div>
+              <div class="bureau-top">
+                <div class="bureau-brand">
+                  <div class="bureau-dot cibil"></div>
+                  <div class="bureau-name">TRANSUNION CIBIL</div>
+                </div>
+                <span class="bureau-trend-badge trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +12 pts</span>
+              </div>
+              <div class="bureau-score-row">
+                <span class="bureau-score-big tabular-nums">743</span>
+                <span class="bureau-score-scale">/ 900</span>
+              </div>
+              <div class="bureau-status-tag tag-very-good">Very Good</div>
+            </div>
+            <div>
+              <div class="bureau-stats-table">
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Accounts</span>
+                  <span class="stat-val tabular-nums">16</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Active</span>
+                  <span class="stat-val tabular-nums" style="color: #2563EB;">7</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Closed</span>
+                  <span class="stat-val tabular-nums" style="color: #64748B;">9</span>
+                </div>
+              </div>
+              <div class="bureau-card-footer">
+                <span>Fetched 28 Jul</span>
+                <a class="bureau-report-link" onclick="viewBureauReport('CIBIL')">View Details <i class="fa-solid fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- CRIF -->
+          <div class="bureau-card">
+            <div>
+              <div class="bureau-top">
+                <div class="bureau-brand">
+                  <div class="bureau-dot crif"></div>
+                  <div class="bureau-name">CRIF HIGH MARK</div>
+                </div>
+                <span class="bureau-trend-badge trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +8 pts</span>
+              </div>
+              <div class="bureau-score-row">
+                <span class="bureau-score-big tabular-nums">757</span>
+                <span class="bureau-score-scale">/ 900</span>
+              </div>
+              <div class="bureau-status-tag tag-very-good">Very Good</div>
+            </div>
+            <div>
+              <div class="bureau-stats-table">
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Accounts</span>
+                  <span class="stat-val tabular-nums">16</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Active</span>
+                  <span class="stat-val tabular-nums" style="color: #2563EB;">7</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Closed</span>
+                  <span class="stat-val tabular-nums" style="color: #64748B;">9</span>
+                </div>
+              </div>
+              <div class="bureau-card-footer">
+                <span>Fetched 28 Jul</span>
+                <a class="bureau-report-link" onclick="viewBureauReport('CRIF')">View Details <i class="fa-solid fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- EXPERIAN -->
+          <div class="bureau-card">
+            <div>
+              <div class="bureau-top">
+                <div class="bureau-brand">
+                  <div class="bureau-dot experian"></div>
+                  <div class="bureau-name">EXPERIAN INDIA</div>
+                </div>
+                <span class="bureau-trend-badge trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +15 pts</span>
+              </div>
+              <div class="bureau-score-row">
+                <span class="bureau-score-big tabular-nums">770</span>
+                <span class="bureau-score-scale">/ 900</span>
+              </div>
+              <div class="bureau-status-tag tag-very-good">Very Good</div>
+            </div>
+            <div>
+              <div class="bureau-stats-table">
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Accounts</span>
+                  <span class="stat-val tabular-nums" style="color: #DC2626;">15*</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Active</span>
+                  <span class="stat-val tabular-nums" style="color: #2563EB;">7</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Closed</span>
+                  <span class="stat-val tabular-nums" style="color: #64748B;">8</span>
+                </div>
+              </div>
+              <div class="bureau-card-footer">
+                <span style="color: #DC2626; font-weight: 600;">1 Account Missing</span>
+                <a class="bureau-report-link" onclick="viewBureauReport('Experian')">View Details <i class="fa-solid fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+
+          <!-- EQUIFAX -->
+          <div class="bureau-card">
+            <div>
+              <div class="bureau-top">
+                <div class="bureau-brand">
+                  <div class="bureau-dot equifax"></div>
+                  <div class="bureau-name">EQUIFAX INDIA</div>
+                </div>
+                <span class="bureau-trend-badge trend-up"><i class="fa-solid fa-arrow-trend-up"></i> +24 pts</span>
+              </div>
+              <div class="bureau-score-row">
+                <span class="bureau-score-big tabular-nums" style="color: #059669;">817</span>
+                <span class="bureau-score-scale">/ 900</span>
+              </div>
+              <div class="bureau-status-tag tag-excellent">Excellent</div>
+            </div>
+            <div>
+              <div class="bureau-stats-table">
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Accounts</span>
+                  <span class="stat-val tabular-nums">16</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Active</span>
+                  <span class="stat-val tabular-nums" style="color: #2563EB;">7</span>
+                </div>
+                <div class="bureau-stat-item">
+                  <span class="stat-label">Closed</span>
+                  <span class="stat-val tabular-nums" style="color: #64748B;">9</span>
+                </div>
+              </div>
+              <div class="bureau-card-footer">
+                <span>Fetched 28 Jul</span>
+                <a class="bureau-report-link" onclick="viewBureauReport('Equifax')">View Details <i class="fa-solid fa-arrow-right"></i></a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB CONTROLLER -->
+      <div class="tab-navigation-bar">
+        <div class="segmented-tabs">
+          <button class="tab-btn active" onclick="switchMainTab('overview', this)">
+            <i class="fa-solid fa-chart-pie"></i> Overview
+          </button>
+          <button class="tab-btn" onclick="switchMainTab('comparison', this)">
+            <i class="fa-solid fa-code-compare"></i> 4-Bureau Comparison Matrix
+          </button>
+          <button class="tab-btn" onclick="switchMainTab('accounts', this)">
+            <i class="fa-solid fa-layer-group"></i> Accounts & Credit Mix
+          </button>
+          <button class="tab-btn" onclick="switchMainTab('disputes', this)">
+            <i class="fa-solid fa-shield-virus"></i> Discrepancies & Disputes
+            <span class="tab-chip" style="background: #FEE2E2; color: #DC2626;">4 Actionable</span>
+          </button>
+          <button class="tab-btn" onclick="switchMainTab('simulator', this)">
+            <i class="fa-solid fa-sliders"></i> Score Simulator
+          </button>
+        </div>
+
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-secondary btn-pill" style="padding: 6px 12px; font-size: 12px;" onclick="showToast('Exporting data as CSV...')">
+            <i class="fa-solid fa-arrow-up-from-bracket"></i> Export Data
+          </button>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 1: OVERVIEW TAB CONTENT
+           ========================================================= -->
+      <div id="tab-overview" class="tab-content-panel">
+        <div class="dashboard-two-col">
+          <!-- DISCREPANCY RECTIFICATION WIDGET (USP) -->
+          <div class="discrepancy-card-widget">
+            <div class="discrepancy-top-accent"></div>
+            <div class="discrepancy-header">
+              <div class="discrepancy-header-left">
+                <div class="alert-icon-square">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                  <div class="discrepancy-title">Discrepancy Intelligence Center</div>
+                  <div class="discrepancy-desc">We analyzed 16 accounts across 4 bureaus and found 4 discrepancies depressing your score.</div>
+                </div>
+              </div>
+              <span class="severity-badge severity-high">Action Required</span>
+            </div>
+
+            <div class="discrepancy-list">
+              <!-- Item 1 -->
+              <div class="discrepancy-item">
+                <div class="item-left">
+                  <i class="fa-solid fa-circle-exclamation item-icon"></i>
+                  <div>
+                    <div class="item-text">
+                      HDFC Bank Credit Card Status Mismatch
+                      <span class="item-bureau-tag">CIBIL vs Experian</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                      Marked <span style="color: #059669; font-weight: 600;">Closed (₹0)</span> in CIBIL, but shown <span style="color: #DC2626; font-weight: 600;">Active (₹42,000)</span> in Experian.
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="severity-badge severity-high">HIGH</span>
+                  <button class="item-btn" onclick="openDisputeModal('HDFC Credit Card')">Raise Request</button>
+                </div>
+              </div>
+
+              <!-- Item 2 -->
+              <div class="discrepancy-item">
+                <div class="item-left">
+                  <i class="fa-solid fa-circle-exclamation item-icon"></i>
+                  <div>
+                    <div class="item-text">
+                      ICICI Personal Loan Missing Record
+                      <span class="item-bureau-tag">Experian Only</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                      Clean 24-month on-time repayment history missing in Experian report.
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="severity-badge severity-medium">MEDIUM</span>
+                  <button class="item-btn" onclick="openDisputeModal('ICICI Personal Loan')">Raise Request</button>
+                </div>
+              </div>
+
+              <!-- Item 3 -->
+              <div class="discrepancy-item">
+                <div class="item-left">
+                  <i class="fa-solid fa-circle-exclamation item-icon"></i>
+                  <div>
+                    <div class="item-text">
+                      Wrong DPD (Days Past Due) Reported
+                      <span class="item-bureau-tag">CRIF High Mark</span>
+                    </div>
+                    <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">
+                      Reported 30+ DPD in March 2024 despite on-time bank auto-debit clearance.
+                    </div>
+                  </div>
+                </div>
+                <div style="display: flex; align-items: center; gap: 10px;">
+                  <span class="severity-badge severity-high">HIGH</span>
+                  <button class="item-btn" onclick="openDisputeModal('DPD Correction')">Raise Request</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="discrepancy-footer-action">
+              <button class="btn btn-warning" style="flex: 1; padding: 12px;" onclick="openDisputeModal()">
+                <i class="fa-solid fa-gavel"></i> Rectify All 4 Issues with PrimeScore Legal Desk
+              </button>
+              <button class="btn btn-secondary" onclick="showToast('Downloading discrepancy audit report...')">
+                <i class="fa-solid fa-download"></i> Audit PDF
+              </button>
+            </div>
+          </div>
+
+          <!-- CREDIT MIX & PORTFOLIO BREAKDOWN -->
+          <div class="credit-mix-card">
+            <div class="section-header" style="margin-bottom: 0;">
+              <div>
+                <h3 class="section-title" style="font-size: 16px;">Credit Mix & Distribution</h3>
+                <span class="section-desc">16 Total Accounts (7 Active, 9 Closed)</span>
+              </div>
+              <span class="meta-chip-label" style="color: #059669; font-weight: 700; background: #ECFDF5; padding: 3px 8px; border-radius: 4px;">Healthy Mix</span>
+            </div>
+
+            <div class="credit-mix-body">
+              <div class="chart-box">
+                <canvas id="creditMixChart"></canvas>
+              </div>
+              <div class="mix-legend-list">
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #2563EB;"></div>
+                    <span>Personal Loans</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">38% (6)</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #EC4899;"></div>
+                    <span>Credit Cards</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">25% (4)</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #F59E0B;"></div>
+                    <span>Loan on Credit Card</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">13% (2)</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #10B981;"></div>
+                    <span>Loan Against Deposits</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">12% (2)</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #8B5CF6;"></div>
+                    <span>Two Wheeler Loans</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">6% (1)</span>
+                </div>
+                <div class="legend-row">
+                  <div class="legend-indicator">
+                    <div class="legend-dot" style="background: #64748B;"></div>
+                    <span>Other Consumer Loans</span>
+                  </div>
+                  <span class="legend-pct tabular-nums">6% (1)</span>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: auto; padding-top: 14px; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+              <span style="font-size: 12px; color: var(--text-secondary);">Total Active Exposure: <strong style="color: var(--text-primary);">₹4,82,500</strong></span>
+              <a style="font-size: 12px; font-weight: 700; color: var(--brand-electric); cursor: pointer;" onclick="switchMainTab('accounts', document.querySelectorAll('.tab-btn')[2])">View All Accounts →</a>
+            </div>
+          </div>
+        </div>
+
+        <!-- 4 KEY CREDIT PILLARS -->
+        <div style="margin-top: 24px;">
+          <div class="section-header">
+            <h3 class="section-title">Key Credit Score Drivers</h3>
+            <span class="section-desc">Impact breakdown across all 4 bureaus</span>
+          </div>
+
+          <div class="factors-grid">
+            <div class="factor-card">
+              <div class="factor-header">
+                <span class="factor-name">Payment History</span>
+                <span class="factor-impact" style="color: #1E40AF; background: #DBEAFE;">35% Impact</span>
+              </div>
+              <div class="factor-value-row">
+                <span class="factor-big-num tabular-nums">99.2%</span>
+                <span class="factor-status-pill">Excellent</span>
+              </div>
+              <div class="factor-bar-bg">
+                <div class="factor-bar-fill" style="width: 99.2%; background: #10B981;"></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">1 Late Mark disputed</div>
+            </div>
+
+            <div class="factor-card">
+              <div class="factor-header">
+                <span class="factor-name">Credit Utilization</span>
+                <span class="factor-impact" style="color: #1E40AF; background: #DBEAFE;">30% Impact</span>
+              </div>
+              <div class="factor-value-row">
+                <span class="factor-big-num tabular-nums">28%</span>
+                <span class="factor-status-pill">Optimal (&lt;30%)</span>
+              </div>
+              <div class="factor-bar-bg">
+                <div class="factor-bar-fill" style="width: 28%; background: #3B82F6;"></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">₹1.12L / ₹4.00L Limit used</div>
+            </div>
+
+            <div class="factor-card">
+              <div class="factor-header">
+                <span class="factor-name">Credit History Age</span>
+                <span class="factor-impact" style="color: #64748B; background: #F1F5F9;">15% Impact</span>
+              </div>
+              <div class="factor-value-row">
+                <span class="factor-big-num tabular-nums">4.8 Yrs</span>
+                <span class="factor-status-pill" style="color: #F59E0B;">Moderate</span>
+              </div>
+              <div class="factor-bar-bg">
+                <div class="factor-bar-fill" style="width: 60%; background: #F59E0B;"></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">Oldest account: HDFC 2019</div>
+            </div>
+
+            <div class="factor-card">
+              <div class="factor-header">
+                <span class="factor-name">Recent Inquiries</span>
+                <span class="factor-impact" style="color: #64748B; background: #F1F5F9;">10% Impact</span>
+              </div>
+              <div class="factor-value-row">
+                <span class="factor-big-num tabular-nums">2</span>
+                <span class="factor-status-pill">Low Risk</span>
+              </div>
+              <div class="factor-bar-bg">
+                <div class="factor-bar-fill" style="width: 20%; background: #10B981;"></div>
+              </div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 8px;">In last 6 months</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 2: 4-BUREAU COMPARISON MATRIX
+           ========================================================= -->
+      <div id="tab-comparison" class="tab-content-panel" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Cross-Bureau Account Sync Matrix</h2>
+            <span class="section-desc">Comparing reporting accuracy across TransUnion CIBIL, CRIF High Mark, Experian & Equifax</span>
+          </div>
+          <button class="btn btn-primary" onclick="openDisputeModal()">
+            <i class="fa-solid fa-plus"></i> Initiate Multi-Bureau Rectification
+          </button>
+        </div>
+
+        <div class="comparison-table-wrapper">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Lender & Account</th>
+                <th>Type</th>
+                <th>CIBIL</th>
+                <th>CRIF High Mark</th>
+                <th>Experian</th>
+                <th>Equifax</th>
+                <th>Sync Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>
+                  <strong>HDFC Bank Credit Card</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">Ending in •••• 4492</div>
+                </td>
+                <td>Credit Card</td>
+                <td><span style="color: #059669; font-weight: 600;">Closed (₹0)</span></td>
+                <td><span style="color: #059669; font-weight: 600;">Closed (₹0)</span></td>
+                <td><span class="mismatch-badge"><i class="fa-solid fa-triangle-exclamation"></i> Active (₹42,000)</span></td>
+                <td><span style="color: #059669; font-weight: 600;">Closed (₹0)</span></td>
+                <td><span class="mismatch-badge">DISCREPANCY</span></td>
+                <td><button class="btn btn-warning btn-pill" style="padding: 4px 10px; font-size: 11px;" onclick="openDisputeModal('HDFC Card')">Rectify</button></td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>ICICI Bank Personal Loan</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">Acc: •••• 8812</div>
+                </td>
+                <td>Personal Loan</td>
+                <td><span style="color: #2563EB; font-weight: 600;">Active (₹1.80L)</span></td>
+                <td><span style="color: #2563EB; font-weight: 600;">Active (₹1.80L)</span></td>
+                <td><span class="mismatch-badge"><i class="fa-solid fa-ban"></i> Record Missing</span></td>
+                <td><span style="color: #2563EB; font-weight: 600;">Active (₹1.80L)</span></td>
+                <td><span class="mismatch-badge">MISSING</span></td>
+                <td><button class="btn btn-warning btn-pill" style="padding: 4px 10px; font-size: 11px;" onclick="openDisputeModal('ICICI Loan')">Rectify</button></td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>SBI Home Loan</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">Acc: •••• 1009</div>
+                </td>
+                <td>Home Loan</td>
+                <td><span style="color: #059669; font-weight: 600;">Active / 0 DPD</span></td>
+                <td><span style="color: #059669; font-weight: 600;">Active / 0 DPD</span></td>
+                <td><span style="color: #059669; font-weight: 600;">Active / 0 DPD</span></td>
+                <td><span style="color: #059669; font-weight: 600;">Active / 0 DPD</span></td>
+                <td><span style="color: #059669; font-weight: 700; font-size: 11px;"><i class="fa-solid fa-check-double"></i> 100% Synced</span></td>
+                <td><button class="btn btn-secondary btn-pill" style="padding: 4px 10px; font-size: 11px;" onclick="showToast('Record verified across 4 bureaus')">Verified</button></td>
+              </tr>
+              <tr>
+                <td>
+                  <strong>Axis Bank Two-Wheeler</strong>
+                  <div style="font-size: 11px; color: var(--text-muted);">Acc: •••• 7721</div>
+                </td>
+                <td>Auto Loan</td>
+                <td><span style="color: #64748B; font-weight: 600;">Closed (2023)</span></td>
+                <td><span class="mismatch-badge"><i class="fa-solid fa-triangle-exclamation"></i> 30+ DPD Flag</span></td>
+                <td><span style="color: #64748B; font-weight: 600;">Closed (2023)</span></td>
+                <td><span style="color: #64748B; font-weight: 600;">Closed (2023)</span></td>
+                <td><span class="mismatch-badge">FALSE DPD</span></td>
+                <td><button class="btn btn-warning btn-pill" style="padding: 4px 10px; font-size: 11px;" onclick="openDisputeModal('Axis DPD')">Rectify</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 3: ACCOUNTS & CREDIT MIX
+           ========================================================= -->
+      <div id="tab-accounts" class="tab-content-panel" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">Consolidated Credit Accounts Portfolio</h2>
+            <span class="section-desc">Showing all 16 active and closed accounts with repayment track records</span>
+          </div>
+        </div>
+        <div class="comparison-table-wrapper">
+          <table class="comparison-table">
+            <thead>
+              <tr>
+                <th>Account & Bank</th>
+                <th>Sanctioned Amount</th>
+                <th>Current Balance</th>
+                <th>Repayment Status</th>
+                <th>Opened Date</th>
+                <th>Bureaus Reporting</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><strong>HDFC Millennia Credit Card</strong></td>
+                <td>₹2,50,000</td>
+                <td>₹34,210 (14% Used)</td>
+                <td><span style="color: #059669; font-weight: 700;">All Clear (000 DPD)</span></td>
+                <td>12 Sep 2021</td>
+                <td><span style="font-weight: 700; color: #2563EB;">4 / 4 Bureaus</span></td>
+              </tr>
+              <tr>
+                <td><strong>ICICI Amazon Pay Card</strong></td>
+                <td>₹1,50,000</td>
+                <td>₹18,500 (12% Used)</td>
+                <td><span style="color: #059669; font-weight: 700;">All Clear (000 DPD)</span></td>
+                <td>05 Jan 2022</td>
+                <td><span style="font-weight: 700; color: #2563EB;">4 / 4 Bureaus</span></td>
+              </tr>
+              <tr>
+                <td><strong>SBI Personal Loan</strong></td>
+                <td>₹3,00,000</td>
+                <td>₹1,12,000</td>
+                <td><span style="color: #059669; font-weight: 700;">Regular EMI Active</span></td>
+                <td>14 Feb 2023</td>
+                <td><span style="font-weight: 700; color: #2563EB;">4 / 4 Bureaus</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 4: DISPUTES & RECTIFICATION HUB
+           ========================================================= -->
+      <div id="tab-disputes" class="tab-content-panel" style="display: none;">
+        <div class="section-header">
+          <div>
+            <h2 class="section-title">PrimeScore Credit Rectification Hub</h2>
+            <span class="section-desc">Track real-time resolution status of bureau disputes handled by PrimeScore advocates</span>
+          </div>
+          <button class="btn btn-primary" onclick="openDisputeModal()">
+            <i class="fa-solid fa-plus"></i> File New Bureau Dispute
+          </button>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px;">
+          <div class="factor-card" style="border-top: 4px solid #F59E0B;">
+            <div class="factor-header">
+              <span class="factor-name">1. In Draft & Verification</span>
+              <span class="meta-chip-label">1 Item</span>
+            </div>
+            <div class="discrepancy-item" style="background: white; margin-top: 10px;">
+              <div>
+                <strong style="font-size: 13px;">Axis Two-Wheeler False DPD</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">Bank clearance NOC pending upload</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="factor-card" style="border-top: 4px solid #3B82F6;">
+            <div class="factor-header">
+              <span class="factor-name">2. Filed with Credit Bureau</span>
+              <span class="meta-chip-label">2 Items</span>
+            </div>
+            <div class="discrepancy-item" style="background: white; margin-top: 10px;">
+              <div>
+                <strong style="font-size: 13px;">HDFC Card Closure Update</strong>
+                <div style="font-size: 11px; color: var(--text-muted);">Ref: PS-EXP-2024-9982 (Experian)</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="factor-card" style="border-top: 4px solid #10B981;">
+            <div class="factor-header">
+              <span class="factor-name">3. Successfully Resolved</span>
+              <span class="meta-chip-label">1 Item</span>
+            </div>
+            <div class="discrepancy-item" style="background: #F0FDF4; border-color: #86EFAC; margin-top: 10px;">
+              <div>
+                <strong style="font-size: 13px; color: #065F46;">Kotak Old Account Removal</strong>
+                <div style="font-size: 11px; color: #047857;">Score impact: +18 Points restored</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 5: SCORE SIMULATOR
+           ========================================================= -->
+      <div id="tab-simulator" class="tab-content-panel" style="display: none;">
+        <div class="simulator-container">
+          <div class="section-header" style="margin-bottom: 24px;">
+            <div>
+              <h2 class="section-title">Interactive AI Credit Score Simulator</h2>
+              <span class="section-desc">Test different financial actions to forecast your score across all 4 bureaus</span>
+            </div>
+            <div style="background: #EFF6FF; padding: 8px 16px; border-radius: var(--radius-lg); text-align: right;">
+              <span style="font-size: 11px; color: var(--brand-primary); font-weight: 700; text-transform: uppercase;">Projected Composite Score</span>
+              <div style="font-size: 28px; font-weight: 800; color: #1E40AF;" id="simulatedScoreVal">798 <span style="font-size: 14px; color: #059669;">(+27 pts)</span></div>
+            </div>
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Pay Down Credit Card Balance: <strong id="sliderCardVal">₹50,000</strong></span>
+              <span style="color: #059669;">+14 Pts</span>
+            </div>
+            <input type="range" min="0" max="150000" step="5000" value="50000" class="sim-slider" oninput="updateSimulation(this.value)" />
+          </div>
+
+          <div class="slider-group">
+            <div class="slider-header">
+              <span>Rectify 4 Reported Bureau Discrepancies</span>
+              <span style="color: #059669;">+48 Pts</span>
+            </div>
+            <div style="display: flex; gap: 12px; margin-top: 8px;">
+              <button class="btn btn-warning btn-pill" onclick="openDisputeModal()">Apply Dispute Rectification to Simulator</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- =========================================================
+       MODAL: RECTIFICATION REQUEST FORM
+       ========================================================= -->
+  <div class="modal-overlay" id="disputeModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-gavel" style="color: #F59E0B;"></i> Raise Credit Rectification Request</div>
+        <button class="modal-close" onclick="closeDisputeModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="dispute-stepper">
+          <div class="step-item active">
+            <div class="step-num">1</div>
+            <div class="step-label">Select Issue</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-label">Upload Proof</div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-label">Prime Bureau Filing</div>
+          </div>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Affected Bureau</label>
+            <select style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); font-size: 13px; font-weight: 600;">
+              <option>Experian India (Account Missing / Wrong Status)</option>
+              <option>TransUnion CIBIL (Late Payment Dispute)</option>
+              <option>CRIF High Mark (False DPD Record)</option>
+              <option>Equifax India (Personal Info Mismatch)</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Dispute Category</label>
+            <select style="width: 100%; padding: 10px; border-radius: var(--radius-md); border: 1px solid var(--border-strong); font-size: 13px; font-weight: 600;">
+              <option>Cross-Bureau Status Mismatch (Closed marked Active)</option>
+              <option>Incorrect Overdue / DPD Amount</option>
+              <option>Account Does Not Belong to Me (Identity Theft)</option>
+              <option>Missing On-Time Repayment Records</option>
+            </select>
+          </div>
+
+          <div>
+            <label style="font-size: 12px; font-weight: 700; color: var(--text-secondary); display: block; margin-bottom: 6px;">Attach Bank NOC / Statement (Optional)</label>
+            <div style="border: 2px dashed var(--border-strong); padding: 24px; text-align: center; border-radius: var(--radius-lg); background: var(--bg-surface-subtle); cursor: pointer;" onclick="showToast('File selected: HDFC_NOC_Closure.pdf')">
+              <i class="fa-solid fa-cloud-arrow-up" style="font-size: 24px; color: var(--brand-electric); margin-bottom: 8px;"></i>
+              <div style="font-size: 13px; font-weight: 700; color: var(--text-primary);">Click to upload bank NOC or closure letter</div>
+              <div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">PDF, PNG or JPG up to 10MB</div>
+            </div>
+          </div>
+        </div>
+
+        <div style="margin-top: 24px; display: flex; justify-content: flex-end; gap: 12px;">
+          <button class="btn btn-secondary" onclick="closeDisputeModal()">Cancel</button>
+          <button class="btn btn-warning" onclick="submitDispute()">Submit Rectification Request →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================
+       MODAL: DOWNLOAD MULTI-BUREAU REPORT
+       ========================================================= -->
+  <div class="modal-overlay" id="downloadModal">
+    <div class="modal-box" style="max-width: 520px;">
+      <div class="modal-header">
+        <div class="modal-title"><i class="fa-solid fa-file-pdf" style="color: #EF4444;"></i> Multi-Bureau Consolidated Report</div>
+        <button class="modal-close" onclick="closeDownloadModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div style="text-align: center; padding: 12px 0;">
+          <div style="width: 60px; height: 60px; border-radius: 50%; background: #EFF6FF; color: #2563EB; display: inline-flex; align-items: center; justify-content: center; font-size: 28px; margin-bottom: 12px;">
+            <i class="fa-solid fa-shield-halved"></i>
+          </div>
+          <h3 style="font-size: 17px; font-weight: 800; color: var(--text-primary);">Unified 4-Bureau Intelligence PDF</h3>
+          <p style="font-size: 13px; color: var(--text-secondary); margin-top: 6px;">
+            Includes CIBIL, CRIF, Experian & Equifax comparative analysis, full inquiry audit, and discrepancy resolution sheet.
+          </p>
+        </div>
+
+        <div style="background: var(--bg-surface-subtle); border-radius: var(--radius-lg); padding: 14px; margin: 16px 0; font-size: 12px; color: var(--text-secondary);">
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span>Report Generation Date:</span>
+            <strong style="color: var(--text-primary);">Today, 10:01 AM</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+            <span>Verified User PAN:</span>
+            <strong style="color: var(--text-primary);">KMMPS••••R</strong>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>Security Encryption:</span>
+            <strong style="color: #059669;">256-Bit SSL Encrypted</strong>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button class="btn btn-secondary" style="flex: 1;" onclick="closeDownloadModal()">Close</button>
+          <button class="btn btn-primary" style="flex: 2;" onclick="triggerDownload()">
+            <i class="fa-solid fa-download"></i> Download Report (PDF)
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" id="toastBox">
+    <i class="fa-solid fa-circle-check" style="color: #10B981; font-size: 16px;"></i>
+    <span id="toastMsg">Action completed successfully!</span>
+  </div>
+
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // Tab Switcher
+    function switchMainTab(tabId, element) {
+      document.querySelectorAll('.tab-content-panel').forEach(el => el.style.display = 'none');
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+
+      const targetPanel = document.getElementById('tab-' + tabId);
+      if (targetPanel) targetPanel.style.display = 'block';
+
+      if (element) {
+        if (element.classList.contains('tab-btn')) {
+          element.classList.add('active');
+        } else if (element.classList.contains('nav-item')) {
+          element.classList.add('active');
+          const correspondingTab = document.querySelector(`.tab-btn[onclick*="${tabId}"]`);
+          if (correspondingTab) correspondingTab.classList.add('active');
+        }
+      }
+    }
+
+    // Modal Handlers
+    function openDisputeModal(issueTitle) {
+      document.getElementById('disputeModal').classList.add('active');
+      if (issueTitle) {
+        showToast('Initiating dispute for: ' + issueTitle);
+      }
+    }
+    function closeDisputeModal() {
+      document.getElementById('disputeModal').classList.remove('active');
+    }
+    function openDownloadModal() {
+      document.getElementById('downloadModal').classList.add('active');
+    }
+    function closeDownloadModal() {
+      document.getElementById('downloadModal').classList.remove('active');
+    }
+
+    function submitDispute() {
+      closeDisputeModal();
+      showToast('Dispute Dossier submitted to PrimeScore Legal Desk! Case ID: #PS-8832');
+    }
+
+    function triggerDownload() {
+      closeDownloadModal();
+      showToast('Downloading PrimeScore_4Bureau_Report.pdf...');
+    }
+
+    function triggerScoreRefresh() {
+      const icon = document.getElementById('refreshIcon');
+      icon.classList.add('fa-spin');
+      showToast('Syncing real-time records across all 4 bureaus...');
+      setTimeout(() => {
+        icon.classList.remove('fa-spin');
+        showToast('All 4 Bureaus successfully updated!');
+      }, 1200);
+    }
+
+    function viewBureauReport(bureauName) {
+      showToast('Opening detailed ' + bureauName + ' official report...');
+    }
+
+    function updateSimulation(val) {
+      document.getElementById('sliderCardVal').innerText = '₹' + Number(val).toLocaleString('en-IN');
+      const base = 771;
+      const boost = Math.round((val / 150000) * 35);
+      document.getElementById('simulatedScoreVal').innerHTML = `${base + boost} <span style="font-size: 14px; color: #059669;">(+${boost} pts)</span>`;
+    }
+
+    // Toast Function
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      document.getElementById('toastMsg').innerText = msg;
+      toast.classList.add('show');
+      setTimeout(() => {
+        toast.classList.remove('show');
+      }, 3500);
+    }
+
+    // Initialize Chart.js Donut
+    window.addEventListener('DOMContentLoaded', () => {
+      const ctx = document.getElementById('creditMixChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Personal Loan', 'Credit Card', 'Loan on CC', 'Deposit Loan', 'Two Wheeler', 'Other'],
+          datasets: [{
+            data: [38, 25, 13, 12, 6, 6],
+            backgroundColor: [
+              '#2563EB',
+              '#EC4899',
+              '#F59E0B',
+              '#10B981',
+              '#8B5CF6',
+              '#64748B'
+            ],
+            borderWidth: 2,
+            borderColor: '#FFFFFF'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          cutout: '75%',
+          plugins: {
+            legend: { display: false },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return context.label + ': ' + context.raw + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+    });
+  </script>
+</body>
+</html>
