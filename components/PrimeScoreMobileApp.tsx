@@ -162,8 +162,14 @@ function AnimatedScoreCounter({ value, duration = 400 }: { value: number; durati
   return <span className="tabular-nums font-extrabold">{displayValue}</span>;
 }
 
-export default function PrimeScoreMobileApp({ isStandalone = false }: { isStandalone?: boolean }) {
-  const [activeBottomNav, setActiveBottomNav] = useState<"home" | "bureaus" | "parth" | "cards" | "loans" | "profile" | "disputes" | "simulator">("home");
+export default function PrimeScoreMobileApp({ 
+  isStandalone = false,
+  initialTab = "home"
+}: { 
+  isStandalone?: boolean;
+  initialTab?: "home" | "bureaus" | "parth" | "cards" | "loans" | "profile" | "disputes" | "simulator";
+}) {
+  const [activeBottomNav, setActiveBottomNav] = useState<"home" | "bureaus" | "parth" | "cards" | "loans" | "profile" | "disputes" | "simulator">(initialTab);
   const [activeHeaderTab, setActiveHeaderTab] = useState<string>("overview");
   const [isDisputeOpen, setIsDisputeOpen] = useState<boolean>(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);

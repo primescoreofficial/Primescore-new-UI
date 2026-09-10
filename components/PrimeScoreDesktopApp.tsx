@@ -56,8 +56,8 @@ import {
   ExternalLink
 } from "lucide-react";
 
-export default function PrimeScoreDesktopApp() {
-  const [activeNav, setActiveNav] = useState<string>("dashboard");
+export default function PrimeScoreDesktopApp({ initialNav = "dashboard" }: { initialNav?: string }) {
+  const [activeNav, setActiveNav] = useState<string>(initialNav);
   const [isDisputeModalOpen, setIsDisputeModalOpen] = useState<boolean>(false);
   const [isNotificationOpen, setIsNotificationOpen] = useState<boolean>(false);
   const [disputePrefill, setDisputePrefill] = useState<string | null>(null);
