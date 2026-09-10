@@ -272,6 +272,33 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
     setIsDisputeOpen(true);
   };
 
+  const handleOpenEmailDispute = (disputeTitle?: string) => {
+    const title = disputeTitle || selectedDisputeTitle || "HDFC Card Status Mismatch";
+    
+    let toEmail = "grievance.redressal@hdfcbank.com, consumer.grievance@experian.com";
+    let accountInfo = "HDFC Millennia Credit Card (•••• 4492)";
+    let issueDesc = "My credit report in Experian reflects this account as 'Active with ₹42,000 overdue' whereas in TransUnion CIBIL and my bank records it is verified as 'Closed with ₹0 balance' (NOC attached).";
+
+    if (title.includes("SBI") || title.includes("DPD") || title.includes("Loan")) {
+      toEmail = "nodalofficer@sbi.co.in, crifgrievance@crifhighmark.com";
+      accountInfo = "SBI Personal Loan (•••• 8821)";
+      issueDesc = "My June 2024 installment was debited automatically on-time on 02-Jun-2024 via NACH, but CRIF HighMark recorded an erroneous 30+ DPD late payment mark.";
+    } else if (title.includes("Axis") || title.includes("Inquiry")) {
+      toEmail = "nodalofficer@axisbank.com, nodalofficer@transunion.com";
+      accountInfo = "Axis Bank Credit Card Inquiry";
+      issueDesc = "An unconsented duplicate hard credit pull was logged on 12-Aug-2024 without my written consent. Under RBI CICRA Section 21, I demand immediate expunging of this inquiry.";
+    }
+
+    const ccEmail = "rectification@primescore.in";
+    const subject = `[URGENT] Formal Rectification Notice under RBI Section 21 - PAN: KMMPS••••R - Acc: ${accountInfo}`;
+    const body = `To,\nThe Principal Nodal Officer & Bureau Grievance Desk,\n\nSub: Formal Credit Rectification Demand under RBI CICRA 2005 (Section 21) & Master Direction 2023\n\nRespected Sir/Madam,\n\nI am writing to formally dispute an erroneous entry on my credit file:\n\n• Name: Sawai Singh\n• PAN: KMMPS••••R\n• Disputed Account: ${accountInfo}\n• Error Details: ${issueDesc}\n\nUnder RBI Credit Information Companies Regulations 2023, credit institutions and credit bureaus are legally mandated to rectify verified discrepancies within 30 calendar days of notification, failing which statutory compensation of ₹100 per day of delay applies.\n\nKindly update your master database and transmit the correction to all 4 credit bureaus (CIBIL, Experian, CRIF HighMark, Equifax) immediately.\n\nThank you,\nSawai Singh\nContact: +91 98••••••42\nTracking CC: rectification@primescore.in`;
+
+    const mailtoUrl = `mailto:${encodeURIComponent(toEmail)}?cc=${encodeURIComponent(ccEmail)}&subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+
+    window.open(mailtoUrl, "_blank");
+    showToast("Opening pre-filled dispute in your Email app...");
+  };
+
   const getDisplayScore = () => {
     const matched = BUREAUS.find((b) => b.id === activeHeaderTab);
     if (matched) {
@@ -2475,6 +2502,481 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
             </motion.div>
           )}
 
+          {/* TAB: LEGAL RECTIFICATION DESK */}
+          {activeBottomNav === "disputes" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3.5 pb-28">
+              
+              {/* 1. HERO STATS CARD (Clean PrimeScore Light Theme) */}
+              <div className="rounded-[26px] bg-white p-5 shadow-sm border border-slate-200/90 flex flex-col gap-4">
+                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                  <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-extrabold text-[#1882FF] border border-blue-200/80">
+                    <Gavel className="h-3.5 w-3.5 text-[#1882FF]" /> RBI Section 21 Backed
+                  </span>
+                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700 border border-emerald-200">
+                    4 Dossiers Active
+                  </span>
+                </div>
+
+                <div className="flex items-baseline justify-between">
+                  <div>
+                    <div className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
+                      Recoverable Score Potential
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-1">
+                      <span className="text-4xl font-black tracking-tight text-slate-900">+48</span>
+                      <span className="text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                        Pts Rebound
+                      </span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Resolution SLA</div>
+                    <div className="text-sm font-black text-slate-900 mt-0.5">30 Days (RBI)</div>
+                    <div className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md mt-1 border border-emerald-100">
+                      ₹100/day guarantee
+                    </div>
+                  </div>
+                </div>
+
+                {/* 4 Bureau Badges */}
+                <div className="grid grid-cols-4 gap-2 pt-1 text-center">
+                  <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-2.5">
+                    <div className="text-[10px] font-extrabold text-slate-500 uppercase">CIBIL</div>
+                    <div className="text-xs font-black text-slate-800 mt-0.5">1 Dispute</div>
+                  </div>
+                  <div className="rounded-xl bg-rose-50 border border-rose-200/80 p-2.5">
+                    <div className="text-[10px] font-extrabold text-rose-600 uppercase">Experian</div>
+                    <div className="text-xs font-black text-rose-700 mt-0.5">Critical (1)</div>
+                  </div>
+                  <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-2.5">
+                    <div className="text-[10px] font-extrabold text-amber-700 uppercase">CRIF</div>
+                    <div className="text-xs font-black text-amber-800 mt-0.5">In Review</div>
+                  </div>
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 p-2.5">
+                    <div className="text-[10px] font-extrabold text-emerald-700 uppercase">Equifax</div>
+                    <div className="text-xs font-black text-emerald-800 mt-0.5">✓ Resolved</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. FILTER PILLS */}
+              <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 scrollbar-none">
+                {[
+                  { id: "all", label: "All Dossiers", count: "4" },
+                  { id: "action", label: "Action Needed", count: "2" },
+                  { id: "review", label: "In Investigation", count: "1" },
+                  { id: "resolved", label: "Resolved", count: "1" }
+                ].map((tab) => {
+                  const isActive = disputeFilter === tab.id;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setDisputeFilter(tab.id as any)}
+                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                        isActive
+                          ? "bg-[#1882FF] text-white shadow-sm"
+                          : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
+                      }`}
+                    >
+                      <span>{tab.label}</span>
+                      <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
+                        isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
+                      }`}>
+                        {tab.count}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 3. DISPUTE DOSSIERS LIST */}
+              <div className="flex flex-col gap-3">
+                {/* DOSSIER 1: HDFC Status Mismatch (Action Needed) */}
+                {(disputeFilter === "all" || disputeFilter === "action") && (
+                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 hover:border-amber-400 transition-all flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-black text-rose-700 border border-rose-200">
+                          Critical Impact (-35 Pts)
+                        </span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">Experian Error</span>
+                      </div>
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
+                        Action Required
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                        HDFC Millennia Credit Card (•••• 4492)
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Account is verified <strong>Closed (₹0 balance)</strong> in CIBIL, CRIF & Equifax, but incorrectly reported as <strong>Active with ₹42,000 overdue</strong> in Experian.
+                      </p>
+                    </div>
+
+                    {/* Evidence Status */}
+                    <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100 flex items-center justify-between text-[11px]">
+                      <span className="text-slate-500 font-semibold">Evidence: <strong className="text-slate-800">Bank NOC Uploaded</strong></span>
+                      <span className="text-emerald-600 font-bold flex items-center gap-1">
+                        <CheckCircle2 className="h-3.5 w-3.5" /> Verified
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => openDisputeModal("HDFC Card Status Mismatch")}
+                      className="w-full rounded-xl bg-[#1882FF] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Zap className="h-3.5 w-3.5 fill-white" />
+                      <span>File 1-Click Rectification Notice (+35 Pts)</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* DOSSIER 2: SBI Loan DPD (In Review) */}
+                {(disputeFilter === "all" || disputeFilter === "review") && (
+                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-black text-amber-700 border border-amber-200">
+                          Medium Impact (-18 Pts)
+                        </span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">CRIF HighMark</span>
+                      </div>
+                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black text-blue-700 border border-blue-200 flex items-center gap-1">
+                        <Clock className="h-2.5 w-2.5" /> In Bureau Review
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                        SBI Personal Loan (•••• 8821)
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Erroneous 30+ DPD late payment recorded in June 2024 despite automated NACH clearance on 02-Jun-2024.
+                      </p>
+                    </div>
+
+                    {/* Investigation Tracker Timeline */}
+                    <div className="rounded-xl bg-blue-50/70 p-3 border border-blue-100 flex flex-col gap-1.5 text-xs">
+                      <div className="flex items-center justify-between font-bold text-blue-900 text-[11px]">
+                        <span>Docket ID: CRIF-88421</span>
+                        <span>Day 8 of 30 SLA</span>
+                      </div>
+                      <div className="h-1.5 w-full rounded-full bg-blue-200 overflow-hidden">
+                        <div className="h-full bg-[#1882FF] w-2/5 rounded-full" />
+                      </div>
+                      <span className="text-[10px] text-blue-700 font-semibold">
+                        Awaiting SBI Nodal Officer verification callback.
+                      </span>
+                    </div>
+
+                    <button
+                      onClick={() => showToast("Opening CRIF Live Ticket Docket #CRIF-88421")}
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                    >
+                      <FileText className="h-3.5 w-3.5 text-slate-500" />
+                      <span>View CRIF Investigation Timeline</span>
+                    </button>
+                  </div>
+                )}
+
+                {/* DOSSIER 3: Axis Bank Unauthorized Inquiry (Action Needed) */}
+                {(disputeFilter === "all" || disputeFilter === "action") && (
+                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black text-blue-700 border border-blue-200">
+                          Low Impact (-8 Pts)
+                        </span>
+                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">CIBIL Inquiry</span>
+                      </div>
+                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
+                        Action Required
+                      </span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                        Axis Bank Credit Card Hard Inquiry
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Unconsented duplicate credit pull logged on 12-Aug-2024. Legally eligible for immediate deletion under RBI Section 21.
+                      </p>
+                    </div>
+
+                    <button
+                      onClick={() => openDisputeModal("Axis Bank Unauthorized Inquiry")}
+                      className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1882FF] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                    >
+                      <Gavel className="h-3.5 w-3.5" />
+                      <span>Issue Formal Deletion Demand (+8 Pts)</span>
+                      <ChevronRight className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                )}
+
+                {/* DOSSIER 4: Bajaj Finserv (Resolved) */}
+                {(disputeFilter === "all" || disputeFilter === "resolved") && (
+                  <div className="rounded-[24px] bg-emerald-50/50 p-4 shadow-sm border border-emerald-200 flex flex-col gap-2.5">
+                    <div className="flex items-center justify-between">
+                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                        ✓ Recovered (+12 Pts)
+                      </span>
+                      <span className="text-[10px] font-extrabold text-emerald-700 uppercase">Equifax India</span>
+                    </div>
+
+                    <div>
+                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                        Bajaj Finserv Consumer Loan (•••• 1092)
+                      </h3>
+                      <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                        Incorrect outstanding balance of ₹14,500 updated to <strong>₹0 Settled & Closed</strong> on Equifax master record.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center justify-between pt-2 border-t border-emerald-200/70 text-[11px] font-bold text-emerald-800">
+                      <span>Rectification Date: 28-Aug-2024</span>
+                      <button
+                        onClick={() => showToast("Downloading Bureau Resolution Certificate...")}
+                        className="text-[#1882FF] hover:underline cursor-pointer"
+                      >
+                        Download Certificate →
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* 4. BULK 1-CLICK ACTION CARD */}
+              <div className="rounded-[26px] bg-gradient-to-r from-blue-600 to-[#1882FF] p-5 text-white shadow-lg flex flex-col gap-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-white/20">
+                    <ShieldCheck className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h4 className="text-sm font-extrabold leading-tight">PrimeScore Legal Escort</h4>
+                    <span className="text-[10px] text-white/80 font-medium">Assigned Advocate: Adv. Rohit Sharma</span>
+                  </div>
+                </div>
+
+                <p className="text-xs text-white/90 leading-relaxed">
+                  Our certified legal team compiles your bank proofs, drafts RBI Ombudsman Section 21 dockets, and follows up with bureau nodal officers until scores update.
+                </p>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <button
+                    onClick={() => openDisputeModal("Bulk 4-Bureau Rectification")}
+                    className="flex-1 rounded-full bg-white py-2.5 text-xs font-extrabold text-slate-900 shadow-md hover:bg-slate-100 active:scale-95 transition-all text-center cursor-pointer"
+                  >
+                    Rectify All Open Issues →
+                  </button>
+                  <button
+                    onClick={() => showToast("Generating Complete 4-Bureau Audit Dossier (PDF)...")}
+                    className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-white hover:bg-white/30 active:scale-95 transition-colors cursor-pointer"
+                    title="Download Audit Dossier"
+                  >
+                    <FileDown className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+
+              {/* 5. RBI SLA TRUST FOOTER */}
+              <div className="rounded-2xl bg-white p-4 border border-slate-200/80 shadow-xs flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600">
+                  <CheckCircle2 className="h-5 w-5" />
+                </div>
+                <div className="text-[11px] text-slate-600 leading-relaxed font-medium">
+                  Under <strong>RBI Credit Information Companies Regulations 2023</strong>, all credit institutions must resolve verified disputes within <strong>30 calendar days</strong>.
+                </div>
+              </div>
+
+            </motion.div>
+          )}
+
+          {/* TAB: SCORE SIMULATOR */}
+          {activeBottomNav === "simulator" && (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3.5 pb-28">
+              
+              {/* 1. SIMULATOR HERO SCORE CARD */}
+              <div className="rounded-[28px] bg-gradient-to-br from-[#1882FF] to-blue-700 p-5 text-white shadow-md">
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center gap-1.5 rounded-full bg-white/20 px-3 py-1 text-[11px] font-bold text-white backdrop-blur-md">
+                    <Sliders className="h-3.5 w-3.5" /> AI Score Simulator
+                  </span>
+                  <span className="rounded-full bg-emerald-400 text-slate-950 font-black px-2.5 py-0.5 text-[10px]">
+                    +{simulatedTotal - 771} Pts Gain
+                  </span>
+                </div>
+
+                <div className="mt-4 flex items-baseline justify-between">
+                  <div>
+                    <div className="text-[11px] font-semibold text-white/80">Projected Composite Score</div>
+                    <div className="flex items-baseline gap-2 mt-0.5">
+                      <span className="text-5xl font-black tracking-tight">{simulatedTotal}</span>
+                      <span className="text-lg font-bold text-white/70">/ 900</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-[10px] text-white/80">Current Score</div>
+                    <div className="text-xl font-bold line-through text-white/70">771</div>
+                    <div className="text-[10px] font-extrabold text-emerald-300">
+                      {simulatedTotal >= 800 ? "Tier-1 Super Prime" : "Tier-1 Prime"}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. INTERACTIVE SIMULATION LEVERS */}
+              <div className="flex flex-col gap-3 rounded-[26px] bg-white p-5 shadow-sm border border-slate-200/80">
+                <h3 className="text-sm font-extrabold text-slate-900">Adjust Credit Behaviors</h3>
+
+                {/* Lever 1: Credit Card Debt Paydown */}
+                <div className="flex flex-col gap-2 rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-xs font-bold text-slate-900">Pay Down Card Dues</div>
+                      <div className="text-[10px] text-slate-500 font-medium">Reduces credit utilization to 12%</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-xs font-black text-[#1882FF]">
+                        ₹{simPaydown.toLocaleString("en-IN")}
+                      </div>
+                      <div className="text-[10px] font-bold text-emerald-600">
+                        +{Math.round((simPaydown / 150000) * 32)} Pts
+                      </div>
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="150000"
+                    step="5000"
+                    value={simPaydown}
+                    onChange={(e) => setSimPaydown(Number(e.target.value))}
+                    className="w-full accent-[#1882FF] cursor-pointer"
+                  />
+                  <div className="flex justify-between text-[10px] text-slate-400 font-semibold">
+                    <span>₹0</span>
+                    <span>₹75k</span>
+                    <span>₹1.5 Lakhs</span>
+                  </div>
+                </div>
+
+                {/* Lever 2: Fix 4 Discrepancies */}
+                <div
+                  onClick={() => setSimFixDisputes(!simFixDisputes)}
+                  className={`flex items-center justify-between rounded-2xl p-3.5 border transition-all cursor-pointer ${
+                    simFixDisputes
+                      ? "bg-blue-50/80 border-[#1882FF] text-slate-900"
+                      : "bg-slate-50 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                      simFixDisputes ? "bg-[#1882FF] text-white" : "bg-slate-200 text-slate-500"
+                    }`}>
+                      <Gavel className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold">Rectify All 4 Discrepancies</div>
+                      <div className="text-[10px] text-slate-500">Remove HDFC mismatch & CRIF DPD error</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-emerald-600">+48 Pts</span>
+                    <div className={`mt-0.5 h-4 w-8 rounded-full p-0.5 transition-colors ${
+                      simFixDisputes ? "bg-[#1882FF]" : "bg-slate-300"
+                    }`}>
+                      <div className={`h-3 w-3 rounded-full bg-white transition-transform ${
+                        simFixDisputes ? "translate-x-4" : "translate-x-0"
+                      }`} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lever 3: Pre-close Personal Loan */}
+                <div
+                  onClick={() => setSimCloseLoan(!simCloseLoan)}
+                  className={`flex items-center justify-between rounded-2xl p-3.5 border transition-all cursor-pointer ${
+                    simCloseLoan
+                      ? "bg-blue-50/80 border-[#1882FF] text-slate-900"
+                      : "bg-slate-50 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                      simCloseLoan ? "bg-[#1882FF] text-white" : "bg-slate-200 text-slate-500"
+                    }`}>
+                      <Building2 className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold">Pre-close SBI Personal Loan</div>
+                      <div className="text-[10px] text-slate-500">Clear ₹1.12L outstanding debt</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-emerald-600">+14 Pts</span>
+                    <div className={`mt-0.5 h-4 w-8 rounded-full p-0.5 transition-colors ${
+                      simCloseLoan ? "bg-[#1882FF]" : "bg-slate-300"
+                    }`}>
+                      <div className={`h-3 w-3 rounded-full bg-white transition-transform ${
+                        simCloseLoan ? "translate-x-4" : "translate-x-0"
+                      }`} />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Lever 4: Zero Hard Inquiries */}
+                <div
+                  onClick={() => setSimNoInquiries(!simNoInquiries)}
+                  className={`flex items-center justify-between rounded-2xl p-3.5 border transition-all cursor-pointer ${
+                    simNoInquiries
+                      ? "bg-blue-50/80 border-[#1882FF] text-slate-900"
+                      : "bg-slate-50 border-slate-200 text-slate-600"
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`flex h-8 w-8 items-center justify-center rounded-xl ${
+                      simNoInquiries ? "bg-[#1882FF] text-white" : "bg-slate-200 text-slate-500"
+                    }`}>
+                      <ShieldCheck className="h-4 w-4" />
+                    </div>
+                    <div>
+                      <div className="text-xs font-bold">No New Inquiries (6 Mos)</div>
+                      <div className="text-[10px] text-slate-500">Allows hard search aging to cool down</div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-xs font-black text-emerald-600">+8 Pts</span>
+                    <div className={`mt-0.5 h-4 w-8 rounded-full p-0.5 transition-colors ${
+                      simNoInquiries ? "bg-[#1882FF]" : "bg-slate-300"
+                    }`}>
+                      <div className={`h-3 w-3 rounded-full bg-white transition-transform ${
+                        simNoInquiries ? "translate-x-4" : "translate-x-0"
+                      }`} />
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* 3. SIMULATOR ACTION CTA */}
+              <button
+                onClick={() => {
+                  setActiveBottomNav("disputes");
+                  showToast("Applying simulated roadmap to Legal Rectification Desk");
+                }}
+                className="rounded-2xl bg-[#1882FF] py-3.5 text-xs font-extrabold text-white shadow-md hover:bg-blue-600 active:scale-95 transition-all text-center flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Zap className="h-4 w-4 fill-white" />
+                <span>Execute Rebound Plan: Reach {simulatedTotal} Score →</span>
+              </button>
+
+            </motion.div>
+          )}
+
         </div>
       </div>
 
@@ -2585,7 +3087,7 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
       </div>
 
       {/* =========================================================
-           4. DISPUTE BOTTOM SHEET DRAWER
+           4. DISPUTE BOTTOM SHEET DRAWER (OFFICIAL EMAIL SENDER)
            ========================================================= */}
       <AnimatePresence>
         {isDisputeOpen && (
@@ -2602,71 +3104,109 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: "spring", damping: 25, stiffness: 300 }}
-              className="w-full rounded-t-[32px] bg-white p-6 pb-8 shadow-2xl"
+              className="w-full max-h-[85vh] overflow-y-auto rounded-t-[32px] bg-white p-5 pb-8 shadow-2xl border-t border-slate-200"
             >
-              <div className="mx-auto mb-4 h-1.5 w-11 rounded-full bg-slate-300" />
-              <div className="flex items-center justify-between">
-                <h3 className="flex items-center gap-2 text-base font-extrabold text-slate-900">
-                  <Gavel className="h-5 w-5 text-amber-500" /> Credit Rectification Desk
-                </h3>
+              {/* Drawer Handle */}
+              <div className="mx-auto mb-3 h-1.5 w-11 rounded-full bg-slate-300" />
+
+              {/* Header */}
+              <div className="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-blue-50 text-[#1882FF]">
+                    <Gavel className="h-5 w-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                      Official Legal Rectification Notice
+                    </h3>
+                    <span className="text-[10px] font-bold text-emerald-600">
+                      RBI CICRA Section 21 &bull; 30-Day Mandatory SLA
+                    </span>
+                  </div>
+                </div>
+
                 <button
                   onClick={() => setIsDisputeOpen(false)}
-                  className="rounded-full p-1 text-slate-400 hover:bg-slate-100 hover:text-slate-600"
+                  className="rounded-full p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-600 active:scale-90 transition-all"
                 >
                   <X className="h-5 w-5" />
                 </button>
               </div>
 
-              <p className="mt-1 text-xs text-slate-500 leading-relaxed">
-                PrimeScore advocates will file official dispute dossiers with Experian, CIBIL & CRIF on your behalf.
-              </p>
-
-              {selectedDisputeTitle && (
-                <div className="mt-3 rounded-xl bg-amber-50 border border-amber-200 p-2.5 text-xs font-bold text-amber-900">
-                  Selected: {selectedDisputeTitle}
-                </div>
-              )}
-
-              <div className="mt-4 flex flex-col gap-3">
-                <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-xs font-bold text-slate-900">
-                      HDFC Credit Card Status Mismatch
-                    </strong>
-                    <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-700">
-                      HIGH
-                    </span>
-                  </div>
-                  <div className="mt-1 text-[11px] text-slate-600">
-                    Experian shows Active (₹42k), CIBIL shows Closed.
+              {/* Selected Dispute Banner */}
+              <div className="mt-3 rounded-2xl bg-blue-50/70 border border-blue-200 p-3 flex items-center justify-between">
+                <div>
+                  <span className="text-[9px] font-black uppercase tracking-wider text-[#1882FF]">
+                    Target Discrepancy
+                  </span>
+                  <div className="text-xs font-black text-slate-900">
+                    {selectedDisputeTitle || "HDFC Millennia Credit Card (•••• 4492) Status Mismatch"}
                   </div>
                 </div>
+                <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-800">
+                  +35 Pts Gain
+                </span>
+              </div>
 
-                <div className="rounded-2xl border border-amber-200 bg-amber-50/60 p-3.5">
-                  <div className="flex items-center justify-between">
-                    <strong className="text-xs font-bold text-slate-900">
-                      Axis Two-Wheeler False DPD
-                    </strong>
-                    <span className="rounded bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-700">
-                      HIGH
-                    </span>
-                  </div>
-                  <div className="mt-1 text-[11px] text-slate-600">
-                    False 30+ DPD reported in March 2024.
-                  </div>
+              {/* Email Route Details */}
+              <div className="mt-3 flex flex-col gap-2 rounded-2xl bg-slate-50 p-3.5 border border-slate-200/80 text-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-400 font-bold uppercase text-[10px]">From (Your Email):</span>
+                  <strong className="text-slate-800 font-mono">sawai••••@gmail.com</strong>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-200/60 pt-1.5">
+                  <span className="text-slate-400 font-bold uppercase text-[10px]">To (Nodal Desks):</span>
+                  <span className="text-slate-700 font-mono text-[11px] truncate max-w-[210px]">
+                    grievance.redressal@hdfcbank.com, consumer.grievance@experian.com
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-t border-slate-200/60 pt-1.5">
+                  <span className="text-slate-400 font-bold uppercase text-[10px]">CC (Tracking):</span>
+                  <strong className="text-[#1882FF] font-mono text-[11px]">rectification@primescore.in</strong>
                 </div>
               </div>
 
-              <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={() => {
-                  setIsDisputeOpen(false);
-                  showToast("Dispute #PS-9921 Submitted to Legal Advocates!");
-                }}
-                className="mt-5 flex w-full items-center justify-center gap-2 rounded-full bg-amber-600 py-3 text-xs font-bold text-white shadow-lg hover:bg-amber-700"
-              >
-                Submit Dispute to Prime Advocates →
-              </motion.button>
+              {/* Letter Preview */}
+              <div className="mt-3 flex flex-col gap-1.5">
+                <span className="text-[10px] font-extrabold uppercase text-slate-400">Pre-Drafted Legal Letter</span>
+                <div className="rounded-2xl bg-slate-100/80 p-3 text-[11px] font-mono text-slate-700 leading-relaxed border border-slate-200 max-h-36 overflow-y-auto">
+                  <p className="font-bold text-slate-900 mb-1">
+                    Subject: [URGENT] Formal Rectification Demand under RBI CICRA 2005 (Section 21) - PAN: KMMPS••••R
+                  </p>
+                  <p className="text-slate-600">
+                    Respected Nodal Officer,<br/><br/>
+                    I formally dispute the status of my account ({selectedDisputeTitle || "HDFC Card •••• 4492"}). CIBIL records reflect ₹0 balance (Closed), yet Experian records incorrectly show Active overdue.<br/><br/>
+                    Under RBI Master Directions, please purge and update this record across all 4 bureaus within 30 days.
+                  </p>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-4 flex flex-col gap-2">
+                <button
+                  onClick={() => {
+                    handleOpenEmailDispute();
+                    setIsDisputeOpen(false);
+                  }}
+                  className="w-full rounded-full bg-[#1882FF] py-3 text-xs font-black text-white shadow-md hover:bg-blue-600 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  <Send className="h-4 w-4" />
+                  <span>Send Notice from My Email (Gmail / Mail) →</span>
+                </button>
+
+                <button
+                  onClick={() => {
+                    navigator.clipboard?.writeText(
+                      `To: grievance.redressal@hdfcbank.com, consumer.grievance@experian.com\nCC: rectification@primescore.in\nSubject: [URGENT] Formal Rectification Demand under RBI CICRA 2005 (Section 21) - PAN: KMMPS••••R\n\nRespected Nodal Officer,\nI formally dispute the status of my account (${selectedDisputeTitle || "HDFC Card •••• 4492"}). Under RBI Master Direction 2023, please rectify this record within 30 days.\n\nThank you,\nSawai Singh (PAN: KMMPS••••R)`
+                    );
+                    showToast("Legal letter copied to clipboard!");
+                  }}
+                  className="w-full rounded-full border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 active:scale-[0.98] transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                >
+                  <Paperclip className="h-3.5 w-3.5 text-slate-400" />
+                  <span>Copy Letter &amp; Nodal Email IDs</span>
+                </button>
+              </div>
             </motion.div>
           </motion.div>
         )}
