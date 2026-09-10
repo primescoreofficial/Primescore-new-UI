@@ -407,14 +407,13 @@ export default function PrimeScoreMobileApp({
                       <>
                         <div onClick={() => setIsNotificationOpen(false)} className="fixed inset-0 z-40" />
                         <motion.div
-                          initial={{ opacity: 0, scale: 0.85, y: -8 }}
+                          initial={{ opacity: 0, scale: 0.95, y: -6 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
-                          exit={{ opacity: 0, scale: 0.85, y: -8 }}
-                          transition={{ type: "spring", damping: 22, stiffness: 350 }}
+                          exit={{ opacity: 0, scale: 0.95, y: -6 }}
+                          transition={{ type: "spring", damping: 24, stiffness: 380 }}
                           style={{ transformOrigin: "top right" }}
-                          className="absolute right-0 top-11 z-50 w-[310px] rounded-3xl bg-white p-4 text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.06)]"
+                          className="absolute right-0 top-12 z-50 w-[310px] rounded-2xl bg-white p-4 text-slate-900 shadow-[0_20px_45px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)]"
                         >
-                          <div className="absolute right-3.5 -top-1.5 h-3 w-3 rotate-45 bg-white border-t border-l border-slate-100" />
                           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                             <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
                               <span>Notifications</span>
