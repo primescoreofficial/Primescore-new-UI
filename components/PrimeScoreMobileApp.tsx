@@ -124,6 +124,44 @@ const BUREAUS: BureauData[] = [
   }
 ];
 
+function AnimatedScoreCounter({ value, duration = 400 }: { value: number; duration?: number }) {
+  const [displayValue, setDisplayValue] = useState<number>(value);
+  const prevValueRef = useRef<number>(value);
+
+  useEffect(() => {
+    const start = prevValueRef.current;
+    const end = value;
+    prevValueRef.current = value;
+
+    if (start === end) return;
+
+    let startTime: number | null = null;
+    let animationFrameId: number;
+
+    const animate = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const elapsed = timestamp - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+      
+      // Decelerating cubic ease-out
+      const easeOut = 1 - Math.pow(1 - progress, 3);
+      const current = Math.round(start + (end - start) * easeOut);
+      
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      }
+    };
+
+    animationFrameId = requestAnimationFrame(animate);
+
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [value, duration]);
+
+  return <span className="tabular-nums font-extrabold">{displayValue}</span>;
+}
+
 export default function PrimeScoreMobileApp({ isStandalone = false }: { isStandalone?: boolean }) {
   const [activeBottomNav, setActiveBottomNav] = useState<"home" | "bureaus" | "parth" | "cards" | "loans" | "profile" | "disputes" | "simulator">("home");
   const [activeHeaderTab, setActiveHeaderTab] = useState<string>("overview");
@@ -485,15 +523,10 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
                 <span className="rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-bold">{currentScore.rating}</span>
               </div>
 
-              <motion.div
-                key={currentScore.score}
-                initial={{ scale: 0.9, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                className="mt-1 flex items-baseline gap-1.5 text-5xl font-extrabold tracking-tight"
-              >
-                <span>{currentScore.score}</span>
+              <div className="mt-1 flex items-baseline gap-1.5 text-5xl font-extrabold tracking-tight">
+                <AnimatedScoreCounter value={currentScore.score} />
                 <span className="text-lg font-semibold text-white/70">/ {currentScore.max}</span>
-              </motion.div>
+              </div>
 
               <motion.button
                 whileTap={{ scale: 0.96 }}
