@@ -11,6 +11,11 @@ const jakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: "PrimeScore™ — 4-Bureau Credit Intelligence & Rectification",
   description: "Unified CIBIL, CRIF, Experian & Equifax Credit Intelligence with 1-Click Rectification.",
+  icons: {
+    icon: "/primescore-logo.png",
+    shortcut: "/primescore-logo.png",
+    apple: "/primescore-logo.png",
+  },
 };
 
 export default function RootLayout({

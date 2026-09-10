@@ -508,14 +508,14 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
               {/* 3. MIDDLE: DISTINCT CIRCULAR SCORE ICON BUTTON */}
               <button
                 onClick={() => setActiveHeaderTab("overview")}
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 overflow-hidden ${
                   activeHeaderTab === "overview"
-                    ? "bg-white text-slate-900 shadow-xl scale-110 ring-2 ring-white/40"
-                    : "bg-white/20 text-white hover:bg-white/30"
+                    ? "bg-white shadow-xl scale-110 ring-2 ring-white/60 p-0.5"
+                    : "bg-white/20 hover:bg-white/30 p-1"
                 }`}
                 title="PrimeScore Index"
               >
-                <Gauge className="h-5 w-5 text-blue-600" />
+                <img src="/primescore-logo.png" alt="PrimeScore" className="h-full w-full object-contain rounded-full" />
               </button>
 
               {/* 4. Right 1: Experian */}
