@@ -551,15 +551,6 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
                 >
                   <Settings className="h-4.5 w-4.5 pointer-events-none" />
                 </button>
-
-                {/* PFP Button on Non-Home Header */}
-                <div
-                  onClick={() => setActiveBottomNav("profile")}
-                  className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-[11px] font-extrabold text-white shadow-sm active:scale-95 transition-transform"
-                  title="Open Settings & Profile"
-                >
-                  SS
-                </div>
               </div>
             </div>
           </div>
@@ -1933,16 +1924,8 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
                       className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 active:scale-90 transition-all cursor-pointer"
                       title="Open Settings"
                     >
-                      <Settings className="h-4 w-4 pointer-events-none" />
+                      <Settings className="h-4.5 w-4.5 pointer-events-none" />
                     </button>
-
-                    <div
-                      onClick={() => setActiveBottomNav("profile")}
-                      className="flex h-8 w-8 cursor-pointer items-center justify-center rounded-full bg-slate-900 text-[11px] font-extrabold text-white shadow-sm active:scale-95 transition-transform"
-                      title="Open Settings & Profile"
-                    >
-                      SS
-                    </div>
                   </div>
                 </div>
 
