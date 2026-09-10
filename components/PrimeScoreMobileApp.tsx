@@ -406,13 +406,25 @@ export default function PrimeScoreMobileApp({
                     {isNotificationOpen && (
                       <>
                         <div onClick={() => setIsNotificationOpen(false)} className="fixed inset-0 z-40" />
+                        {/* Caret Pointer aligned directly under center of bell icon */}
+                        <motion.div
+                          initial={{ opacity: 0, y: -4 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -4 }}
+                          className="absolute right-[9px] top-[38px] z-50 pointer-events-none"
+                        >
+                          <svg width="14" height="8" viewBox="0 0 14 8" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M7 0L14 8H0L7 0Z" fill="white" />
+                          </svg>
+                        </motion.div>
+
                         <motion.div
                           initial={{ opacity: 0, scale: 0.95, y: -6 }}
                           animate={{ opacity: 1, scale: 1, y: 0 }}
                           exit={{ opacity: 0, scale: 0.95, y: -6 }}
                           transition={{ type: "spring", damping: 24, stiffness: 380 }}
                           style={{ transformOrigin: "top right" }}
-                          className="absolute right-0 top-12 z-50 w-[310px] rounded-2xl bg-white p-4 text-slate-900 shadow-[0_20px_45px_rgba(0,0,0,0.25),0_0_0_1px_rgba(0,0,0,0.06)]"
+                          className="absolute right-0 top-[44px] z-50 w-[310px] rounded-2xl bg-white p-4 text-slate-900 shadow-[0_20px_45px_rgba(0,0,0,0.28),0_0_0_1px_rgba(0,0,0,0.06)]"
                         >
                           <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
                             <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
