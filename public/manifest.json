@@ -1,0 +1,25 @@
+{
+  "name": "PrimeScore - 4-Bureau Credit Intelligence",
+  "short_name": "PrimeScore",
+  "description": "Unified CIBIL, CRIF, Experian and Equifax Credit Intelligence with 1-Click Rectification.",
+  "start_url": "/mobile",
+  "display": "standalone",
+  "background_color": "#080D1A",
+  "theme_color": "#1882FF",
+  "orientation": "portrait",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/primescore-logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/primescore-logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ]
+}
