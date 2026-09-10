@@ -154,7 +154,7 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
 
   // Parth Advisory State
   const [isParthOpen, setIsParthOpen] = useState<boolean>(false);
-  const [isOpportunitiesOpen, setIsOpportunitiesOpen] = useState<boolean>(false);
+  const [isOpportunitiesOpen, setIsOpportunitiesOpen] = useState<boolean>(true);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
   const [parthInput, setParthInput] = useState<string>("");
   const [isParthLoading, setIsParthLoading] = useState<boolean>(false);
