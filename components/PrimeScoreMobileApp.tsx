@@ -389,15 +389,88 @@ export default function PrimeScoreMobileApp({
                 </div>
               </div>
 
-              <div className="flex items-center gap-3.5 relative">
+              <div className="flex items-center gap-3.5">
                 {/* Bell Button */}
-                <button
-                  onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                  className="relative text-white active:scale-90 p-1.5 rounded-full hover:bg-white/10 transition-colors"
-                >
-                  <Bell className="h-5 w-5" />
-                  <span className="absolute 1 top-1 right-1 h-2 w-2 rounded-full border-2 border-[#1882FF] bg-red-500 animate-pulse" />
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => setIsNotificationOpen(!isNotificationOpen)}
+                    className="relative text-white active:scale-90 p-1.5 rounded-full hover:bg-white/10 transition-colors flex items-center justify-center"
+                    title="Notifications"
+                  >
+                    <Bell className="h-5 w-5" />
+                    <span className="absolute top-1 right-1 h-2 w-2 rounded-full border-2 border-[#1882FF] bg-red-500 animate-pulse" />
+                  </button>
+
+                  {/* NOTIFICATION TRAY */}
+                  <AnimatePresence>
+                    {isNotificationOpen && (
+                      <>
+                        <div onClick={() => setIsNotificationOpen(false)} className="fixed inset-0 z-40" />
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.85, y: -8 }}
+                          animate={{ opacity: 1, scale: 1, y: 0 }}
+                          exit={{ opacity: 0, scale: 0.85, y: -8 }}
+                          transition={{ type: "spring", damping: 22, stiffness: 350 }}
+                          style={{ transformOrigin: "top right" }}
+                          className="absolute right-0 top-11 z-50 w-[310px] rounded-3xl bg-white p-4 text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.06)]"
+                        >
+                          <div className="absolute right-3.5 -top-1.5 h-3 w-3 rotate-45 bg-white border-t border-l border-slate-100" />
+                          <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
+                            <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
+                              <span>Notifications</span>
+                              <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-700">3 New</span>
+                            </div>
+                            <button
+                              onClick={() => {
+                                showToast("All marked as read");
+                                setIsNotificationOpen(false);
+                              }}
+                              className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              <CheckCheck className="h-3 w-3" /> Mark read
+                            </button>
+                          </div>
+
+                          <div className="mt-2.5 flex flex-col gap-2 max-h-[320px] overflow-y-auto scrollbar-none">
+                            <div
+                              onClick={() => openDisputeModal("HDFC Status Mismatch")}
+                              className="flex cursor-pointer gap-3 rounded-2xl bg-amber-50/70 p-2.5 hover:bg-amber-100/60 transition-colors border border-amber-200/60"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white font-extrabold text-xs">
+                                !
+                              </div>
+                              <div>
+                                <div className="text-xs font-extrabold text-slate-900">
+                                  Discrepancy Found (Experian)
+                                </div>
+                                <div className="text-[10px] text-slate-600 leading-tight">
+                                  HDFC Card shows active (₹42,000) instead of closed.
+                                </div>
+                              </div>
+                            </div>
+
+                            <div
+                              onClick={() => openDisputeModal("Axis Two-Wheeler DPD")}
+                              className="flex cursor-pointer gap-3 rounded-2xl bg-slate-50 p-2.5 hover:bg-slate-100 transition-colors border border-slate-100"
+                            >
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white font-extrabold text-xs">
+                                ✓
+                              </div>
+                              <div>
+                                <div className="text-xs font-extrabold text-slate-900">
+                                  Equifax Score Synced (+24 Pts)
+                                </div>
+                                <div className="text-[10px] text-slate-600 leading-tight">
+                                  Equifax score updated to 817 (Tier 1 Excellent).
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </div>
 
                 {/* Settings Gear Button */}
                 <button
@@ -410,76 +483,6 @@ export default function PrimeScoreMobileApp({
                 >
                   <Settings className="h-5 w-5 pointer-events-none" />
                 </button>
-
-                {/* NOTIFICATION TRAY */}
-                <AnimatePresence>
-                  {isNotificationOpen && (
-                    <>
-                      <div onClick={() => setIsNotificationOpen(false)} className="fixed inset-0 z-40" />
-                      <motion.div
-                        initial={{ opacity: 0, scale: 0.85, y: -8 }}
-                        animate={{ opacity: 1, scale: 1, y: 0 }}
-                        exit={{ opacity: 0, scale: 0.85, y: -8 }}
-                        transition={{ type: "spring", damping: 22, stiffness: 350 }}
-                        style={{ transformOrigin: "top right" }}
-                        className="absolute right-0 top-11 z-50 w-[310px] rounded-3xl bg-white p-4 text-slate-900 shadow-[0_20px_50px_rgba(0,0,0,0.3),0_0_0_1px_rgba(0,0,0,0.06)]"
-                      >
-                        <div className="absolute right-7 -top-1.5 h-3 w-3 rotate-45 bg-white border-t border-l border-slate-100" />
-                        <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                          <div className="flex items-center gap-2 text-xs font-extrabold text-slate-900">
-                            <span>Notifications</span>
-                            <span className="rounded-full bg-rose-100 px-1.5 py-0.5 text-[9px] font-extrabold text-rose-700">3 New</span>
-                          </div>
-                          <button
-                            onClick={() => {
-                              showToast("All marked as read");
-                              setIsNotificationOpen(false);
-                            }}
-                            className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1"
-                          >
-                            <CheckCheck className="h-3 w-3" /> Mark read
-                          </button>
-                        </div>
-
-                        <div className="mt-2.5 flex flex-col gap-2 max-h-[320px] overflow-y-auto scrollbar-none">
-                          <div
-                            onClick={() => openDisputeModal("HDFC Status Mismatch")}
-                            className="flex cursor-pointer gap-3 rounded-2xl bg-amber-50/70 p-2.5 hover:bg-amber-100/60 transition-colors border border-amber-200/60"
-                          >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-white font-extrabold text-xs">
-                              !
-                            </div>
-                            <div>
-                              <div className="text-xs font-extrabold text-slate-900">
-                                Discrepancy Found (Experian)
-                              </div>
-                              <div className="text-[10px] text-slate-600 leading-tight">
-                                HDFC Card shows active (₹42,000) instead of closed.
-                              </div>
-                            </div>
-                          </div>
-
-                          <div
-                            onClick={() => openDisputeModal("Axis Two-Wheeler DPD")}
-                            className="flex cursor-pointer gap-3 rounded-2xl bg-slate-50 p-2.5 hover:bg-slate-100 transition-colors border border-slate-100"
-                          >
-                            <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-blue-500 text-white font-extrabold text-xs">
-                              ✓
-                            </div>
-                            <div>
-                              <div className="text-xs font-extrabold text-slate-900">
-                                Equifax Score Synced (+24 Pts)
-                              </div>
-                              <div className="text-[10px] text-slate-600 leading-tight">
-                                Equifax score updated to 817 (Tier 1 Excellent).
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </motion.div>
-                    </>
-                  )}
-                </AnimatePresence>
               </div>
             </div>
 
