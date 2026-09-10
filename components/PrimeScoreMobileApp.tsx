@@ -245,6 +245,16 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
   const currentScore = getDisplayScore();
   const simulatedTotal = 771 + (simFixDisputes ? 48 : 0) + Math.round((simPaydown / 150000) * 32) + (simCloseLoan ? 14 : 0) + (simNoInquiries ? 8 : 0);
 
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  // Auto-scroll to top whenever switching main tabs or sub-pages
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({ top: 0, left: 0, behavior: "instant" });
+    }
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, [activeBottomNav, cardSubTab, loanSubTab, selectedBureauId]);
+
   return (
     <div className={`relative flex flex-col overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 ${
       isStandalone 
@@ -259,9 +269,12 @@ export default function PrimeScoreMobileApp({ isStandalone = false }: { isStanda
       )}
 
       {/* Main Scrollable View */}
-      <div className={`relative flex flex-1 flex-col overflow-x-hidden bg-[#F8FAFC] scrollbar-none ${
-        activeBottomNav === "parth" ? "overflow-hidden" : "overflow-y-auto"
-      }`}>
+      <div 
+        ref={scrollContainerRef}
+        className={`relative flex flex-1 flex-col overflow-x-hidden bg-[#F8FAFC] scrollbar-none ${
+          activeBottomNav === "parth" ? "overflow-hidden" : "overflow-y-auto"
+        }`}
+      >
         
         {/* Toast Notification */}
         <AnimatePresence>
