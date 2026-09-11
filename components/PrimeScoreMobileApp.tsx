@@ -8,6 +8,7 @@ import {
   Settings,
   ChevronDown,
   ChevronRight,
+  ChevronLeft,
   TrendingUp,
   AlertTriangle,
   CreditCard,
@@ -195,6 +196,18 @@ export default function PrimeScoreMobileApp({
   const [selectedBureauId, setSelectedBureauId] = useState<string>("cibil");
   const [bureauMatrixFilter, setBureauMatrixFilter] = useState<"all" | "mismatch" | "cards" | "loans">("all");
   const [disputeFilter, setDisputeFilter] = useState<"all" | "action" | "review" | "resolved">("all");
+  const [currentOfferIndex, setCurrentOfferIndex] = useState<number>(0);
+  const [isOfferPaused, setIsOfferPaused] = useState<boolean>(false);
+  const touchOfferStartX = useRef<number | null>(null);
+
+  // Auto-scroll one card at a time and loop infinitely (3.5s per card)
+  useEffect(() => {
+    if (isOfferPaused) return;
+    const timer = setInterval(() => {
+      setCurrentOfferIndex((prev) => (prev + 1) % 4);
+    }, 3500);
+    return () => clearInterval(timer);
+  }, [isOfferPaused]);
 
   // Parth Advisory State
   const [isParthOpen, setIsParthOpen] = useState<boolean>(false);
@@ -924,7 +937,7 @@ export default function PrimeScoreMobileApp({
                         <span className={`text-[10px] font-extrabold uppercase ${isSelected ? "text-[#1882FF]" : "text-slate-400"}`}>
                           {b.name.split(" ")[0]}
                         </span>
-                        <div className={`text-base font-black font-mono mt-1 ${
+                        <div className={`text-base font-black mt-1 ${
                           b.hasDiscrepancy ? "text-rose-600" : isSelected ? "text-slate-900" : "text-slate-700"
                         }`}>
                           {b.score}{b.hasDiscrepancy ? "*" : ""}
@@ -955,7 +968,7 @@ export default function PrimeScoreMobileApp({
                     </div>
 
                     <div className="text-right">
-                      <span className="text-2xl font-black text-slate-900 font-mono">{currentBureau.score}</span>
+                      <span className="text-2xl font-black text-slate-900">{currentBureau.score}</span>
                       <span className="text-xs text-slate-400 font-medium">/900</span>
                     </div>
                   </div>
@@ -981,12 +994,12 @@ export default function PrimeScoreMobileApp({
                 </div>
 
                 {/* 3. FILTER PILLS */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   {[
-                    { id: "all", label: "All 16 Accounts" },
+                    { id: "all", label: "All 10 Accounts" },
                     { id: "mismatch", label: "Mismatches (4)" },
-                    { id: "cards", label: "Cards" },
-                    { id: "loans", label: "Loans" },
+                    { id: "cards", label: "Credit Cards (5)" },
+                    { id: "loans", label: "Loans (5)" },
                   ].map((f) => (
                     <button
                       key={f.id}
@@ -1002,44 +1015,314 @@ export default function PrimeScoreMobileApp({
                   ))}
                 </div>
 
-                {/* 4. CROSS-BUREAU MISMATCH CARD */}
-                <div className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <h3 className="text-sm font-extrabold text-slate-900">HDFC Millennia Credit Card</h3>
-                      <div className="text-[11px] text-slate-400 font-medium">•••• 4492 • Limit ₹2.50L</div>
-                    </div>
-                    <span className="rounded-md bg-rose-50 border border-rose-200 px-2 py-0.5 text-[9px] font-extrabold text-rose-700 uppercase">
-                      Status Mismatch
-                    </span>
-                  </div>
+                {/* 4. CROSS-BUREAU COMPARISON ACCOUNT CARDS */}
+                <div className="flex flex-col gap-3.5">
+                  {[
+                    {
+                      id: "hdfc-card",
+                      title: "HDFC Millennia Credit Card",
+                      account: "•••• 4492",
+                      meta: "Limit ₹2,50,000",
+                      type: "cards",
+                      isMismatch: true,
+                      bank: "HDFC Bank",
+                      logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
+                      badge: "STATUS MISMATCH",
+                      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
+                      impact: "Affects Experian (-35 Pts)",
+                      note: "Closed in CIBIL, CRIF & Equifax but incorrectly reported as Active in Experian.",
+                      bureaus: {
+                        cibil: { label: "Closed (₹0)", isError: false },
+                        experian: { label: "Active (₹42,000)", isError: true },
+                        crif: { label: "Closed (₹0)", isError: false },
+                        equifax: { label: "Closed (₹0)", isError: false },
+                      },
+                      disputeTitle: "HDFC Credit Card Status Mismatch"
+                    },
+                    {
+                      id: "axis-microloan",
+                      title: "Axis Bank / InnoFin Microloan",
+                      account: "A/c 4656",
+                      meta: "Personal Loan • ₹6,000",
+                      type: "loans",
+                      isMismatch: true,
+                      bank: "Axis Bank",
+                      logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
+                      badge: "OVERDUE MISMATCH",
+                      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
+                      impact: "Affects CIBIL & CRIF (-48 Pts)",
+                      note: "Disputed overdue of ₹9,729 reported on CIBIL and CRIF while Settled in Equifax.",
+                      bureaus: {
+                        cibil: { label: "Overdue (₹9,729)", isError: true },
+                        experian: { label: "Closed (₹0)", isError: false },
+                        crif: { label: "Overdue (₹9,729)", isError: true },
+                        equifax: { label: "Settled (₹0)", isError: false },
+                      },
+                      disputeTitle: "Axis Bank Overdue Discrepancy"
+                    },
+                    {
+                      id: "sbi-innofin",
+                      title: "SBI InnoFin Solutions",
+                      account: "A/c R3DH",
+                      meta: "Digital Loan • ₹5,500",
+                      type: "loans",
+                      isMismatch: true,
+                      bank: "State Bank of India",
+                      logo: "/banks small logo icons svg/Bank Name=State Bank of India.svg",
+                      badge: "WRITE-OFF ERROR",
+                      badgeColor: "bg-rose-50 text-rose-700 border-rose-200",
+                      impact: "Affects Experian & CIBIL",
+                      note: "Experian shows Written-Off, while CIBIL shows active overdue of ₹9,140.",
+                      bureaus: {
+                        cibil: { label: "Overdue (₹9,140)", isError: true },
+                        experian: { label: "Written-Off", isError: true },
+                        crif: { label: "Active (₹5,500)", isError: true },
+                        equifax: { label: "Closed (₹0)", isError: false },
+                      },
+                      disputeTitle: "SBI InnoFin Write-Off Discrepancy"
+                    },
+                    {
+                      id: "icici-sapphiro",
+                      title: "ICICI Bank Sapphiro Card",
+                      account: "•••• 4821",
+                      meta: "Limit ₹5,00,000 • Active",
+                      type: "cards",
+                      isMismatch: true,
+                      bank: "ICICI Bank",
+                      logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
+                      badge: "LIMIT MISMATCH",
+                      badgeColor: "bg-amber-50 text-amber-800 border-amber-200",
+                      impact: "Artificially inflates Experian Utilization",
+                      note: "Experian reports lower limit of ₹3.50L instead of verified ₹5.00L sanctioned limit.",
+                      bureaus: {
+                        cibil: { label: "Limit ₹5.00L", isError: false },
+                        experian: { label: "Limit ₹3.50L", isError: true },
+                        crif: { label: "Limit ₹5.00L", isError: false },
+                        equifax: { label: "Limit ₹5.00L", isError: false },
+                      },
+                      disputeTitle: "ICICI Sapphiro Limit Rectification"
+                    },
+                    {
+                      id: "hdfc-home",
+                      title: "HDFC Bank Home Loan",
+                      account: "•••• 9210",
+                      meta: "Sanctioned ₹25 Lakhs • ₹14.25L Left",
+                      type: "loans",
+                      isMismatch: false,
+                      bank: "HDFC Bank",
+                      logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
+                      badge: "4/4 SYNCED",
+                      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      impact: "100% Clean Repayment",
+                      note: "All 4 bureaus report zero DPD delays with regular on-time monthly auto-debits.",
+                      bureaus: {
+                        cibil: { label: "Regular (₹14.25L)", isError: false },
+                        experian: { label: "Regular (₹14.25L)", isError: false },
+                        crif: { label: "Regular (₹14.25L)", isError: false },
+                        equifax: { label: "Regular (₹14.25L)", isError: false },
+                      },
+                      disputeTitle: ""
+                    },
+                    {
+                      id: "axis-atlas",
+                      title: "Axis Bank Atlas Rewards Card",
+                      account: "•••• 8912",
+                      meta: "Limit ₹2,50,000 • Active",
+                      type: "cards",
+                      isMismatch: false,
+                      bank: "Axis Bank",
+                      logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
+                      badge: "4/4 SYNCED",
+                      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      impact: "Positive History (+14 Pts)",
+                      note: "39% utilization reported accurately across CIBIL, CRIF, Experian and Equifax.",
+                      bureaus: {
+                        cibil: { label: "Active (₹99.8K)", isError: false },
+                        experian: { label: "Active (₹99.8K)", isError: false },
+                        crif: { label: "Active (₹99.8K)", isError: false },
+                        equifax: { label: "Active (₹99.8K)", isError: false },
+                      },
+                      disputeTitle: ""
+                    },
+                    {
+                      id: "icici-pl",
+                      title: "ICICI Bank Personal Loan",
+                      account: "•••• 3314",
+                      meta: "Sanctioned ₹5 Lakhs • ₹3.40L Left",
+                      type: "loans",
+                      isMismatch: false,
+                      bank: "ICICI Bank",
+                      logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
+                      badge: "4/4 SYNCED",
+                      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      impact: "Zero Delays Reported",
+                      note: "14 consecutive on-time EMIs recorded across all 4 bureau repositories.",
+                      bureaus: {
+                        cibil: { label: "Active (₹3.40L)", isError: false },
+                        experian: { label: "Active (₹3.40L)", isError: false },
+                        crif: { label: "Active (₹3.40L)", isError: false },
+                        equifax: { label: "Active (₹3.40L)", isError: false },
+                      },
+                      disputeTitle: ""
+                    },
+                    {
+                      id: "sbi-simplyclick",
+                      title: "SBI SimplyCLICK Credit Card",
+                      account: "•••• 1092",
+                      meta: "Limit ₹1,75,000 • 7% Utilized",
+                      type: "cards",
+                      isMismatch: false,
+                      bank: "State Bank of India",
+                      logo: "/banks small logo icons svg/Bank Name=State Bank of India.svg",
+                      badge: "4/4 SYNCED",
+                      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200",
+                      impact: "Ideal Credit Ratio (<10%)",
+                      note: "All bureaus reflect ₹12,400 balance with perfect payment verification.",
+                      bureaus: {
+                        cibil: { label: "Active (₹12.4K)", isError: false },
+                        experian: { label: "Active (₹12.4K)", isError: false },
+                        crif: { label: "Active (₹12.4K)", isError: false },
+                        equifax: { label: "Active (₹12.4K)", isError: false },
+                      },
+                      disputeTitle: ""
+                    },
+                    {
+                      id: "kotak-league",
+                      title: "Kotak League Platinum Card",
+                      account: "•••• 6734",
+                      meta: "Limit ₹1,20,000 • Closed",
+                      type: "cards",
+                      isMismatch: false,
+                      bank: "Kotak Mahindra Bank",
+                      logo: "/banks small logo icons svg/Bank Name=Kotak Bank.svg",
+                      badge: "CLOSED (CLEAN)",
+                      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+                      impact: "NOC Issued & Cleared",
+                      note: "Account closed with zero outstanding balance and verified NOC documentation.",
+                      bureaus: {
+                        cibil: { label: "Closed (₹0)", isError: false },
+                        experian: { label: "Closed (₹0)", isError: false },
+                        crif: { label: "Closed (₹0)", isError: false },
+                        equifax: { label: "Closed (₹0)", isError: false },
+                      },
+                      disputeTitle: ""
+                    },
+                    {
+                      id: "idfc-two-wheeler",
+                      title: "IDFC FIRST Two Wheeler Loan",
+                      account: "•••• 5519",
+                      meta: "Sanctioned ₹1,20,000 • Paid Off",
+                      type: "loans",
+                      isMismatch: false,
+                      bank: "IDFC FIRST Bank",
+                      logo: "/banks small logo icons svg/Bank Name=IDFC Bank.svg",
+                      badge: "CLOSED (CLEAN)",
+                      badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
+                      impact: "Fully Matured (Debt Free)",
+                      note: "36 of 36 EMIs paid on time. Loan successfully closed with complete bureau clearance.",
+                      bureaus: {
+                        cibil: { label: "Closed (₹0)", isError: false },
+                        experian: { label: "Closed (₹0)", isError: false },
+                        crif: { label: "Closed (₹0)", isError: false },
+                        equifax: { label: "Closed (₹0)", isError: false },
+                      },
+                      disputeTitle: ""
+                    }
+                  ]
+                    .filter((acc) => {
+                      if (bureauMatrixFilter === "mismatch") return acc.isMismatch;
+                      if (bureauMatrixFilter === "cards") return acc.type === "cards";
+                      if (bureauMatrixFilter === "loans") return acc.type === "loans";
+                      return true;
+                    })
+                    .map((acc) => (
+                      <div
+                        key={acc.id}
+                        className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90 hover:border-blue-300 transition-all"
+                      >
+                        {/* Header Row */}
+                        <div className="flex justify-between items-start gap-2">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                              <img src={acc.logo} alt={acc.bank} className="h-full w-full object-contain" />
+                            </div>
+                            <div className="min-w-0">
+                              <h3 className="text-sm font-extrabold text-slate-900 truncate leading-tight">
+                                {acc.title}
+                              </h3>
+                              <div className="text-[11px] text-slate-400 font-semibold mt-0.5">
+                                {acc.account} • {acc.meta}
+                              </div>
+                            </div>
+                          </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <div>
-                      <span className="text-slate-400 text-[10px] font-bold uppercase">CIBIL:</span>
-                      <div className="font-bold text-emerald-600">Closed (₹0)</div>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-[10px] font-bold uppercase">Experian:</span>
-                      <div className="font-bold text-rose-600">Active (₹42,000)</div>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-[10px] font-bold uppercase">CRIF High:</span>
-                      <div className="font-bold text-emerald-600">Closed (₹0)</div>
-                    </div>
-                    <div>
-                      <span className="text-slate-400 text-[10px] font-bold uppercase">Equifax:</span>
-                      <div className="font-bold text-emerald-600">Closed (₹0)</div>
-                    </div>
-                  </div>
+                          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-extrabold uppercase border ${acc.badgeColor}`}>
+                            {acc.badge}
+                          </span>
+                        </div>
 
-                  <button
-                    onClick={() => openDisputeModal("HDFC Credit Card Status Mismatch")}
-                    className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-[#1882FF] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5"
-                  >
-                    <span>File 1-Click Rectification Request</span>
-                    <ChevronRight className="h-3.5 w-3.5" />
-                  </button>
+                        {/* 4-Bureau Status Comparison Grid */}
+                        <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                            <div className="text-slate-400 text-[9px] font-bold uppercase">TransUnion CIBIL</div>
+                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.cibil.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                              {acc.bureaus.cibil.label}
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                            <div className="text-slate-400 text-[9px] font-bold uppercase">Experian</div>
+                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.experian.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                              {acc.bureaus.experian.label}
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                            <div className="text-slate-400 text-[9px] font-bold uppercase">CRIF High Mark</div>
+                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.crif.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                              {acc.bureaus.crif.label}
+                            </div>
+                          </div>
+
+                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                            <div className="text-slate-400 text-[9px] font-bold uppercase">Equifax</div>
+                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.equifax.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                              {acc.bureaus.equifax.label}
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Note & Action Footer */}
+                        <p className="text-xs text-slate-600 leading-snug">
+                          {acc.note}
+                        </p>
+
+                        {acc.isMismatch ? (
+                          <button
+                            onClick={() => openDisputeModal(acc.disputeTitle)}
+                            className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-[#1882FF] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                          >
+                            <Gavel className="h-3.5 w-3.5" />
+                            <span>File 1-Click Rectification Request</span>
+                            <ChevronRight className="h-3.5 w-3.5" />
+                          </button>
+                        ) : (
+                          <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-bold text-emerald-700">
+                            <span className="flex items-center gap-1">
+                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                              <span>{acc.impact}</span>
+                            </span>
+                            <button
+                              onClick={() => showToast(`Opening verified bureau audit for ${acc.title}`)}
+                              className="text-xs text-[#1882FF] hover:underline cursor-pointer flex items-center gap-0.5"
+                            >
+                              <span>Audit Details</span>
+                              <ChevronRight className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
                 </div>
               </motion.div>
             );
@@ -1127,6 +1410,7 @@ export default function PrimeScoreMobileApp({
                     {
                       bank: "ICICI Bank",
                       cardName: "Sapphiro Visa Signature",
+                      logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
                       mask: "•••• 4821",
                       limit: "₹5,00,000",
                       utilization: "34%",
@@ -1137,8 +1421,9 @@ export default function PrimeScoreMobileApp({
                       badgeColor: "bg-blue-50 text-[#1882FF] border-blue-200"
                     },
                     {
-                      bank: "RBL Bank",
-                      cardName: "Platinum Maxima Mastercard",
+                      bank: "Axis Bank",
+                      cardName: "Atlas Rewards Card",
+                      logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
                       mask: "•••• 8912",
                       limit: "₹2,50,000",
                       utilization: "39%",
@@ -1149,8 +1434,9 @@ export default function PrimeScoreMobileApp({
                       badgeColor: "bg-blue-50 text-[#1882FF] border-blue-200"
                     },
                     {
-                      bank: "HDFC Bank",
-                      cardName: "Regalia Gold Visa",
+                      bank: "Kotak Mahindra Bank",
+                      cardName: "Zen Signature Visa",
+                      logo: "/banks small logo icons svg/Bank Name=Kotak Mahindra Bank.svg",
                       mask: "•••• 1042",
                       limit: "₹4,00,000",
                       utilization: "6%",
@@ -1163,18 +1449,22 @@ export default function PrimeScoreMobileApp({
                   ].map((card, idx) => (
                     <div
                       key={idx}
-                      className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 hover:border-blue-300 transition-all"
+                      className="rounded-[26px] bg-white p-4 shadow-sm border border-slate-200/80 hover:border-blue-300 transition-all"
                     >
                       {/* Top Bank Name & Chevron Row */}
                       <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-base font-extrabold text-slate-900">{card.bank}</h4>
-                          <span className="text-[10px] font-bold text-slate-400">{card.mask}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[9px] font-black border ${card.badgeColor}`}>
-                            {card.badge}
-                          </span>
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 p-1">
+                            <img src={card.logo} alt={card.bank} className="h-full w-full object-contain" />
+                          </div>
+                          <div>
+                            <h4 className="text-sm font-extrabold text-slate-900 leading-tight">{card.bank}</h4>
+                            <span className="text-[10px] font-bold text-slate-400">{card.mask}</span>
+                          </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                        <span className={`rounded-full px-2 py-0.5 text-[9px] font-black border ${card.badgeColor}`}>
+                          {card.badge}
+                        </span>
                       </div>
 
                       {/* Card Utilization Details */}
@@ -1246,6 +1536,7 @@ export default function PrimeScoreMobileApp({
                     {
                       bank: "ICICI Bank",
                       card: "Sapphiro Card",
+                      logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
                       type: "Lifetime Free • Visa Signature",
                       perks: "₹5,000 Gift Vouchers + 2 Free Lounge Visits/Quarter",
                       tag: "Pre-Approved",
@@ -1254,6 +1545,7 @@ export default function PrimeScoreMobileApp({
                     {
                       bank: "HDFC Bank",
                       card: "Diners Club Black",
+                      logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
                       type: "Premium Travel & Rewards",
                       perks: "10x Reward Points on SmartBuy + Unlimited Airport Lounges",
                       tag: "High Reward",
@@ -1262,6 +1554,7 @@ export default function PrimeScoreMobileApp({
                     {
                       bank: "Axis Bank",
                       card: "Atlas Card",
+                      logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
                       type: "Frequent Flyer Miles",
                       perks: "5,000 Bonus EDGE Miles on 1st Transaction + Hotel Upgrades",
                       tag: "Special Offer",
@@ -1272,19 +1565,27 @@ export default function PrimeScoreMobileApp({
                       key={i}
                       className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200 hover:border-slate-300 transition-all flex flex-col justify-between gap-3.5"
                     >
-                      <div className="flex items-start justify-between">
-                        <div>
+                      <div>
+                        <div className="flex items-center justify-between">
                           <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${offer.tagColor}`}>
                             {offer.tag}
                           </span>
-                          <div className="mt-2">
+                        </div>
+
+                        <div className="mt-2.5 flex items-center gap-3">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                            <img src={offer.logo} alt={offer.bank} className="h-full w-full object-contain" />
+                          </div>
+                          <div>
                             <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{offer.bank}</span>
                             <h4 className="text-sm font-extrabold text-slate-900 leading-tight">{offer.card}</h4>
                           </div>
-                          <p className="mt-1 text-[11px] font-semibold text-slate-500">{offer.type}</p>
-                          <p className="mt-1.5 text-xs text-slate-600 leading-snug">{offer.perks}</p>
                         </div>
+
+                        <p className="mt-2 text-[11px] font-semibold text-slate-500">{offer.type}</p>
+                        <p className="mt-1 text-xs text-slate-600 leading-snug">{offer.perks}</p>
                       </div>
+
                       <button
                         onClick={() => showToast(`Applying for ${offer.card}... Zero CIBIL hard hit!`)}
                         className="w-full rounded-xl bg-[#1882FF] py-2.5 text-xs font-bold text-white hover:bg-blue-600 active:scale-[0.98] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5"
@@ -1316,10 +1617,10 @@ export default function PrimeScoreMobileApp({
                 </div>
 
                 {/* Subtab Segmented Switcher */}
-                <div className="flex items-center border-b border-slate-100 gap-5 text-xs">
+                <div className="flex items-center border-b border-slate-100 gap-5 text-xs overflow-x-auto scrollbar-none no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                   <button
                     onClick={() => setLoanSubTab("active_loans")}
-                    className={`pb-2 font-extrabold transition-colors relative cursor-pointer ${
+                    className={`pb-2 font-extrabold transition-colors relative cursor-pointer whitespace-nowrap shrink-0 ${
                       loanSubTab === "active_loans" ? "text-[#1882FF]" : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
@@ -1331,7 +1632,7 @@ export default function PrimeScoreMobileApp({
 
                   <button
                     onClick={() => setLoanSubTab("pre_approved")}
-                    className={`pb-2 font-extrabold transition-colors relative flex items-center gap-1 cursor-pointer ${
+                    className={`pb-2 font-extrabold transition-colors relative flex items-center gap-1 cursor-pointer whitespace-nowrap shrink-0 ${
                       loanSubTab === "pre_approved" ? "text-[#1882FF]" : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
@@ -1346,7 +1647,7 @@ export default function PrimeScoreMobileApp({
 
                   <button
                     onClick={() => setLoanSubTab("emi_calc")}
-                    className={`pb-2 font-extrabold transition-colors relative cursor-pointer ${
+                    className={`pb-2 font-extrabold transition-colors relative cursor-pointer whitespace-nowrap shrink-0 ${
                       loanSubTab === "emi_calc" ? "text-[#1882FF]" : "text-slate-400 hover:text-slate-600"
                     }`}
                   >
@@ -1359,29 +1660,200 @@ export default function PrimeScoreMobileApp({
 
                 {/* Integrated Status Row */}
                 {loanSubTab === "active_loans" && (
-                  <div className="flex items-center justify-between rounded-2xl bg-gradient-to-r from-blue-50/60 via-slate-50 to-emerald-50/40 p-3 border border-slate-100">
-                    <div>
+                  <div className="flex items-center justify-between gap-2 rounded-2xl bg-gradient-to-r from-blue-50/60 via-slate-50 to-emerald-50/40 p-3 border border-slate-100">
+                    <div className="min-w-0">
                       <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">Total Monthly EMI</div>
-                      <h3 className="text-base font-black text-slate-900 tracking-tight">₹42,500 <span className="text-[10px] font-normal text-slate-500">/mo • Next auto-debit: 5th Oct</span></h3>
+                      <div className="flex items-baseline gap-1">
+                        <span className="text-base font-black text-slate-900 tracking-tight">₹42,500</span>
+                        <span className="text-[10px] font-medium text-slate-500">/mo</span>
+                      </div>
+                      <div className="text-[10px] font-medium text-slate-500 mt-0.5 whitespace-nowrap">
+                        Next auto-debit: 5th Oct
+                      </div>
                     </div>
-                    <span className="rounded-full bg-emerald-100 px-2.5 py-1 text-[9px] font-black text-emerald-800 flex items-center gap-1">
+                    <span className="shrink-0 rounded-full bg-emerald-100/90 border border-emerald-200 px-2.5 py-1 text-[9px] font-black text-emerald-800 flex items-center gap-1">
                       <Check className="h-3 w-3" /> Autopay Active
                     </span>
                   </div>
                 )}
               </div>
 
-              {/* VIEW 1: ACTIVE LOANS */}
+              {/* VIEW 1: ACTIVE LOANS & OVERDUE ACCOUNTS */}
               {loanSubTab === "active_loans" && (
                 <div className="flex flex-col gap-3.5">
 
-                  {/* Active Institutional Loans Header */}
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
-                      Active institutional loans
+                  {/* Section 1: Attention Required / Overdue Accounts Section */}
+                  <div className="flex items-center justify-between px-1 pt-1 gap-2 flex-wrap">
+                    <div className="flex items-center gap-1.5 min-w-0">
+                      <span className="text-xs font-black text-slate-900 tracking-tight uppercase whitespace-nowrap">
+                        Overdue &amp; Disputed
+                      </span>
+                      <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-rose-500 px-1.5 text-[9px] font-black text-white shadow-xs shrink-0">
+                        2
+                      </span>
+                    </div>
+                    <span className="shrink-0 text-[9px] font-extrabold text-rose-600 bg-rose-50 border border-rose-200/80 px-2 py-0.5 rounded-md whitespace-nowrap">
+                      Impacts Score (-48 Pts)
                     </span>
-                    <span className="rounded-full bg-slate-100 px-2 py-0.5 text-[10px] font-bold text-slate-600 border border-slate-200">
-                      4-Bureau Synced
+                  </div>
+
+                  {/* Overdue Account Card 1: Axis Bank / InnoFin Dispute */}
+                  <div className="overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-sm transition-all">
+                    <div className="p-3.5 flex flex-col gap-3">
+                      {/* Top Header Badge Row */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[9px] font-extrabold text-slate-700">
+                          <CreditCard className="h-2.5 w-2.5 text-slate-500" />
+                          <span>PERSONAL LOAN</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[9px] font-black uppercase text-rose-600 border border-rose-200/70">
+                            OVERDUE
+                          </span>
+                          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black uppercase text-emerald-600 border border-emerald-200/70">
+                            ACTIVE
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bank Entity & Issued Date */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                            <img
+                              src="/banks small logo icons svg/Bank Name=Axis bank.svg"
+                              alt="Axis Bank"
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-extrabold text-slate-900 leading-tight truncate">
+                              Axis Bank / InnoFin Microloan
+                            </h4>
+                            <div className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                              A/c ending 4656
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="text-[11px] font-extrabold text-slate-900">25 Sep, 2024</div>
+                          <div className="text-[9px] font-medium text-slate-400">Issued Date</div>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-slate-100" />
+
+                      {/* Amount Metrics Grid */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Loan Amount</div>
+                          <div className="text-base font-black text-slate-900 mt-0.5">₹6,000</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] font-bold text-rose-500 uppercase tracking-tight">Overdue Amount</div>
+                          <div className="text-base font-black text-rose-600 mt-0.5">₹9,729</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Bar */}
+                    <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/80 px-3.5 py-2">
+                      <span className="text-[11px] font-bold text-slate-700">
+                        Wrong Information?
+                      </span>
+                      <button
+                        onClick={() => openDisputeModal("Axis / InnoFin Overdue Discrepancy")}
+                        className="rounded-lg bg-[#1882FF] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-xs hover:bg-blue-600 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <Gavel className="h-3 w-3" />
+                        <span>Raise Dispute</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Overdue Account Card 2: SBI / InnoFin */}
+                  <div className="overflow-hidden rounded-2xl bg-white border border-slate-200/90 shadow-sm transition-all">
+                    <div className="p-3.5 flex flex-col gap-3">
+                      {/* Top Header Badge Row */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-1.5 rounded-md bg-slate-100 px-2 py-0.5 text-[9px] font-extrabold text-slate-700">
+                          <CreditCard className="h-2.5 w-2.5 text-slate-500" />
+                          <span>PERSONAL LOAN</span>
+                        </div>
+                        <div className="flex items-center gap-1.5">
+                          <span className="rounded-md bg-rose-50 px-1.5 py-0.5 text-[9px] font-black uppercase text-rose-600 border border-rose-200/70">
+                            OVERDUE
+                          </span>
+                          <span className="rounded-md bg-emerald-50 px-1.5 py-0.5 text-[9px] font-black uppercase text-emerald-600 border border-emerald-200/70">
+                            ACTIVE
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Bank Entity & Issued Date */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                            <img
+                              src="/banks small logo icons svg/Bank Name=State Bank of India.svg"
+                              alt="SBI Bank"
+                              className="h-full w-full object-contain"
+                            />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-extrabold text-slate-900 leading-tight truncate">
+                              SBI InnoFin Solutions
+                            </h4>
+                            <div className="text-[10px] font-semibold text-slate-400 mt-0.5">
+                              A/c ending R3DH
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="text-right shrink-0">
+                          <div className="text-[11px] font-extrabold text-slate-900">28 Aug, 2024</div>
+                          <div className="text-[9px] font-medium text-slate-400">Issued Date</div>
+                        </div>
+                      </div>
+
+                      <div className="border-t border-slate-100" />
+
+                      {/* Amount Metrics Grid */}
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">Loan Amount</div>
+                          <div className="text-base font-black text-slate-900 mt-0.5">₹5,500</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-[9px] font-bold text-rose-500 uppercase tracking-tight">Overdue Amount</div>
+                          <div className="text-base font-black text-rose-600 mt-0.5">₹9,140</div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Bottom Action Bar */}
+                    <div className="flex items-center justify-between border-t border-slate-100 bg-slate-50/80 px-3.5 py-2">
+                      <span className="text-[11px] font-bold text-slate-700">
+                        Wrong Information?
+                      </span>
+                      <button
+                        onClick={() => openDisputeModal("InnoFin Solutions Overdue Discrepancy")}
+                        className="rounded-lg bg-[#1882FF] px-3 py-1.5 text-[11px] font-extrabold text-white shadow-xs hover:bg-blue-600 active:scale-95 transition-all cursor-pointer flex items-center gap-1"
+                      >
+                        <Gavel className="h-3 w-3" />
+                        <span>Raise Dispute</span>
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Section 2: Active Regular Loans */}
+                  <div className="flex items-center justify-between px-1 pt-2">
+                    <span className="text-xs font-black text-slate-600 uppercase tracking-wider">
+                      On-Time Institutional Loans
+                    </span>
+                    <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-bold text-emerald-700 border border-emerald-200">
+                      Clean Repayment
                     </span>
                   </div>
 
@@ -1389,6 +1861,7 @@ export default function PrimeScoreMobileApp({
                   {[
                     {
                       bank: "HDFC Bank Home Loan",
+                      logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
                       account: "•••• 9210",
                       sanctioned: "₹25 Lakhs",
                       roi: "8.55% p.a.",
@@ -1400,6 +1873,7 @@ export default function PrimeScoreMobileApp({
                     },
                     {
                       bank: "ICICI Bank Personal Loan",
+                      logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
                       account: "•••• 3314",
                       sanctioned: "₹5 Lakhs",
                       roi: "10.40% p.a.",
@@ -1412,44 +1886,48 @@ export default function PrimeScoreMobileApp({
                   ].map((loan, idx) => (
                     <div
                       key={idx}
-                      className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 hover:border-blue-300 transition-all"
+                      className="rounded-2xl bg-white p-3.5 shadow-sm border border-slate-200/90 hover:border-blue-300 transition-all"
                     >
                       {/* Top Row */}
-                      <div className="flex items-center justify-between border-b border-slate-100 pb-2.5">
-                        <div className="flex items-center gap-2">
-                          <h4 className="text-base font-extrabold text-slate-900">{loan.bank}</h4>
-                          <span className="text-[10px] font-bold text-slate-400">{loan.account}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[9px] font-black border ${loan.tagColor}`}>
-                            {loan.tag}
-                          </span>
+                      <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-slate-50 border border-slate-100 p-1">
+                            <img src={loan.logo} alt={loan.bank} className="h-full w-full object-contain" />
+                          </div>
+                          <div className="min-w-0">
+                            <h4 className="text-xs font-extrabold text-slate-900 leading-tight truncate">{loan.bank}</h4>
+                            <span className="text-[10px] font-bold text-slate-400">{loan.account}</span>
+                          </div>
                         </div>
-                        <ChevronRight className="h-4 w-4 text-slate-400" />
+                        <span className={`rounded-full px-2 py-0.5 text-[8px] font-black shrink-0 border ${loan.tagColor}`}>
+                          {loan.tag}
+                        </span>
                       </div>
 
                       {/* Details Row */}
-                      <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 font-semibold">
+                      <div className="mt-2 flex items-center justify-between text-[10px] text-slate-500 font-semibold">
                         <span>ROI: <strong className="text-slate-800">{loan.roi}</strong></span>
                         <span>Tenure: <strong className="text-slate-800">{loan.tenureLeft}</strong></span>
                         <span>Sanctioned: <strong className="text-slate-800">{loan.sanctioned}</strong></span>
                       </div>
 
                       {/* Outstanding & Pay EMI Button Row */}
-                      <div className="mt-3.5 flex items-center justify-between pt-2 border-t border-slate-100">
+                      <div className="mt-2.5 flex items-center justify-between pt-2 border-t border-slate-100">
                         <div>
-                          <div className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">
+                          <div className="text-[9px] font-bold text-slate-400 uppercase tracking-tight">
                             Outstanding Principal
                           </div>
-                          <div className="text-xl font-black text-slate-900 tracking-tight">
+                          <div className="text-base font-black text-slate-900 tracking-tight">
                             {loan.outstanding}
                           </div>
-                          <div className="text-[10px] text-slate-400 font-medium">
+                          <div className="text-[9px] text-slate-400 font-medium">
                             Monthly EMI: {loan.emi}
                           </div>
                         </div>
 
                         <button
                           onClick={() => showToast(`Opening EMI payment portal for ${loan.bank} (${loan.emi})`)}
-                          className="rounded-full bg-slate-900 px-6 py-2 text-xs font-black text-white shadow-sm hover:bg-[#1882FF] active:scale-95 transition-all cursor-pointer"
+                          className="rounded-full bg-slate-900 px-4 py-1.5 text-[11px] font-black text-white shadow-xs hover:bg-[#1882FF] active:scale-95 transition-all cursor-pointer"
                         >
                           Pay EMI
                         </button>
@@ -1495,6 +1973,7 @@ export default function PrimeScoreMobileApp({
                   {[
                     {
                       bank: "HDFC Bank",
+                      logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
                       title: "Instant Personal Loan",
                       amount: "₹15,00,000",
                       roi: "10.25% p.a.",
@@ -1505,6 +1984,7 @@ export default function PrimeScoreMobileApp({
                     },
                     {
                       bank: "Axis Bank",
+                      logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
                       title: "Prime Auto Loan",
                       amount: "₹8,50,000",
                       roi: "8.75% p.a.",
@@ -1514,7 +1994,8 @@ export default function PrimeScoreMobileApp({
                       tagColor: "bg-emerald-50 text-emerald-700 border-emerald-200"
                     },
                     {
-                      bank: "SBI Bank",
+                      bank: "State Bank of India",
+                      logo: "/banks small logo icons svg/Bank Name=State Bank of India.svg",
                       title: "Home Loan Balance Transfer",
                       amount: "₹25,00,000",
                       roi: "8.35% p.a.",
@@ -1522,6 +2003,17 @@ export default function PrimeScoreMobileApp({
                       feature: "Reduce current EMI rate & save up to ₹3.4L interest",
                       tag: "Save ₹3.4L",
                       tagColor: "bg-purple-50 text-purple-700 border-purple-200"
+                    },
+                    {
+                      bank: "IDFC FIRST Bank",
+                      logo: "/banks small logo icons svg/Bank Name=IDFC Bank.svg",
+                      title: "Prime Consumer Durable Loan",
+                      amount: "₹1,50,000",
+                      roi: "0% No-Cost EMI",
+                      tenure: "3 to 12 Months",
+                      feature: "Zero down payment on electronics & shopping with prime tier",
+                      tag: "0% No-Cost",
+                      tagColor: "bg-emerald-50 text-emerald-700 border-emerald-200"
                     }
                   ].map((offer, i) => (
                     <div
@@ -1533,18 +2025,23 @@ export default function PrimeScoreMobileApp({
                           <span className={`rounded-md px-2 py-0.5 text-[10px] font-bold border ${offer.tagColor}`}>
                             {offer.tag}
                           </span>
-                          <span className="text-xs font-black text-emerald-600 font-mono">{offer.roi}</span>
+                          <span className="text-xs font-black text-emerald-600">{offer.roi}</span>
                         </div>
 
-                        <div className="mt-2 flex items-baseline justify-between">
-                          <div>
-                            <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{offer.bank}</span>
-                            <h4 className="text-sm font-extrabold text-slate-900 leading-tight">{offer.title}</h4>
+                        <div className="mt-2.5 flex items-center justify-between gap-3">
+                          <div className="flex items-center gap-2.5 min-w-0">
+                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                              <img src={offer.logo} alt={offer.bank} className="h-full w-full object-contain" />
+                            </div>
+                            <div className="min-w-0">
+                              <span className="text-[10px] font-bold text-slate-400 uppercase tracking-tight">{offer.bank}</span>
+                              <h4 className="text-sm font-extrabold text-slate-900 leading-tight truncate">{offer.title}</h4>
+                            </div>
                           </div>
-                          <div className="text-lg font-black text-slate-900 font-mono">{offer.amount}</div>
+                          <div className="text-lg font-black text-slate-900 shrink-0">{offer.amount}</div>
                         </div>
 
-                        <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 font-medium">
+                        <div className="mt-2 flex items-center gap-2 text-[11px] text-slate-500 font-medium">
                           <span>{offer.tenure}</span>
                         </div>
 
@@ -1599,7 +2096,7 @@ export default function PrimeScoreMobileApp({
 
                       {/* Main Monthly EMI Number */}
                       <div className="mt-3 flex items-baseline gap-2">
-                        <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">
+                        <span className="text-3xl font-black tracking-tight text-slate-900">
                           ₹{calculatedEmi.toLocaleString("en-IN")}
                         </span>
                         <span className="text-xs font-semibold text-slate-500">/ month</span>
@@ -1647,21 +2144,21 @@ export default function PrimeScoreMobileApp({
                         <div className="mt-3.5 grid grid-cols-3 gap-2 text-center">
                           <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100">
                             <div className="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Principal</div>
-                            <div className="text-xs font-black text-slate-900 mt-0.5 font-mono">
+                            <div className="text-xs font-black text-slate-900 mt-0.5">
                               ₹{loanCalcAmount.toLocaleString("en-IN")}
                             </div>
                           </div>
 
                           <div className="rounded-xl bg-emerald-50/70 p-2.5 border border-emerald-100">
                             <div className="text-[9px] font-bold text-emerald-700 uppercase tracking-wider">Interest</div>
-                            <div className="text-xs font-black text-emerald-700 mt-0.5 font-mono">
+                            <div className="text-xs font-black text-emerald-700 mt-0.5">
                               ₹{totalInterest.toLocaleString("en-IN")}
                             </div>
                           </div>
 
                           <div className="rounded-xl bg-blue-50/70 p-2.5 border border-blue-100">
                             <div className="text-[9px] font-bold text-blue-700 uppercase tracking-wider">Total Payable</div>
-                            <div className="text-xs font-black text-slate-900 mt-0.5 font-mono">
+                            <div className="text-xs font-black text-slate-900 mt-0.5">
                               ₹{totalPayment.toLocaleString("en-IN")}
                             </div>
                           </div>
@@ -1669,20 +2166,17 @@ export default function PrimeScoreMobileApp({
                       </div>
                     </div>
 
-                    {/* 2. INTERACTIVE SLIDER CONTROLS CARD WITH DIRECT MANUAL EDITING */}
-                    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/90 flex flex-col gap-5">
+                    {/* 2. CLEAN & STREAMLINED SLIDER CONTROLS CARD */}
+                    <div className="rounded-2xl bg-white p-5 shadow-sm border border-slate-200/90 flex flex-col gap-6">
                       
                       {/* Control 1: Loan Principal */}
-                      <div>
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <span className="text-xs font-extrabold text-slate-900">Loan Principal</span>
-                            <span className="block text-[10px] text-slate-400 font-medium">Choose or enter borrowing amount</span>
-                          </div>
+                      <div className="flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-extrabold text-slate-900">Loan Amount</span>
                           
                           {/* Editable Principal Input Box */}
-                          <div className="flex items-center gap-1 rounded-xl bg-blue-50/80 px-2.5 py-1 border border-blue-200 focus-within:border-[#1882FF] focus-within:bg-white transition-colors">
-                            <span className="text-xs font-extrabold text-[#1882FF]">₹</span>
+                          <div className="flex items-center gap-1 rounded-xl bg-slate-50 px-3 py-1.5 border border-slate-200 focus-within:border-[#1882FF] focus-within:bg-white transition-all">
+                            <span className="text-xs font-bold text-slate-400">₹</span>
                             <input
                               type="number"
                               min="10000"
@@ -1693,7 +2187,7 @@ export default function PrimeScoreMobileApp({
                                 const val = Number(e.target.value);
                                 setLoanCalcAmount(isNaN(val) ? 0 : val);
                               }}
-                              className="w-24 bg-transparent text-right text-sm font-black text-[#1882FF] font-mono outline-none"
+                              className="w-24 bg-transparent text-right text-sm font-black text-slate-900 outline-none"
                             />
                           </div>
                         </div>
@@ -1705,33 +2199,24 @@ export default function PrimeScoreMobileApp({
                           step="25000"
                           value={Math.min(2500000, Math.max(50000, loanCalcAmount))}
                           onChange={(e) => setLoanCalcAmount(Number(e.target.value))}
-                          className="mt-2.5 w-full h-2 bg-slate-200 rounded-lg accent-[#1882FF] cursor-pointer"
+                          className="w-full h-2 bg-slate-100 rounded-lg accent-[#1882FF] cursor-pointer"
                         />
 
-                        {/* Min / Max labels */}
-                        <div className="mt-1 flex justify-between text-[10px] text-slate-400 font-semibold">
-                          <span>₹50,000</span>
-                          <span>₹12.50 Lakhs</span>
-                          <span>₹25 Lakhs</span>
-                        </div>
-
-                        {/* Quick Amount Chips */}
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        {/* Presets Row */}
+                        <div className="flex items-center justify-between gap-1.5 pt-1">
                           {[
-                            { amt: 100000, label: "₹1L" },
-                            { amt: 300000, label: "₹3L" },
-                            { amt: 500000, label: "₹5L" },
-                            { amt: 1000000, label: "₹10L" },
-                            { amt: 1500000, label: "₹15L" },
-                            { amt: 2000000, label: "₹20L" }
+                            { amt: 100000, label: "₹1 Lakh" },
+                            { amt: 500000, label: "₹5 Lakhs" },
+                            { amt: 1000000, label: "₹10 Lakhs" },
+                            { amt: 2000000, label: "₹20 Lakhs" }
                           ].map((item) => (
                             <button
                               key={item.amt}
                               onClick={() => setLoanCalcAmount(item.amt)}
-                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold transition-all cursor-pointer ${
+                              className={`flex-1 rounded-lg py-1 text-[10px] font-bold transition-all cursor-pointer text-center ${
                                 loanCalcAmount === item.amt
-                                  ? "bg-[#1882FF] text-white shadow-sm"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/70"
+                                  ? "bg-[#1882FF] text-white shadow-xs"
+                                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60"
                               }`}
                             >
                               {item.label}
@@ -1741,15 +2226,12 @@ export default function PrimeScoreMobileApp({
                       </div>
 
                       {/* Control 2: Loan Tenure */}
-                      <div className="border-t border-slate-100 pt-4">
-                        <div className="flex items-center justify-between gap-3">
-                          <div>
-                            <span className="text-xs font-extrabold text-slate-900">Loan Tenure</span>
-                            <span className="block text-[10px] text-slate-400 font-medium">Repayment period in months</span>
-                          </div>
+                      <div className="flex flex-col gap-2.5 border-t border-slate-100 pt-5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm font-extrabold text-slate-900">Tenure</span>
 
                           {/* Editable Tenure Input Box */}
-                          <div className="flex items-center gap-1 rounded-xl bg-blue-50/80 px-2.5 py-1 border border-blue-200 focus-within:border-[#1882FF] focus-within:bg-white transition-colors">
+                          <div className="flex items-center gap-1.5 rounded-xl bg-slate-50 px-3 py-1.5 border border-slate-200 focus-within:border-[#1882FF] focus-within:bg-white transition-all">
                             <input
                               type="number"
                               min="3"
@@ -1760,9 +2242,9 @@ export default function PrimeScoreMobileApp({
                                 const val = Number(e.target.value);
                                 setLoanCalcTenure(isNaN(val) ? 0 : val);
                               }}
-                              className="w-10 bg-transparent text-right text-sm font-black text-[#1882FF] font-mono outline-none"
+                              className="w-10 bg-transparent text-right text-sm font-black text-slate-900 outline-none"
                             />
-                            <span className="text-xs font-extrabold text-[#1882FF]">Months</span>
+                            <span className="text-xs font-bold text-slate-400">Months</span>
                           </div>
                         </div>
 
@@ -1773,32 +2255,24 @@ export default function PrimeScoreMobileApp({
                           step="6"
                           value={Math.min(84, Math.max(6, loanCalcTenure))}
                           onChange={(e) => setLoanCalcTenure(Number(e.target.value))}
-                          className="mt-2.5 w-full h-2 bg-slate-200 rounded-lg accent-[#1882FF] cursor-pointer"
+                          className="w-full h-2 bg-slate-100 rounded-lg accent-[#1882FF] cursor-pointer"
                         />
 
-                        <div className="mt-1 flex justify-between text-[10px] text-slate-400 font-semibold">
-                          <span>6 Months</span>
-                          <span>36 Months ({Math.round((loanCalcTenure / 12) * 10) / 10} yrs)</span>
-                          <span>84 Months (7 yrs)</span>
-                        </div>
-
-                        {/* Quick Tenure Chips */}
-                        <div className="mt-2 flex flex-wrap gap-1.5">
+                        {/* Presets Row */}
+                        <div className="flex items-center justify-between gap-1.5 pt-1">
                           {[
-                            { m: 12, label: "12 Mos (1y)" },
-                            { m: 24, label: "24 Mos (2y)" },
-                            { m: 36, label: "36 Mos (3y)" },
-                            { m: 48, label: "48 Mos (4y)" },
-                            { m: 60, label: "60 Mos (5y)" },
-                            { m: 84, label: "84 Mos (7y)" }
+                            { m: 12, label: "1 Year" },
+                            { m: 24, label: "2 Years" },
+                            { m: 36, label: "3 Years" },
+                            { m: 60, label: "5 Years" }
                           ].map((t) => (
                             <button
                               key={t.m}
                               onClick={() => setLoanCalcTenure(t.m)}
-                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold transition-all cursor-pointer ${
+                              className={`flex-1 rounded-lg py-1 text-[10px] font-bold transition-all cursor-pointer text-center ${
                                 loanCalcTenure === t.m
-                                  ? "bg-[#1882FF] text-white shadow-sm"
-                                  : "bg-slate-100 text-slate-700 hover:bg-slate-200 border border-slate-200/70"
+                                  ? "bg-[#1882FF] text-white shadow-xs"
+                                  : "bg-slate-50 text-slate-600 hover:bg-slate-100 border border-slate-200/60"
                               }`}
                             >
                               {t.label}
@@ -1808,17 +2282,17 @@ export default function PrimeScoreMobileApp({
                       </div>
 
                       {/* Control 3: Interest Rate (ROI) */}
-                      <div className="border-t border-slate-100 pt-4">
-                        <div className="flex items-center justify-between gap-3">
+                      <div className="flex flex-col gap-2.5 border-t border-slate-100 pt-5">
+                        <div className="flex items-center justify-between">
                           <div>
-                            <span className="text-xs font-extrabold text-slate-900">Interest Rate (ROI)</span>
-                            <span className="block text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                              <CheckCircle2 className="h-3 w-3" /> Unlocked Tier-1 Rate
+                            <span className="text-sm font-extrabold text-slate-900">Interest Rate</span>
+                            <span className="block text-[10px] text-emerald-600 font-bold">
+                              Prime 771 Discount Active
                             </span>
                           </div>
 
                           {/* Editable ROI Input Box */}
-                          <div className="flex items-center gap-1 rounded-xl bg-emerald-50 px-2.5 py-1 border border-emerald-200 focus-within:border-emerald-500 focus-within:bg-white transition-colors">
+                          <div className="flex items-center gap-1 rounded-xl bg-emerald-50 px-3 py-1.5 border border-emerald-200 focus-within:border-emerald-500 focus-within:bg-white transition-all">
                             <input
                               type="number"
                               min="1"
@@ -1829,9 +2303,9 @@ export default function PrimeScoreMobileApp({
                                 const val = Number(e.target.value);
                                 setLoanCalcRoi(isNaN(val) ? 0 : val);
                               }}
-                              className="w-14 bg-transparent text-right text-sm font-black text-emerald-700 font-mono outline-none"
+                              className="w-14 bg-transparent text-right text-sm font-black text-emerald-700 outline-none"
                             />
-                            <span className="text-xs font-extrabold text-emerald-700">% p.a.</span>
+                            <span className="text-xs font-bold text-emerald-700">% p.a.</span>
                           </div>
                         </div>
 
@@ -1842,35 +2316,13 @@ export default function PrimeScoreMobileApp({
                           step="0.25"
                           value={Math.min(18.0, Math.max(8.0, loanCalcRoi))}
                           onChange={(e) => setLoanCalcRoi(Number(e.target.value))}
-                          className="mt-2.5 w-full h-2 bg-slate-200 rounded-lg accent-emerald-500 cursor-pointer"
+                          className="w-full h-2 bg-slate-100 rounded-lg accent-emerald-500 cursor-pointer"
                         />
 
-                        <div className="mt-1 flex justify-between text-[10px] text-slate-400 font-semibold">
-                          <span className="text-emerald-600 font-bold">8.0% (Prime Home)</span>
-                          <span>12.5%</span>
-                          <span>18.0%</span>
-                        </div>
-
-                        {/* Quick Rate Chips */}
-                        <div className="mt-2 flex flex-wrap gap-1.5">
-                          {[
-                            { r: 8.5, label: "8.50% (Home Loan)" },
-                            { r: 10.25, label: "10.25% (Prime Personal)" },
-                            { r: 12.5, label: "12.50% (Standard)" },
-                            { r: 14.75, label: "14.75% (Non-Prime)" }
-                          ].map((rate) => (
-                            <button
-                              key={rate.r}
-                              onClick={() => setLoanCalcRoi(rate.r)}
-                              className={`rounded-full px-2.5 py-0.5 text-[10px] font-extrabold transition-all cursor-pointer ${
-                                loanCalcRoi === rate.r
-                                  ? "bg-emerald-600 text-white shadow-sm"
-                                  : "bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-200"
-                              }`}
-                            >
-                              {rate.label}
-                            </button>
-                          ))}
+                        {/* Clean Min/Max Indicator */}
+                        <div className="flex justify-between text-[10px] font-semibold text-slate-400">
+                          <span>Min: 8.0% (Home Loan)</span>
+                          <span>Max: 18.0% (Standard)</span>
                         </div>
                       </div>
                     </div>
@@ -1893,7 +2345,7 @@ export default function PrimeScoreMobileApp({
                       <div className="grid grid-cols-2 gap-2.5">
                         <div className="rounded-2xl bg-blue-50/70 border border-blue-100 p-3">
                           <div className="text-[10px] font-bold text-blue-700 uppercase">Towards Principal</div>
-                          <div className="text-base font-black text-slate-900 mt-0.5 font-mono">
+                          <div className="text-base font-black text-slate-900 mt-0.5">
                             ₹{firstMonthPrincipal.toLocaleString("en-IN")}
                           </div>
                           <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Reduces debt directly</div>
@@ -1901,7 +2353,7 @@ export default function PrimeScoreMobileApp({
 
                         <div className="rounded-2xl bg-emerald-50/70 border border-emerald-100 p-3">
                           <div className="text-[10px] font-bold text-emerald-700 uppercase">Towards Interest</div>
-                          <div className="text-base font-black text-slate-900 mt-0.5 font-mono">
+                          <div className="text-base font-black text-slate-900 mt-0.5">
                             ₹{firstMonthInterest.toLocaleString("en-IN")}
                           </div>
                           <div className="text-[10px] text-slate-500 mt-0.5 font-medium">Bank interest charge</div>
@@ -1918,7 +2370,7 @@ export default function PrimeScoreMobileApp({
                           <span className="flex items-center gap-1.5">
                             <span className="h-2 w-2 rounded-full bg-blue-500" /> Year 1 Completed
                           </span>
-                          <span className="text-slate-600 font-mono">₹{(calculatedEmi * 12).toLocaleString("en-IN")} paid</span>
+                          <span className="text-slate-600 font-bold">₹{(calculatedEmi * 12).toLocaleString("en-IN")} paid</span>
                         </div>
 
                         {loanCalcTenure > 12 && (
@@ -1926,7 +2378,7 @@ export default function PrimeScoreMobileApp({
                             <span className="flex items-center gap-1.5">
                               <span className="h-2 w-2 rounded-full bg-indigo-500" /> Year 2 Completed
                             </span>
-                            <span className="text-slate-600 font-mono">₹{(calculatedEmi * Math.min(24, loanCalcTenure)).toLocaleString("en-IN")} paid</span>
+                            <span className="text-slate-600 font-bold">₹{(calculatedEmi * Math.min(24, loanCalcTenure)).toLocaleString("en-IN")} paid</span>
                           </div>
                         )}
 
@@ -2368,46 +2820,106 @@ export default function PrimeScoreMobileApp({
                     Unlock institutional borrowing rates &amp; automated bureau remedies
                   </p>
 
-                  {/* Looping Marquee Ad of Loans & Cards (PrimeScore Theme) */}
-                  <div className="mt-3 relative overflow-hidden rounded-2xl bg-gradient-to-r from-blue-50/90 via-indigo-50/40 to-blue-50/90 p-2.5 border border-blue-200/60">
-                    <div className="flex items-center justify-between text-[10px] font-black text-slate-900 mb-1 px-1">
-                      <span className="flex items-center gap-1 text-[#1882FF]">
-                        <Zap className="h-3 w-3 text-[#1882FF] fill-[#1882FF]" /> LIVE PRE-APPROVED OFFERS
+                  {/* Single Card Auto-scrolling Looping Carousel */}
+                  <div className="mt-3 flex flex-col gap-2">
+                    <div className="flex items-center justify-between px-0.5">
+                      <span className="text-xs font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                        <Zap className="h-3.5 w-3.5 text-[#1882FF] fill-[#1882FF]" /> Pre-Approved Card Offers
                       </span>
-                      <span className="rounded bg-[#1882FF] px-1.5 py-0.5 text-[8px] font-black text-white">
-                        INSTANT DISBURSAL
+                      <span className="text-[10px] font-bold text-[#1882FF] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#1882FF] animate-pulse"></span>
+                        {currentOfferIndex + 1} of 4 • Auto-Playing
                       </span>
                     </div>
 
-                    {/* Continuous Looping Marquee */}
-                    <div className="relative overflow-hidden py-1">
-                      <motion.div
-                        animate={{ x: ["0%", "-50%"] }}
-                        transition={{ ease: "linear", duration: 22, repeat: Infinity }}
-                        className="flex w-max items-center gap-2.5"
+                    {/* Single-Card Viewport with Smooth Sliding Transition */}
+                    <div
+                      className="relative w-full overflow-hidden rounded-2xl border border-slate-200/90 shadow-sm bg-slate-950 group select-none"
+                      onMouseEnter={() => setIsOfferPaused(true)}
+                      onMouseLeave={() => setIsOfferPaused(false)}
+                      onTouchStart={(e) => {
+                        setIsOfferPaused(true);
+                        touchOfferStartX.current = e.touches[0].clientX;
+                      }}
+                      onTouchEnd={(e) => {
+                        setIsOfferPaused(false);
+                        if (touchOfferStartX.current !== null) {
+                          const diff = touchOfferStartX.current - e.changedTouches[0].clientX;
+                          if (diff > 35) {
+                            // Swiped left -> next card
+                            setCurrentOfferIndex((prev) => (prev + 1) % 4);
+                          } else if (diff < -35) {
+                            // Swiped right -> prev card
+                            setCurrentOfferIndex((prev) => (prev === 0 ? 3 : prev - 1));
+                          }
+                          touchOfferStartX.current = null;
+                        }
+                      }}
+                    >
+                      <div
+                        className="flex w-full transition-transform duration-500 ease-out"
+                        style={{ transform: `translateX(-${currentOfferIndex * 100}%)` }}
                       >
                         {[
-                          { title: "⚡ HDFC Personal Loan: ₹15L @ 10.25% ROI (Instant Disbursal)", tag: "Zero Fee", color: "bg-blue-100 text-blue-800" },
-                          { title: "💳 ICICI Sapphiro Card: Lifetime Free + ₹5,000 Vouchers", tag: "Pre-Approved", color: "bg-emerald-100 text-emerald-800" },
-                          { title: "🛡️ Free Advocate Legal Notice: Fix Experian & CIBIL Errors", tag: "Ombudsman", color: "bg-indigo-100 text-indigo-800" },
-                          { title: "📈 Guaranteed +48 Score Surge within 60 Days", tag: "Prime AI", color: "bg-emerald-100 text-emerald-800" },
-                          { title: "⚡ HDFC Personal Loan: ₹15L @ 10.25% ROI (Instant Disbursal)", tag: "Zero Fee", color: "bg-blue-100 text-blue-800" },
-                          { title: "💳 ICICI Sapphiro Card: Lifetime Free + ₹5,000 Vouchers", tag: "Pre-Approved", color: "bg-emerald-100 text-emerald-800" },
-                          { title: "🛡️ Free Advocate Legal Notice: Fix Experian & CIBIL Errors", tag: "Ombudsman", color: "bg-indigo-100 text-indigo-800" },
-                          { title: "📈 Guaranteed +48 Score Surge within 60 Days", tag: "Prime AI", color: "bg-emerald-100 text-emerald-800" }
-                        ].map((ad, i) => (
+                          { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png", badge: "5% Online Cashback" },
+                          { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png", badge: "10% NeuCoins Perks" },
+                          { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png", badge: "Club Vistara Gold" },
+                          { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png", badge: "Premium Lounge & Perks" }
+                        ].map((item) => (
                           <div
-                            key={i}
-                            onClick={() => showToast(`Claiming offer: ${ad.title}`)}
-                            className="flex shrink-0 items-center gap-2 rounded-xl bg-white px-3 py-1.5 shadow-sm border border-blue-200/70 cursor-pointer hover:bg-blue-50/70 transition-colors"
+                            key={item.id}
+                            onClick={() => showToast(`Opening application for ${item.title}`)}
+                            className="w-full shrink-0 flex-none cursor-pointer relative"
                           >
-                            <span className="text-[11px] font-bold text-slate-900">{ad.title}</span>
-                            <span className={`rounded px-1.5 py-0.5 text-[9px] font-extrabold ${ad.color}`}>
-                              {ad.tag}
-                            </span>
+                            <img
+                              src={item.image}
+                              alt={item.title}
+                              className="w-full h-auto aspect-[16/10] object-cover pointer-events-none select-none block"
+                              loading="lazy"
+                            />
                           </div>
                         ))}
-                      </motion.div>
+                      </div>
+
+                      {/* Previous Slide Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentOfferIndex((prev) => (prev === 0 ? 3 : prev - 1));
+                        }}
+                        className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/60 transition-all active:scale-95 shadow-md"
+                        aria-label="Previous card offer"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </button>
+
+                      {/* Next Slide Button */}
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setCurrentOfferIndex((prev) => (prev + 1) % 4);
+                        }}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/60 transition-all active:scale-95 shadow-md"
+                        aria-label="Next card offer"
+                      >
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+
+                    {/* Pagination Indicator Dots */}
+                    <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                      {[0, 1, 2, 3].map((idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => setCurrentOfferIndex(idx)}
+                          className={`h-1.5 rounded-full transition-all duration-300 ${
+                            currentOfferIndex === idx
+                              ? "w-6 bg-[#1882FF]"
+                              : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                          }`}
+                          aria-label={`Go to card offer ${idx + 1}`}
+                        />
+                      ))}
                     </div>
                   </div>
 
@@ -2526,55 +3038,62 @@ export default function PrimeScoreMobileApp({
           {activeBottomNav === "disputes" && (
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3.5 pb-28">
               
-              {/* 1. HERO STATS CARD (Clean PrimeScore Light Theme) */}
-              <div className="rounded-[26px] bg-white p-5 shadow-sm border border-slate-200/90 flex flex-col gap-4">
-                <div className="flex items-center justify-between border-b border-slate-100 pb-3">
-                  <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1 text-[11px] font-extrabold text-[#1882FF] border border-blue-200/80">
-                    <Gavel className="h-3.5 w-3.5 text-[#1882FF]" /> RBI Section 21 Backed
+              {/* 1. HERO STATS CARD (Clean PrimeScore Light Theme - Mobile Adaptive) */}
+              <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90 flex flex-col gap-3.5">
+                {/* Top Section 21 Bar */}
+                <div className="flex items-center justify-between gap-2 border-b border-slate-100 pb-2.5">
+                  <span className="flex items-center gap-1.5 rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-extrabold text-[#1882FF] border border-blue-200/80">
+                    <Gavel className="h-3 w-3 text-[#1882FF]" /> RBI Section 21
                   </span>
-                  <span className="rounded-full bg-emerald-50 px-2.5 py-1 text-[10px] font-extrabold text-emerald-700 border border-emerald-200">
-                    4 Dossiers Active
+                  <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-extrabold text-emerald-700 border border-emerald-200">
+                    4 Active Dossiers
                   </span>
                 </div>
 
-                <div className="flex items-baseline justify-between">
+                {/* Score Potential & SLA Metrics */}
+                <div className="grid grid-cols-2 gap-3 items-center">
                   <div>
-                    <div className="text-[11px] font-extrabold text-slate-500 uppercase tracking-wider">
-                      Recoverable Score Potential
+                    <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">
+                      Recoverable Score
                     </div>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <span className="text-4xl font-black tracking-tight text-slate-900">+48</span>
-                      <span className="text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-md border border-emerald-200">
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-3xl font-black tracking-tight text-slate-900 font-mono">+48</span>
+                      <span className="text-[10px] font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
                         Pts Rebound
                       </span>
                     </div>
                   </div>
+
                   <div className="text-right">
-                    <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-wider">Resolution SLA</div>
-                    <div className="text-sm font-black text-slate-900 mt-0.5">30 Days (RBI)</div>
-                    <div className="text-[10px] text-emerald-700 font-extrabold bg-emerald-50 px-2 py-0.5 rounded-md mt-1 border border-emerald-100">
+                    <div className="text-[10px] font-extrabold text-slate-400 uppercase tracking-tight">
+                      Resolution SLA
+                    </div>
+                    <div className="text-xs font-black text-slate-900 mt-0.5">
+                      30 Days (RBI)
+                    </div>
+                    <div className="inline-block text-[9px] text-emerald-700 font-extrabold bg-emerald-50 px-1.5 py-0.5 rounded mt-0.5 border border-emerald-100">
                       ₹100/day guarantee
                     </div>
                   </div>
                 </div>
 
-                {/* 4 Bureau Badges */}
-                <div className="grid grid-cols-4 gap-2 pt-1 text-center">
-                  <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-2.5">
-                    <div className="text-[10px] font-extrabold text-slate-500 uppercase">CIBIL</div>
-                    <div className="text-xs font-black text-slate-800 mt-0.5">1 Dispute</div>
+                {/* 4 Bureau Status Mini Cards */}
+                <div className="grid grid-cols-4 gap-1.5 pt-1 text-center">
+                  <div className="rounded-xl bg-slate-50 border border-slate-200/80 p-2 flex flex-col justify-center">
+                    <div className="text-[9px] font-extrabold text-slate-400 uppercase">CIBIL</div>
+                    <div className="text-[11px] font-black text-slate-800 mt-0.5 leading-tight">1 Dispute</div>
                   </div>
-                  <div className="rounded-xl bg-rose-50 border border-rose-200/80 p-2.5">
-                    <div className="text-[10px] font-extrabold text-rose-600 uppercase">Experian</div>
-                    <div className="text-xs font-black text-rose-700 mt-0.5">Critical (1)</div>
+                  <div className="rounded-xl bg-rose-50 border border-rose-200/80 p-2 flex flex-col justify-center">
+                    <div className="text-[9px] font-extrabold text-rose-500 uppercase">Experian</div>
+                    <div className="text-[11px] font-black text-rose-700 mt-0.5 leading-tight">Critical (1)</div>
                   </div>
-                  <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-2.5">
-                    <div className="text-[10px] font-extrabold text-amber-700 uppercase">CRIF</div>
-                    <div className="text-xs font-black text-amber-800 mt-0.5">In Review</div>
+                  <div className="rounded-xl bg-amber-50 border border-amber-200/80 p-2 flex flex-col justify-center">
+                    <div className="text-[9px] font-extrabold text-amber-600 uppercase">CRIF</div>
+                    <div className="text-[11px] font-black text-amber-800 mt-0.5 leading-tight">In Review</div>
                   </div>
-                  <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 p-2.5">
-                    <div className="text-[10px] font-extrabold text-emerald-700 uppercase">Equifax</div>
-                    <div className="text-xs font-black text-emerald-800 mt-0.5">✓ Resolved</div>
+                  <div className="rounded-xl bg-emerald-50 border border-emerald-200/80 p-2 flex flex-col justify-center">
+                    <div className="text-[9px] font-extrabold text-emerald-600 uppercase">Equifax</div>
+                    <div className="text-[11px] font-black text-emerald-700 mt-0.5 leading-tight">✓ Resolved</div>
                   </div>
                 </div>
               </div>
@@ -2584,7 +3103,7 @@ export default function PrimeScoreMobileApp({
                 {[
                   { id: "all", label: "All Dossiers", count: "4" },
                   { id: "action", label: "Action Needed", count: "2" },
-                  { id: "review", label: "In Investigation", count: "1" },
+                  { id: "review", label: "In Review", count: "1" },
                   { id: "resolved", label: "Resolved", count: "1" }
                 ].map((tab) => {
                   const isActive = disputeFilter === tab.id;
@@ -2592,14 +3111,14 @@ export default function PrimeScoreMobileApp({
                     <button
                       key={tab.id}
                       onClick={() => setDisputeFilter(tab.id as any)}
-                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3.5 py-1.5 text-xs font-bold transition-all cursor-pointer ${
+                      className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold transition-all cursor-pointer ${
                         isActive
-                          ? "bg-[#1882FF] text-white shadow-sm"
+                          ? "bg-[#1882FF] text-white shadow-xs"
                           : "bg-white text-slate-600 border border-slate-200/80 hover:bg-slate-50"
                       }`}
                     >
                       <span>{tab.label}</span>
-                      <span className={`rounded-full px-1.5 py-0.2 text-[10px] font-black ${
+                      <span className={`rounded-full px-1.5 py-0.2 text-[9px] font-black ${
                         isActive ? "bg-white/20 text-white" : "bg-slate-100 text-slate-600"
                       }`}>
                         {tab.count}
@@ -2613,30 +3132,30 @@ export default function PrimeScoreMobileApp({
               <div className="flex flex-col gap-3">
                 {/* DOSSIER 1: HDFC Status Mismatch (Action Needed) */}
                 {(disputeFilter === "all" || disputeFilter === "action") && (
-                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 hover:border-amber-400 transition-all flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-rose-50 px-2.5 py-0.5 text-[10px] font-black text-rose-700 border border-rose-200">
-                          Critical Impact (-35 Pts)
+                  <div className="rounded-2xl bg-white p-3.5 shadow-sm border border-slate-200/80 hover:border-amber-400 transition-all flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded-md bg-rose-50 px-2 py-0.5 text-[9px] font-black text-rose-700 border border-rose-200">
+                          Critical (-35 Pts)
                         </span>
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">Experian Error</span>
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase">Experian Error</span>
                       </div>
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
+                      <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
                         Action Required
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                      <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
                         HDFC Millennia Credit Card (•••• 4492)
                       </h3>
                       <p className="text-xs text-slate-600 mt-1 leading-relaxed">
-                        Account is verified <strong>Closed (₹0 balance)</strong> in CIBIL, CRIF & Equifax, but incorrectly reported as <strong>Active with ₹42,000 overdue</strong> in Experian.
+                        Account is verified <strong>Closed (₹0 balance)</strong> in CIBIL, CRIF &amp; Equifax, but incorrectly reported as <strong>Active with ₹42,000 overdue</strong> in Experian.
                       </p>
                     </div>
 
                     {/* Evidence Status */}
-                    <div className="rounded-xl bg-slate-50 p-2.5 border border-slate-100 flex items-center justify-between text-[11px]">
+                    <div className="rounded-xl bg-slate-50 p-2 border border-slate-100 flex items-center justify-between text-[11px]">
                       <span className="text-slate-500 font-semibold">Evidence: <strong className="text-slate-800">Bank NOC Uploaded</strong></span>
                       <span className="text-emerald-600 font-bold flex items-center gap-1">
                         <CheckCircle2 className="h-3.5 w-3.5" /> Verified
@@ -2645,7 +3164,7 @@ export default function PrimeScoreMobileApp({
 
                     <button
                       onClick={() => openDisputeModal("HDFC Card Status Mismatch")}
-                      className="w-full rounded-xl bg-[#1882FF] py-2.5 text-xs font-bold text-white shadow-sm hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full rounded-xl bg-[#1882FF] py-2 text-xs font-bold text-white shadow-xs hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Zap className="h-3.5 w-3.5 fill-white" />
                       <span>File 1-Click Rectification Notice (+35 Pts)</span>
@@ -2656,21 +3175,21 @@ export default function PrimeScoreMobileApp({
 
                 {/* DOSSIER 2: SBI Loan DPD (In Review) */}
                 {(disputeFilter === "all" || disputeFilter === "review") && (
-                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-amber-50 px-2.5 py-0.5 text-[10px] font-black text-amber-700 border border-amber-200">
-                          Medium Impact (-18 Pts)
+                  <div className="rounded-2xl bg-white p-3.5 shadow-sm border border-slate-200/80 flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
+                          Medium (-18 Pts)
                         </span>
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">CRIF HighMark</span>
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase">CRIF HighMark</span>
                       </div>
-                      <span className="rounded-full bg-blue-50 px-2 py-0.5 text-[9px] font-black text-blue-700 border border-blue-200 flex items-center gap-1">
+                      <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[9px] font-black text-blue-700 border border-blue-200 flex items-center gap-1">
                         <Clock className="h-2.5 w-2.5" /> In Bureau Review
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                      <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
                         SBI Personal Loan (•••• 8821)
                       </h3>
                       <p className="text-xs text-slate-600 mt-1 leading-relaxed">
@@ -2679,22 +3198,22 @@ export default function PrimeScoreMobileApp({
                     </div>
 
                     {/* Investigation Tracker Timeline */}
-                    <div className="rounded-xl bg-blue-50/70 p-3 border border-blue-100 flex flex-col gap-1.5 text-xs">
-                      <div className="flex items-center justify-between font-bold text-blue-900 text-[11px]">
+                    <div className="rounded-xl bg-blue-50/70 p-2.5 border border-blue-100 flex flex-col gap-1.5 text-xs">
+                      <div className="flex items-center justify-between font-bold text-blue-900 text-[10px]">
                         <span>Docket ID: CRIF-88421</span>
                         <span>Day 8 of 30 SLA</span>
                       </div>
                       <div className="h-1.5 w-full rounded-full bg-blue-200 overflow-hidden">
                         <div className="h-full bg-[#1882FF] w-2/5 rounded-full" />
                       </div>
-                      <span className="text-[10px] text-blue-700 font-semibold">
+                      <span className="text-[9px] text-blue-700 font-semibold">
                         Awaiting SBI Nodal Officer verification callback.
                       </span>
                     </div>
 
                     <button
                       onClick={() => showToast("Opening CRIF Live Ticket Docket #CRIF-88421")}
-                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100 active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <FileText className="h-3.5 w-3.5 text-slate-500" />
                       <span>View CRIF Investigation Timeline</span>
@@ -2704,21 +3223,21 @@ export default function PrimeScoreMobileApp({
 
                 {/* DOSSIER 3: Axis Bank Unauthorized Inquiry (Action Needed) */}
                 {(disputeFilter === "all" || disputeFilter === "action") && (
-                  <div className="rounded-[24px] bg-white p-4 shadow-sm border border-slate-200/80 flex flex-col gap-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-[10px] font-black text-blue-700 border border-blue-200">
-                          Low Impact (-8 Pts)
+                  <div className="rounded-2xl bg-white p-3.5 shadow-sm border border-slate-200/80 flex flex-col gap-3">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <span className="rounded-md bg-blue-50 px-2 py-0.5 text-[9px] font-black text-blue-700 border border-blue-200">
+                          Low (-8 Pts)
                         </span>
-                        <span className="text-[10px] font-extrabold text-slate-400 uppercase">CIBIL Inquiry</span>
+                        <span className="text-[9px] font-extrabold text-slate-400 uppercase">CIBIL Inquiry</span>
                       </div>
-                      <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
+                      <span className="rounded-md bg-amber-50 px-2 py-0.5 text-[9px] font-black text-amber-700 border border-amber-200">
                         Action Required
                       </span>
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                      <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
                         Axis Bank Credit Card Hard Inquiry
                       </h3>
                       <p className="text-xs text-slate-600 mt-1 leading-relaxed">
@@ -2728,7 +3247,7 @@ export default function PrimeScoreMobileApp({
 
                     <button
                       onClick={() => openDisputeModal("Axis Bank Unauthorized Inquiry")}
-                      className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white shadow-sm hover:bg-[#1882FF] active:scale-95 transition-all flex items-center justify-center gap-2 cursor-pointer"
+                      className="w-full rounded-xl bg-slate-900 py-2 text-xs font-bold text-white shadow-xs hover:bg-[#1882FF] active:scale-95 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
                     >
                       <Gavel className="h-3.5 w-3.5" />
                       <span>Issue Formal Deletion Demand (+8 Pts)</span>
@@ -2739,16 +3258,16 @@ export default function PrimeScoreMobileApp({
 
                 {/* DOSSIER 4: Bajaj Finserv (Resolved) */}
                 {(disputeFilter === "all" || disputeFilter === "resolved") && (
-                  <div className="rounded-[24px] bg-emerald-50/50 p-4 shadow-sm border border-emerald-200 flex flex-col gap-2.5">
-                    <div className="flex items-center justify-between">
-                      <span className="rounded-full bg-emerald-100 px-2.5 py-0.5 text-[10px] font-black text-emerald-800 border border-emerald-300">
+                  <div className="rounded-2xl bg-emerald-50/50 p-3.5 shadow-sm border border-emerald-200 flex flex-col gap-2.5">
+                    <div className="flex flex-wrap items-center justify-between gap-1.5">
+                      <span className="rounded-md bg-emerald-100 px-2 py-0.5 text-[9px] font-black text-emerald-800 border border-emerald-300">
                         ✓ Recovered (+12 Pts)
                       </span>
-                      <span className="text-[10px] font-extrabold text-emerald-700 uppercase">Equifax India</span>
+                      <span className="text-[9px] font-extrabold text-emerald-700 uppercase">Equifax India</span>
                     </div>
 
                     <div>
-                      <h3 className="text-base font-extrabold text-slate-900 leading-tight">
+                      <h3 className="text-sm font-extrabold text-slate-900 leading-tight">
                         Bajaj Finserv Consumer Loan (•••• 1092)
                       </h3>
                       <p className="text-xs text-slate-600 mt-1 leading-relaxed">

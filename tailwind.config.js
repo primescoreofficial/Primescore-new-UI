@@ -21,7 +21,16 @@ module.exports = {
       },
       fontFamily: {
         sans: ["var(--font-jakarta)", "sans-serif"],
-      }
+      },
+      keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0%)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
+      },
+      animation: {
+        "marquee-infinite": "marquee 22s linear infinite",
+      },
     },
   },
   plugins: [],
