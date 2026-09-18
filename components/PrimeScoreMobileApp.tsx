@@ -196,16 +196,23 @@ export default function PrimeScoreMobileApp({
   const [selectedBureauId, setSelectedBureauId] = useState<string>("cibil");
   const [bureauMatrixFilter, setBureauMatrixFilter] = useState<"all" | "mismatch" | "cards" | "loans">("all");
   const [disputeFilter, setDisputeFilter] = useState<"all" | "action" | "review" | "resolved">("all");
-  const [currentOfferIndex, setCurrentOfferIndex] = useState<number>(0);
+  const [expandedAccountIds, setExpandedAccountIds] = useState<Record<string, boolean>>({});
+  const toggleAccountExpand = (id: string) => setExpandedAccountIds((prev) => ({ ...prev, [id]: !prev[id] }));
+  const [[offerSlide, offerDirection], setOfferSlide] = useState<[number, number]>([0, 1]);
   const [isOfferPaused, setIsOfferPaused] = useState<boolean>(false);
-  const touchOfferStartX = useRef<number | null>(null);
 
-  // Auto-scroll one card at a time and loop infinitely (3.5s per card)
+  const activeOfferIndex = ((offerSlide % 4) + 4) % 4;
+
+  const paginateOffer = (newDirection: number) => {
+    setOfferSlide(([prev]) => [prev + newDirection, newDirection]);
+  };
+
+  // Auto-scroll loop: Show ONE card, hold 3.8s, then slide to next in an infinite loop
   useEffect(() => {
     if (isOfferPaused) return;
     const timer = setInterval(() => {
-      setCurrentOfferIndex((prev) => (prev + 1) % 4);
-    }, 3500);
+      setOfferSlide(([prev]) => [prev + 1, 1]);
+    }, 3800);
     return () => clearInterval(timer);
   }, [isOfferPaused]);
 
@@ -1037,7 +1044,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Closed (₹0)", isError: false },
                         equifax: { label: "Closed (₹0)", isError: false },
                       },
-                      disputeTitle: "HDFC Credit Card Status Mismatch"
+                      disputeTitle: "HDFC Credit Card Status Mismatch",
+                      details: {
+                        sanctioned: "₹2,50,000",
+                        currentBalance: "₹0",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "14-May-2023",
+                        closed: "18-Dec-2025",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "18-Dec-2025",
+                        emi: "N/A (Revolving)",
+                        interestRate: "3.49% p.m.",
+                        tenure: "Revolving",
+                        dpdGrid: [
+                          { month: "01-26", status: "CLSD", type: "closed" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "axis-microloan",
@@ -1058,7 +1092,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Overdue (₹9,729)", isError: true },
                         equifax: { label: "Settled (₹0)", isError: false },
                       },
-                      disputeTitle: "Axis Bank Overdue Discrepancy"
+                      disputeTitle: "Axis Bank Overdue Discrepancy",
+                      details: {
+                        sanctioned: "₹6,000",
+                        currentBalance: "₹9,729",
+                        overdue: "₹9,729",
+                        ownership: "Individual",
+                        opened: "18-Aug-2024",
+                        closed: "Disputed",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "12-Nov-2024",
+                        emi: "₹680",
+                        interestRate: "24.0% p.a.",
+                        tenure: "12 Months",
+                        dpdGrid: [
+                          { month: "01-26", status: "180+", type: "default" },
+                          { month: "12-25", status: "150+", type: "default" },
+                          { month: "11-25", status: "120+", type: "default" },
+                          { month: "10-25", status: "090", type: "default" },
+                          { month: "09-25", status: "060", type: "delay" },
+                          { month: "08-25", status: "030", type: "delay" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "sbi-innofin",
@@ -1079,7 +1140,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Active (₹5,500)", isError: true },
                         equifax: { label: "Closed (₹0)", isError: false },
                       },
-                      disputeTitle: "SBI InnoFin Write-Off Discrepancy"
+                      disputeTitle: "SBI InnoFin Write-Off Discrepancy",
+                      details: {
+                        sanctioned: "₹5,500",
+                        currentBalance: "₹9,140",
+                        overdue: "₹9,140",
+                        ownership: "Individual",
+                        opened: "10-Feb-2024",
+                        closed: "Unresolved",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "05-May-2024",
+                        emi: "₹620",
+                        interestRate: "26.0% p.a.",
+                        tenure: "10 Months",
+                        dpdGrid: [
+                          { month: "01-26", status: "SUB", type: "default" },
+                          { month: "12-25", status: "180+", type: "default" },
+                          { month: "11-25", status: "150+", type: "default" },
+                          { month: "10-25", status: "120+", type: "default" },
+                          { month: "09-25", status: "090", type: "default" },
+                          { month: "08-25", status: "060", type: "delay" },
+                          { month: "07-25", status: "030", type: "delay" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "icici-sapphiro",
@@ -1100,7 +1188,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Limit ₹5.00L", isError: false },
                         equifax: { label: "Limit ₹5.00L", isError: false },
                       },
-                      disputeTitle: "ICICI Sapphiro Limit Rectification"
+                      disputeTitle: "ICICI Sapphiro Limit Rectification",
+                      details: {
+                        sanctioned: "₹5,00,000",
+                        currentBalance: "₹1,72,947",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "05-Aug-2022",
+                        closed: "Active (Standard)",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "18-Jan-2026",
+                        emi: "N/A (Revolving)",
+                        interestRate: "3.50% p.m.",
+                        tenure: "Revolving",
+                        dpdGrid: [
+                          { month: "01-26", status: "000", type: "ontime" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "hdfc-home",
@@ -1121,7 +1236,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Regular (₹14.25L)", isError: false },
                         equifax: { label: "Regular (₹14.25L)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹25,00,000",
+                        currentBalance: "₹14,25,000",
+                        overdue: "₹0",
+                        ownership: "Joint (Primary)",
+                        opened: "12-Nov-2021",
+                        closed: "Active (Standard)",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "05-Jan-2026",
+                        emi: "₹24,850",
+                        interestRate: "8.45% p.a.",
+                        tenure: "180 Months (122 Left)",
+                        dpdGrid: [
+                          { month: "01-26", status: "000", type: "ontime" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "axis-atlas",
@@ -1142,7 +1284,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Active (₹99.8K)", isError: false },
                         equifax: { label: "Active (₹99.8K)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹2,50,000",
+                        currentBalance: "₹99,853",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "20-Mar-2023",
+                        closed: "Active (Standard)",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "22-Jan-2026",
+                        emi: "N/A (Revolving)",
+                        interestRate: "3.60% p.m.",
+                        tenure: "Revolving",
+                        dpdGrid: [
+                          { month: "01-26", status: "000", type: "ontime" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "icici-pl",
@@ -1163,7 +1332,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Active (₹3.40L)", isError: false },
                         equifax: { label: "Active (₹3.40L)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹5,00,000",
+                        currentBalance: "₹3,40,000",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "15-Nov-2024",
+                        closed: "Active (Standard)",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "05-Jan-2026",
+                        emi: "₹16,210",
+                        interestRate: "10.50% p.a.",
+                        tenure: "36 Months (22 Left)",
+                        dpdGrid: [
+                          { month: "01-26", status: "000", type: "ontime" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "sbi-simplyclick",
@@ -1184,7 +1380,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Active (₹12.4K)", isError: false },
                         equifax: { label: "Active (₹12.4K)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹1,75,000",
+                        currentBalance: "₹12,400",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "10-Jun-2023",
+                        closed: "Active (Standard)",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "12-Jan-2026",
+                        emi: "N/A (Revolving)",
+                        interestRate: "3.50% p.m.",
+                        tenure: "Revolving",
+                        dpdGrid: [
+                          { month: "01-26", status: "000", type: "ontime" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "kotak-league",
@@ -1194,7 +1417,7 @@ export default function PrimeScoreMobileApp({
                       type: "cards",
                       isMismatch: false,
                       bank: "Kotak Mahindra Bank",
-                      logo: "/banks small logo icons svg/Bank Name=Kotak Bank.svg",
+                      logo: "/banks small logo icons svg/Bank Name=Kotak Mahindra Bank.svg",
                       badge: "CLOSED (CLEAN)",
                       badgeColor: "bg-slate-100 text-slate-700 border-slate-200",
                       impact: "NOC Issued & Cleared",
@@ -1205,7 +1428,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Closed (₹0)", isError: false },
                         equifax: { label: "Closed (₹0)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹1,20,000",
+                        currentBalance: "₹0",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "14-Jan-2022",
+                        closed: "02-Nov-2025",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "02-Nov-2025",
+                        emi: "N/A",
+                        interestRate: "3.40% p.m.",
+                        tenure: "Closed (Debt Free)",
+                        dpdGrid: [
+                          { month: "01-26", status: "CLSD", type: "closed" },
+                          { month: "12-25", status: "CLSD", type: "closed" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     },
                     {
                       id: "idfc-two-wheeler",
@@ -1226,7 +1476,34 @@ export default function PrimeScoreMobileApp({
                         crif: { label: "Closed (₹0)", isError: false },
                         equifax: { label: "Closed (₹0)", isError: false },
                       },
-                      disputeTitle: ""
+                      disputeTitle: "",
+                      details: {
+                        sanctioned: "₹1,20,000",
+                        currentBalance: "₹0",
+                        overdue: "₹0",
+                        ownership: "Individual",
+                        opened: "10-Jan-2023",
+                        closed: "15-Jan-2026",
+                        lastReported: "31-Jan-2026",
+                        lastPayment: "10-Jan-2026",
+                        emi: "₹4,110",
+                        interestRate: "11.5% p.a.",
+                        tenure: "36 Months (Completed)",
+                        dpdGrid: [
+                          { month: "01-26", status: "CLSD", type: "closed" },
+                          { month: "12-25", status: "000", type: "ontime" },
+                          { month: "11-25", status: "000", type: "ontime" },
+                          { month: "10-25", status: "000", type: "ontime" },
+                          { month: "09-25", status: "000", type: "ontime" },
+                          { month: "08-25", status: "000", type: "ontime" },
+                          { month: "07-25", status: "000", type: "ontime" },
+                          { month: "06-25", status: "000", type: "ontime" },
+                          { month: "05-25", status: "000", type: "ontime" },
+                          { month: "04-25", status: "000", type: "ontime" },
+                          { month: "03-25", status: "000", type: "ontime" },
+                          { month: "02-25", status: "000", type: "ontime" },
+                        ]
+                      }
                     }
                   ]
                     .filter((acc) => {
@@ -1235,94 +1512,235 @@ export default function PrimeScoreMobileApp({
                       if (bureauMatrixFilter === "loans") return acc.type === "loans";
                       return true;
                     })
-                    .map((acc) => (
-                      <div
-                        key={acc.id}
-                        className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90 hover:border-blue-300 transition-all"
-                      >
-                        {/* Header Row */}
-                        <div className="flex justify-between items-start gap-2">
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
-                              <img src={acc.logo} alt={acc.bank} className="h-full w-full object-contain" />
+                    .map((acc) => {
+                      const isExpanded = !!expandedAccountIds[acc.id];
+
+                      return (
+                        <div
+                          key={acc.id}
+                          className="flex flex-col gap-3 rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90 hover:border-blue-300 transition-all"
+                        >
+                          {/* Header Row */}
+                          <div className="flex justify-between items-start gap-2">
+                            <div className="flex items-center gap-2.5 min-w-0">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-slate-50 border border-slate-100 p-1.5 shadow-xs">
+                                <img src={acc.logo} alt={acc.bank} className="h-full w-full object-contain" />
+                              </div>
+                              <div className="min-w-0">
+                                <h3 className="text-sm font-extrabold text-slate-900 truncate leading-tight">
+                                  {acc.title}
+                                </h3>
+                                <div className="text-[11px] text-slate-400 font-semibold mt-0.5">
+                                  {acc.account} • {acc.meta}
+                                </div>
+                              </div>
                             </div>
-                            <div className="min-w-0">
-                              <h3 className="text-sm font-extrabold text-slate-900 truncate leading-tight">
-                                {acc.title}
-                              </h3>
-                              <div className="text-[11px] text-slate-400 font-semibold mt-0.5">
-                                {acc.account} • {acc.meta}
+
+                            <span className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-extrabold uppercase border ${acc.badgeColor}`}>
+                              {acc.badge}
+                            </span>
+                          </div>
+
+                          {/* 4-Bureau Status Comparison Grid */}
+                          <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                              <div className="text-slate-400 text-[9px] font-bold uppercase">TransUnion CIBIL</div>
+                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.cibil.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                {acc.bureaus.cibil.label}
+                              </div>
+                            </div>
+
+                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                              <div className="text-slate-400 text-[9px] font-bold uppercase">Experian</div>
+                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.experian.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                {acc.bureaus.experian.label}
+                              </div>
+                            </div>
+
+                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                              <div className="text-slate-400 text-[9px] font-bold uppercase">CRIF High Mark</div>
+                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.crif.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                {acc.bureaus.crif.label}
+                              </div>
+                            </div>
+
+                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                              <div className="text-slate-400 text-[9px] font-bold uppercase">Equifax</div>
+                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.equifax.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                {acc.bureaus.equifax.label}
                               </div>
                             </div>
                           </div>
 
-                          <span className={`shrink-0 rounded-md px-2 py-0.5 text-[9px] font-extrabold uppercase border ${acc.badgeColor}`}>
-                            {acc.badge}
-                          </span>
-                        </div>
+                          {/* Note & Action Footer */}
+                          <p className="text-xs text-slate-600 leading-snug">
+                            {acc.note}
+                          </p>
 
-                        {/* 4-Bureau Status Comparison Grid */}
-                        <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                            <div className="text-slate-400 text-[9px] font-bold uppercase">TransUnion CIBIL</div>
-                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.cibil.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                              {acc.bureaus.cibil.label}
-                            </div>
-                          </div>
-
-                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                            <div className="text-slate-400 text-[9px] font-bold uppercase">Experian</div>
-                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.experian.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                              {acc.bureaus.experian.label}
-                            </div>
-                          </div>
-
-                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                            <div className="text-slate-400 text-[9px] font-bold uppercase">CRIF High Mark</div>
-                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.crif.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                              {acc.bureaus.crif.label}
-                            </div>
-                          </div>
-
-                          <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                            <div className="text-slate-400 text-[9px] font-bold uppercase">Equifax</div>
-                            <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.equifax.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                              {acc.bureaus.equifax.label}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Note & Action Footer */}
-                        <p className="text-xs text-slate-600 leading-snug">
-                          {acc.note}
-                        </p>
-
-                        {acc.isMismatch ? (
+                          {/* Dropdown Accordion Toggle Button */}
                           <button
-                            onClick={() => openDisputeModal(acc.disputeTitle)}
-                            className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-[#1882FF] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
+                            type="button"
+                            onClick={() => toggleAccountExpand(acc.id)}
+                            className="flex items-center justify-between w-full py-2 px-3 rounded-xl bg-slate-50 hover:bg-blue-50/60 border border-slate-200/80 text-xs font-bold text-slate-700 hover:text-[#1882FF] transition-all cursor-pointer"
                           >
-                            <Gavel className="h-3.5 w-3.5" />
-                            <span>File 1-Click Rectification Request</span>
-                            <ChevronRight className="h-3.5 w-3.5" />
-                          </button>
-                        ) : (
-                          <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-bold text-emerald-700">
-                            <span className="flex items-center gap-1">
-                              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
-                              <span>{acc.impact}</span>
+                            <span className="flex items-center gap-1.5">
+                              <Table className="h-3.5 w-3.5 text-[#1882FF]" />
+                              <span>{isExpanded ? "Hide Account Breakdown & DPD" : "View Full Breakdown & DPD History"}</span>
                             </span>
+                            <ChevronDown className={`h-4 w-4 transition-transform duration-300 ${isExpanded ? "rotate-180 text-[#1882FF]" : "text-slate-400"}`} />
+                          </button>
+
+                          {/* Dropdown Content with AnimatePresence */}
+                          <AnimatePresence>
+                            {isExpanded && (
+                              <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: "auto" }}
+                                exit={{ opacity: 0, height: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                className="overflow-hidden flex flex-col gap-3 pt-1 border-t border-dashed border-slate-200 mt-1"
+                              >
+                                {/* 1. Balance & Limit Breakdown */}
+                                <div>
+                                  <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-1.5">
+                                    Balance &amp; Limit Breakdown
+                                  </div>
+                                  <div className="grid grid-cols-3 gap-2 text-center">
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-2 shadow-2xs">
+                                      <div className="text-[9px] font-bold text-slate-400 uppercase">Sanctioned</div>
+                                      <div className="text-xs font-black text-slate-900 mt-0.5">{acc.details.sanctioned}</div>
+                                    </div>
+                                    <div className="bg-slate-50 border border-slate-100 rounded-xl p-2 shadow-2xs">
+                                      <div className="text-[9px] font-bold text-slate-400 uppercase">Current Balance</div>
+                                      <div className="text-xs font-black text-slate-900 mt-0.5">{acc.details.currentBalance}</div>
+                                    </div>
+                                    <div className={`rounded-xl p-2 border shadow-2xs ${acc.details.overdue !== "₹0" ? "bg-rose-50 border-rose-200 text-rose-700" : "bg-slate-50 border-slate-100 text-slate-900"}`}>
+                                      <div className="text-[9px] font-bold uppercase opacity-75">Overdue</div>
+                                      <div className="text-xs font-black mt-0.5">{acc.details.overdue}</div>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 2. Account Details Key-Value Grid */}
+                                <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 shadow-2xs">
+                                  <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400 mb-2">
+                                    Account Details
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Ownership</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.ownership}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Opened</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.opened}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Closed</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.closed}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Last Reported</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.lastReported}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Last Payment</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.lastPayment}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Monthly EMI</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.emi}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Interest Rate</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.interestRate}</span>
+                                    </div>
+                                    <div className="flex justify-between items-center border-b border-slate-200/50 pb-1">
+                                      <span className="text-slate-400 font-semibold text-[11px]">Tenure</span>
+                                      <span className="font-bold text-slate-800 text-[11px]">{acc.details.tenure}</span>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* 3. Payment History — Days Past Due (DPD Grid) */}
+                                <div className="bg-slate-50/70 border border-slate-100 rounded-xl p-3 shadow-2xs">
+                                  <div className="flex items-center justify-between mb-2">
+                                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                      Payment History (DPD)
+                                    </span>
+                                    <span className="text-[9px] font-bold text-slate-400">Past 12 Months</span>
+                                  </div>
+
+                                  <div className="grid grid-cols-6 gap-1.5">
+                                    {acc.details.dpdGrid.map((dpd, dIdx) => {
+                                      let badgeStyle = "bg-emerald-50 text-emerald-700 border-emerald-200";
+                                      if (dpd.type === "delay") badgeStyle = "bg-amber-50 text-amber-800 border-amber-200";
+                                      if (dpd.type === "default") badgeStyle = "bg-rose-50 text-rose-700 border-rose-200";
+                                      if (dpd.type === "closed" || dpd.type === "nodata") badgeStyle = "bg-slate-100 text-slate-600 border-slate-200";
+
+                                      return (
+                                        <div
+                                          key={dIdx}
+                                          className={`flex flex-col items-center justify-center p-1 rounded-lg border text-center ${badgeStyle}`}
+                                        >
+                                          <span className="text-[10px] font-black leading-none">{dpd.status}</span>
+                                          <span className="text-[8px] font-semibold opacity-75 mt-0.5 leading-none">{dpd.month}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+
+                                  {/* DPD Status Legend */}
+                                  <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-[9px] font-bold text-slate-500">
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+                                      <span>STD / 000</span>
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+                                      <span>1–89 DPD</span>
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+                                      <span>90+ / SUB</span>
+                                    </span>
+                                    <span className="flex items-center gap-1">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-slate-400" />
+                                      <span>CLSD / XXX</span>
+                                    </span>
+                                  </div>
+                                </div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {acc.isMismatch ? (
                             <button
-                              onClick={() => showToast(`Opening verified bureau audit for ${acc.title}`)}
-                              className="text-xs text-[#1882FF] hover:underline cursor-pointer flex items-center gap-0.5"
+                              onClick={() => openDisputeModal(acc.disputeTitle)}
+                              className="w-full rounded-xl bg-slate-900 py-2.5 text-xs font-bold text-white hover:bg-[#1882FF] active:scale-[0.98] transition-all cursor-pointer flex items-center justify-center gap-1.5 shadow-xs"
                             >
-                              <span>Audit Details</span>
-                              <ChevronRight className="h-3 w-3" />
+                              <Gavel className="h-3.5 w-3.5" />
+                              <span>File 1-Click Rectification Request</span>
+                              <ChevronRight className="h-3.5 w-3.5" />
                             </button>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                          ) : (
+                            <div className="flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-bold text-emerald-700">
+                              <span className="flex items-center gap-1">
+                                <CheckCircle2 className="h-3.5 w-3.5 text-emerald-600" />
+                                <span>{acc.impact}</span>
+                              </span>
+                              <button
+                                onClick={() => showToast(`Opening verified bureau audit for ${acc.title}`)}
+                                className="text-xs text-[#1882FF] hover:underline cursor-pointer flex items-center gap-0.5"
+                              >
+                                <span>Audit Details</span>
+                                <ChevronRight className="h-3 w-3" />
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               </motion.div>
             );
@@ -2828,66 +3246,94 @@ export default function PrimeScoreMobileApp({
                       </span>
                       <span className="text-[10px] font-bold text-[#1882FF] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
                         <span className="h-1.5 w-1.5 rounded-full bg-[#1882FF] animate-pulse"></span>
-                        {currentOfferIndex + 1} of 4 • Auto-Playing
+                        {activeOfferIndex + 1} of 4 • Auto-Rotating
                       </span>
                     </div>
 
-                    {/* Single-Card Viewport with Smooth Sliding Transition */}
+                    {/* Single-Card Viewport with Framer Motion Slide Transition */}
                     <div
-                      className="relative w-full overflow-hidden rounded-2xl border border-slate-200/90 shadow-sm bg-slate-950 group select-none"
+                      className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200/90 shadow-sm bg-slate-900 group select-none"
                       onMouseEnter={() => setIsOfferPaused(true)}
                       onMouseLeave={() => setIsOfferPaused(false)}
-                      onTouchStart={(e) => {
-                        setIsOfferPaused(true);
-                        touchOfferStartX.current = e.touches[0].clientX;
-                      }}
-                      onTouchEnd={(e) => {
-                        setIsOfferPaused(false);
-                        if (touchOfferStartX.current !== null) {
-                          const diff = touchOfferStartX.current - e.changedTouches[0].clientX;
-                          if (diff > 35) {
-                            // Swiped left -> next card
-                            setCurrentOfferIndex((prev) => (prev + 1) % 4);
-                          } else if (diff < -35) {
-                            // Swiped right -> prev card
-                            setCurrentOfferIndex((prev) => (prev === 0 ? 3 : prev - 1));
-                          }
-                          touchOfferStartX.current = null;
-                        }
-                      }}
+                      onTouchStart={() => setIsOfferPaused(true)}
+                      onTouchEnd={() => setIsOfferPaused(false)}
                     >
-                      <div
-                        className="flex w-full transition-transform duration-500 ease-out"
-                        style={{ transform: `translateX(-${currentOfferIndex * 100}%)` }}
-                      >
-                        {[
-                          { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png", badge: "5% Online Cashback" },
-                          { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png", badge: "10% NeuCoins Perks" },
-                          { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png", badge: "Club Vistara Gold" },
-                          { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png", badge: "Premium Lounge & Perks" }
-                        ].map((item) => (
-                          <div
-                            key={item.id}
-                            onClick={() => showToast(`Opening application for ${item.title}`)}
-                            className="w-full shrink-0 flex-none cursor-pointer relative"
-                          >
-                            <img
-                              src={item.image}
-                              alt={item.title}
-                              className="w-full h-auto aspect-[16/10] object-cover pointer-events-none select-none block"
-                              loading="lazy"
-                            />
-                          </div>
-                        ))}
-                      </div>
+                      <AnimatePresence initial={false} custom={offerDirection}>
+                        <motion.div
+                          key={offerSlide}
+                          custom={offerDirection}
+                          variants={{
+                            enter: (dir: number) => ({
+                              x: dir >= 0 ? "100%" : "-100%",
+                              opacity: 0,
+                            }),
+                            center: {
+                              zIndex: 1,
+                              x: 0,
+                              opacity: 1,
+                            },
+                            exit: (dir: number) => ({
+                              zIndex: 0,
+                              x: dir >= 0 ? "-100%" : "100%",
+                              opacity: 0,
+                            }),
+                          }}
+                          initial="enter"
+                          animate="center"
+                          exit="exit"
+                          transition={{
+                            x: { type: "spring", stiffness: 280, damping: 28 },
+                            opacity: { duration: 0.2 },
+                          }}
+                          drag="x"
+                          dragConstraints={{ left: 0, right: 0 }}
+                          dragElastic={0.6}
+                          onDragEnd={(e, { offset, velocity }) => {
+                            const swipe = Math.abs(offset.x) * velocity.x;
+                            if (swipe < -1000 || offset.x < -40) {
+                              paginateOffer(1);
+                            } else if (swipe > 1000 || offset.x > 40) {
+                              paginateOffer(-1);
+                            }
+                          }}
+                          onClick={() => {
+                            const offers = [
+                              { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
+                              { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
+                              { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
+                              { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
+                            ];
+                            showToast(`Opening application for ${offers[activeOfferIndex].title}`);
+                          }}
+                          className="absolute inset-0 w-full h-full cursor-pointer"
+                        >
+                          {(() => {
+                            const offers = [
+                              { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
+                              { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
+                              { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
+                              { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
+                            ];
+                            const current = offers[activeOfferIndex];
+                            return (
+                              <img
+                                src={current.image}
+                                alt={current.title}
+                                className="w-full h-full object-cover pointer-events-none select-none block"
+                                loading="lazy"
+                              />
+                            );
+                          })()}
+                        </motion.div>
+                      </AnimatePresence>
 
                       {/* Previous Slide Button */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setCurrentOfferIndex((prev) => (prev === 0 ? 3 : prev - 1));
+                          paginateOffer(-1);
                         }}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/60 transition-all active:scale-95 shadow-md"
+                        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
                         aria-label="Previous card offer"
                       >
                         <ChevronLeft className="h-4 w-4" />
@@ -2897,9 +3343,9 @@ export default function PrimeScoreMobileApp({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setCurrentOfferIndex((prev) => (prev + 1) % 4);
+                          paginateOffer(1);
                         }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full bg-black/40 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/60 transition-all active:scale-95 shadow-md"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
                         aria-label="Next card offer"
                       >
                         <ChevronRight className="h-4 w-4" />
@@ -2911,9 +3357,12 @@ export default function PrimeScoreMobileApp({
                       {[0, 1, 2, 3].map((idx) => (
                         <button
                           key={idx}
-                          onClick={() => setCurrentOfferIndex(idx)}
+                          onClick={() => {
+                            const dir = idx >= activeOfferIndex ? 1 : -1;
+                            setOfferSlide(([prev]) => [prev + (idx - activeOfferIndex), dir]);
+                          }}
                           className={`h-1.5 rounded-full transition-all duration-300 ${
-                            currentOfferIndex === idx
+                            activeOfferIndex === idx
                               ? "w-6 bg-[#1882FF]"
                               : "w-1.5 bg-slate-300 hover:bg-slate-400"
                           }`}
