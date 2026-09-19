@@ -17,6 +17,9 @@ import {
   Zap,
   CheckCircle2,
   Sliders,
+  SlidersHorizontal,
+  Filter,
+  Search,
   Table,
   Home,
   User,
@@ -193,8 +196,23 @@ export default function PrimeScoreMobileApp({
   const [simNoInquiries, setSimNoInquiries] = useState<boolean>(true);
 
   // Subfilters & Bureau Selection
-  const [selectedBureauId, setSelectedBureauId] = useState<string>("cibil");
-  const [bureauMatrixFilter, setBureauMatrixFilter] = useState<"all" | "mismatch" | "cards" | "loans">("all");
+  const [selectedBureauId, setSelectedBureauId] = useState<string>("all");
+  const [bureauMatrixFilters, setBureauMatrixFilters] = useState<string[]>([]);
+  const toggleBureauFilter = (filterId: string) => {
+    if (filterId === "all") {
+      setBureauMatrixFilters([]);
+      return;
+    }
+    setBureauMatrixFilters((prev) => {
+      if (prev.includes(filterId)) {
+        return prev.filter((f) => f !== filterId);
+      } else {
+        return [...prev, filterId];
+      }
+    });
+  };
+  const [bureauSearchQuery, setBureauSearchQuery] = useState<string>("");
+  const [isBureauFilterOpen, setIsBureauFilterOpen] = useState<boolean>(false);
   const [disputeFilter, setDisputeFilter] = useState<"all" | "action" | "review" | "resolved">("all");
   const [expandedAccountIds, setExpandedAccountIds] = useState<Record<string, boolean>>({});
   const toggleAccountExpand = (id: string) => setExpandedAccountIds((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -220,6 +238,7 @@ export default function PrimeScoreMobileApp({
   const [isParthOpen, setIsParthOpen] = useState<boolean>(false);
   const [isOpportunitiesOpen, setIsOpportunitiesOpen] = useState<boolean>(true);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState<boolean>(false);
+  const [profileSubView, setProfileSubView] = useState<"main" | "plans" | "video">("main");
   const [parthInput, setParthInput] = useState<string>("");
   const [isParthLoading, setIsParthLoading] = useState<boolean>(false);
   const [parthMessages, setParthMessages] = useState<Array<{ sender: "user" | "parth"; text: string; actionText?: string; actionType?: string }>>([
@@ -326,11 +345,38 @@ export default function PrimeScoreMobileApp({
   };
 
   const getDisplayScore = () => {
-    const matched = BUREAUS.find((b) => b.id === activeHeaderTab);
-    if (matched) {
-      return { label: matched.name, score: matched.score, max: matched.maxScore, rating: matched.rating };
+    const currentId = activeHeaderTab === "overview" ? "all" : activeHeaderTab;
+    if (currentId === "all") {
+      return { 
+        label: "PrimeScore Composite", 
+        score: 771, 
+        max: 900, 
+        rating: "Tier 1 Prime", 
+        subtext: "+48 Pts Potential via Rectification",
+        badgeBg: "bg-white/20 text-white border-white/30" 
+      };
     }
-    return { label: "PrimeScore Composite", score: 771, max: 900, rating: "Tier 1 Prime" };
+    const matched = BUREAUS.find((b) => b.id === currentId);
+    if (matched) {
+      let subtext = `${matched.trend} in last 60 days`;
+      if (matched.hasDiscrepancy) subtext = "⚠️ 1 Discrepancy Found (-35 Pts)";
+      return { 
+        label: matched.name, 
+        score: matched.score, 
+        max: matched.maxScore, 
+        rating: matched.rating, 
+        subtext,
+        badgeBg: matched.hasDiscrepancy ? "bg-rose-500/30 text-rose-200 border-rose-400/40" : "bg-white/20 text-white border-white/30"
+      };
+    }
+    return { 
+      label: "PrimeScore Composite", 
+      score: 771, 
+      max: 900, 
+      rating: "Tier 1 Prime", 
+      subtext: "+48 Pts Potential via Rectification",
+      badgeBg: "bg-white/20 text-white border-white/30" 
+    };
   };
 
   const currentScore = getDisplayScore();
@@ -338,13 +384,12 @@ export default function PrimeScoreMobileApp({
 
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
-  // Auto-scroll to top whenever switching main tabs or sub-pages
+  // Auto-scroll to top whenever switching main tabs
   useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({ top: 0, left: 0, behavior: "instant" });
     }
-    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
-  }, [activeBottomNav, cardSubTab, loanSubTab, selectedBureauId]);
+  }, [activeBottomNav]);
 
   return (
     <div className={`relative flex flex-col overflow-hidden bg-[#F8FAFC] font-sans text-slate-900 ${
@@ -383,10 +428,10 @@ export default function PrimeScoreMobileApp({
         </AnimatePresence>
 
         {/* =========================================================
-             1. HOME PAGE HEADER (ONLY ON HOME TAB)
+             1. BLUE HERO HEADER (ON HOME & BUREAUS TABS)
              ========================================================= */}
         {activeBottomNav === "home" ? (
-          <div className="relative bg-gradient-to-b from-[#1882FF] to-[#1474E8] px-5 pb-8 pt-5 text-white">
+          <div className="relative bg-gradient-to-b from-[#1882FF] to-[#1474E8] px-5 pb-7 pt-5 text-white">
             {/* User Greeting Row */}
             <div className="flex items-center justify-between relative">
               <div
@@ -414,7 +459,7 @@ export default function PrimeScoreMobileApp({
                 <div className="relative">
                   <button
                     onClick={() => setIsNotificationOpen(!isNotificationOpen)}
-                    className="relative text-white active:scale-90 p-1.5 rounded-full hover:bg-white/10 transition-colors flex items-center justify-center"
+                    className="relative text-white active:scale-90 p-1.5 rounded-full hover:bg-white/10 transition-colors flex items-center justify-center cursor-pointer"
                     title="Notifications"
                   >
                     <Bell className="h-5 w-5" />
@@ -456,7 +501,7 @@ export default function PrimeScoreMobileApp({
                                 showToast("All marked as read");
                                 setIsNotificationOpen(false);
                               }}
-                              className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1"
+                              className="text-[10px] font-bold text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
                             >
                               <CheckCheck className="h-3 w-3" /> Mark read
                             </button>
@@ -520,14 +565,17 @@ export default function PrimeScoreMobileApp({
             {/* =========================================================
                  5-ITEM CAPSULE BAR WITH DISTINCT CIRCLE ICON IN CENTER
                  ========================================================= */}
-            <div className="mt-5 flex items-center justify-between gap-1 rounded-full bg-black/15 p-1.5 backdrop-blur-md">
+            <div className="mt-5 flex items-center justify-between rounded-full bg-[#0E6AD8] p-1.5 border border-white/15 shadow-inner">
               {/* 1. Left 1: CIBIL */}
               <button
-                onClick={() => setActiveHeaderTab("cibil")}
-                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-extrabold transition-all duration-200 ${
+                onClick={() => {
+                  setActiveHeaderTab("cibil");
+                  setSelectedBureauId("cibil");
+                }}
+                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer ${
                   activeHeaderTab === "cibil"
-                    ? "bg-white text-slate-900 shadow-md"
-                    : "bg-transparent text-white/85 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-md scale-[1.02]"
+                    : "bg-transparent text-white hover:bg-white/10"
                 }`}
               >
                 CIBIL
@@ -535,36 +583,45 @@ export default function PrimeScoreMobileApp({
 
               {/* 2. Left 2: CRIF */}
               <button
-                onClick={() => setActiveHeaderTab("crif")}
-                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-extrabold transition-all duration-200 ${
+                onClick={() => {
+                  setActiveHeaderTab("crif");
+                  setSelectedBureauId("crif");
+                }}
+                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer ${
                   activeHeaderTab === "crif"
-                    ? "bg-white text-slate-900 shadow-md"
-                    : "bg-transparent text-white/85 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-md scale-[1.02]"
+                    : "bg-transparent text-white hover:bg-white/10"
                 }`}
               >
                 CRIF
               </button>
 
-              {/* 3. MIDDLE: DISTINCT CIRCULAR SCORE ICON BUTTON */}
+              {/* 3. MIDDLE: DISTINCT CIRCULAR SCORE ICON BUTTON (ALL BUREAUS / COMPOSITE) */}
               <button
-                onClick={() => setActiveHeaderTab("overview")}
-                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full transition-all duration-200 ${
+                onClick={() => {
+                  setActiveHeaderTab("overview");
+                  setSelectedBureauId("all");
+                }}
+                className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full transition-all duration-200 cursor-pointer ${
                   activeHeaderTab === "overview"
-                    ? "bg-white text-slate-900 shadow-xl scale-110 ring-2 ring-white/40"
-                    : "bg-white/20 text-white hover:bg-white/30"
+                    ? "bg-white text-[#1882FF] shadow-lg scale-105 ring-2 ring-white/60"
+                    : "bg-white/90 text-[#1882FF] hover:bg-white shadow-sm"
                 }`}
-                title="PrimeScore Index"
+                title="PrimeScore Index (All 4 Bureaus)"
               >
-                <Gauge className="h-5 w-5 text-blue-600" />
+                <Gauge className="h-5 w-5 text-[#1882FF]" />
               </button>
 
               {/* 4. Right 1: Experian */}
               <button
-                onClick={() => setActiveHeaderTab("experian")}
-                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-extrabold transition-all duration-200 ${
+                onClick={() => {
+                  setActiveHeaderTab("experian");
+                  setSelectedBureauId("experian");
+                }}
+                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer ${
                   activeHeaderTab === "experian"
-                    ? "bg-white text-slate-900 shadow-md"
-                    : "bg-transparent text-white/85 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-md scale-[1.02]"
+                    : "bg-transparent text-white hover:bg-white/10"
                 }`}
               >
                 Experian
@@ -572,11 +629,14 @@ export default function PrimeScoreMobileApp({
 
               {/* 5. Right 2: Equifax */}
               <button
-                onClick={() => setActiveHeaderTab("equifax")}
-                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-extrabold transition-all duration-200 ${
+                onClick={() => {
+                  setActiveHeaderTab("equifax");
+                  setSelectedBureauId("equifax");
+                }}
+                className={`flex-1 flex h-8 items-center justify-center rounded-full text-xs font-black transition-all duration-200 cursor-pointer ${
                   activeHeaderTab === "equifax"
-                    ? "bg-white text-slate-900 shadow-md"
-                    : "bg-transparent text-white/85 hover:text-white"
+                    ? "bg-white text-slate-900 shadow-md scale-[1.02]"
+                    : "bg-transparent text-white hover:bg-white/10"
                 }`}
               >
                 Equifax
@@ -586,11 +646,13 @@ export default function PrimeScoreMobileApp({
             {/* Center Hero Score */}
             <div className="mt-4 flex flex-col items-center justify-center text-center">
               <div className="flex items-center gap-1.5 text-xs font-semibold text-white/90">
-                <span>{currentScore.label}</span>
-                <span className="rounded bg-white/20 px-1.5 py-0.5 text-[9px] font-bold">{currentScore.rating}</span>
+                <span className="font-extrabold text-sm">{currentScore.label}</span>
+                <span className={`rounded-full px-2.5 py-0.5 text-[9px] font-black uppercase border ${currentScore.badgeBg}`}>
+                  {currentScore.rating}
+                </span>
               </div>
 
-              <div className="mt-1 flex items-baseline gap-1.5 text-5xl font-extrabold tracking-tight">
+              <div className="mt-1 flex items-baseline gap-1.5 text-5xl font-extrabold tracking-tight text-white">
                 <AnimatedScoreCounter value={currentScore.score} />
                 <span className="text-lg font-semibold text-white/70">/ {currentScore.max}</span>
               </div>
@@ -598,15 +660,15 @@ export default function PrimeScoreMobileApp({
               <motion.button
                 whileTap={{ scale: 0.96 }}
                 onClick={() => openDisputeModal()}
-                className="mt-2 flex items-center gap-1.5 rounded-full bg-white/20 px-3.5 py-1 text-xs font-bold text-white backdrop-blur-md"
+                className="mt-2.5 flex items-center gap-1.5 rounded-full bg-white/20 hover:bg-white/30 px-4 py-1 text-xs font-bold text-white backdrop-blur-md transition-all cursor-pointer shadow-xs border border-white/15"
               >
                 <Zap className="h-3.5 w-3.5 fill-amber-300 text-amber-300" />
-                <span>+48 Pts Potential via Rectification</span>
+                <span>{currentScore.subtext}</span>
               </motion.button>
             </div>
           </div>
         ) : activeBottomNav !== "profile" && activeBottomNav !== "parth" ? (
-          /* NATIVE NARROW HEADER FOR OTHER TABS (Bureaus, Disputes, Simulator) */
+          /* NATIVE NARROW HEADER FOR OTHER TABS (Bureaus, Cards, Loans, Disputes, Simulator) */
           <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-md px-4 py-3 border-b border-slate-200/80">
             <div className="flex items-center justify-between">
               <div>
@@ -684,7 +746,7 @@ export default function PrimeScoreMobileApp({
 
           {/* TAB 1: HOME */}
           {activeBottomNav === "home" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-4">
+            <div className="flex flex-col gap-4">
               {/* CARD 1: 4 BUREAUS */}
               <div className="flex flex-col gap-4 rounded-[26px] bg-white p-5 shadow-sm border border-slate-100">
                 <div className="flex items-center justify-between">
@@ -745,71 +807,49 @@ export default function PrimeScoreMobileApp({
                   </div>
                 </div>
 
-                {/* Infinite Looping Marquee Ticker Rows */}
-                <div className="relative flex flex-col gap-2 overflow-hidden py-1">
-                  {/* Left & Right Edge Soft Vignette Fades */}
-                  <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-r from-[#EEF2F6] to-transparent" />
-                  <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-4 bg-gradient-to-l from-[#EEF2F6] to-transparent" />
-
-                  {/* ROW 1: Loops Left */}
-                  <motion.div
-                    animate={{ x: ["0%", "-50%"] }}
-                    transition={{ ease: "linear", duration: 48, repeat: Infinity }}
-                    className="flex w-max items-center gap-2"
-                  >
+                {/* Swipeable Suggested Prompt Chips (Static, No Continuous Auto-Scrolling) */}
+                <div className="flex flex-col gap-2 py-1">
+                  <div className="flex gap-2 overflow-x-auto scrollbar-none no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
                     {[
                       { text: "Mera credit score 800+ kaise hoga?", icon: TrendingUp },
                       { text: "CIBIL me dispute kaise kare?", icon: ShieldCheck },
                       { text: "Negative remarks remove kaise kare?", icon: AlertTriangle },
                       { text: "Score update kab hota hai?", icon: RefreshCw },
-                      { text: "Mera credit score 800+ kaise hoga?", icon: TrendingUp },
-                      { text: "CIBIL me dispute kaise kare?", icon: ShieldCheck },
-                      { text: "Negative remarks remove kaise kare?", icon: AlertTriangle },
-                      { text: "Score update kab hota hai?", icon: RefreshCw }
                     ].map((item, idx) => {
                       const IconComponent = item.icon;
                       return (
                         <button
                           key={`r1-${idx}`}
                           onClick={() => askParth(item.text)}
-                          className="flex shrink-0 items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/70 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                          className="flex shrink-0 items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-xs border border-slate-200/70 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
                         >
                           <IconComponent className="h-3.5 w-3.5 text-[#1882FF] shrink-0" />
-                          <span>{item.text.length > 28 ? item.text.slice(0, 26) + "..." : item.text}</span>
+                          <span>{item.text}</span>
                         </button>
                       );
                     })}
-                  </motion.div>
+                  </div>
 
-                  {/* ROW 2: Loops Right */}
-                  <motion.div
-                    animate={{ x: ["-50%", "0%"] }}
-                    transition={{ ease: "linear", duration: 55, repeat: Infinity }}
-                    className="flex w-max items-center gap-2"
-                  >
+                  <div className="flex gap-2 overflow-x-auto scrollbar-none no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden pb-1">
                     {[
                       { text: "Loan approval ke chances kaise badhaye?", icon: Zap },
                       { text: "Experian score low kyu hai?", icon: AlertTriangle },
                       { text: "Best credit card for 770 score?", icon: CreditCard },
                       { text: "Credit limit double kaise kare?", icon: TrendingUp },
-                      { text: "Loan approval ke chances kaise badhaye?", icon: Zap },
-                      { text: "Experian score low kyu hai?", icon: AlertTriangle },
-                      { text: "Best credit card for 770 score?", icon: CreditCard },
-                      { text: "Credit limit double kaise kare?", icon: TrendingUp }
                     ].map((item, idx) => {
                       const IconComponent = item.icon;
                       return (
                         <button
                           key={`r2-${idx}`}
                           onClick={() => askParth(item.text)}
-                          className="flex shrink-0 items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-sm border border-slate-200/70 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
+                          className="flex shrink-0 items-center gap-2 rounded-full bg-white px-3.5 py-2 text-xs font-semibold text-slate-800 shadow-xs border border-slate-200/70 hover:bg-slate-50 active:scale-95 transition-all cursor-pointer"
                         >
                           <IconComponent className="h-3.5 w-3.5 text-[#1882FF] shrink-0" />
-                          <span>{item.text.length > 28 ? item.text.slice(0, 26) + "..." : item.text}</span>
+                          <span>{item.text}</span>
                         </button>
                       );
                     })}
-                  </motion.div>
+                  </div>
                 </div>
 
                 {/* Input Bar */}
@@ -916,82 +956,121 @@ export default function PrimeScoreMobileApp({
                   <ShieldCheck className="h-4 w-4" /> Rectify All 4 Discrepancies →
                 </motion.button>
               </div>
-            </motion.div>
+            </div>
           )}
 
           {/* TAB 2: BUREAUS MATRIX */}
           {activeBottomNav === "bureaus" && (() => {
+            const isAllBureaus = selectedBureauId === "all";
             const currentBureau = BUREAUS.find((b) => b.id === selectedBureauId) || BUREAUS[0];
 
             return (
-              <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3.5 pb-24">
+              <div className="flex flex-col gap-3.5 pb-24">
                 
-                {/* 1. 4-BUREAU SELECTION TILES (CLICKABLE) */}
-                <div className="grid grid-cols-4 gap-2 text-center">
-                  {BUREAUS.map((b) => {
+                {/* 1. 5-CARD SINGLE ROW BUREAU SELECTOR (RESPONSIVE FOR ALL SCREEN SIZES) */}
+                <div className="grid grid-cols-5 gap-1 min-[360px]:gap-1.5 text-center">
+                  {[
+                    { id: "all", label: "ALL 4", score: 771, hasDiscrepancy: false },
+                    { id: "cibil", label: "CIBIL", score: 743, hasDiscrepancy: false },
+                    { id: "crif", label: "CRIF", score: 757, hasDiscrepancy: false },
+                    { id: "experian", label: "EXPERIAN", score: 770, hasDiscrepancy: true },
+                    { id: "equifax", label: "EQUIFAX", score: 817, hasDiscrepancy: false },
+                  ].map((b) => {
                     const isSelected = selectedBureauId === b.id;
                     return (
                       <motion.button
                         key={b.id}
                         whileTap={{ scale: 0.96 }}
-                        onClick={() => setSelectedBureauId(b.id)}
-                        className={`rounded-2xl p-3 shadow-xs transition-all cursor-pointer flex flex-col items-center justify-between border ${
+                        onClick={() => {
+                          setSelectedBureauId(b.id);
+                          setActiveHeaderTab(b.id === "all" ? "overview" : b.id);
+                        }}
+                        className={`rounded-xl min-[360px]:rounded-2xl py-1.5 px-0.5 min-[360px]:py-2 min-[360px]:px-1 shadow-xs transition-all cursor-pointer flex flex-col items-center justify-between border min-h-[58px] min-[360px]:min-h-[64px] ${
                           isSelected
                             ? "bg-white border-[#1882FF] ring-2 ring-blue-500/20 shadow-md scale-[1.02]"
                             : "bg-white border-slate-200/80 hover:border-slate-300"
                         }`}
                       >
-                        <span className={`text-[10px] font-extrabold uppercase ${isSelected ? "text-[#1882FF]" : "text-slate-400"}`}>
-                          {b.name.split(" ")[0]}
+                        <span className={`text-[7.5px] min-[360px]:text-[8.5px] font-black uppercase tracking-tight truncate max-w-full ${
+                          isSelected ? "text-[#1882FF]" : "text-slate-400"
+                        }`}>
+                          {b.label}
                         </span>
-                        <div className={`text-base font-black mt-1 ${
+                        <div className={`text-xs min-[360px]:text-sm sm:text-base font-black my-0.5 ${
                           b.hasDiscrepancy ? "text-rose-600" : isSelected ? "text-slate-900" : "text-slate-700"
                         }`}>
                           {b.score}{b.hasDiscrepancy ? "*" : ""}
                         </div>
-                        <span className={`mt-1 h-1 w-5 rounded-full ${isSelected ? "bg-[#1882FF]" : "bg-transparent"}`} />
+                        <span className={`h-0.5 min-[360px]:h-1 w-3.5 min-[360px]:w-4 rounded-full transition-all ${
+                          isSelected ? "bg-[#1882FF]" : "bg-transparent"
+                        }`} />
                       </motion.button>
                     );
                   })}
                 </div>
 
-                {/* 2. SELECTED BUREAU SUMMARY & OFFICIAL DOWNLOAD BANNER */}
-                <div className="rounded-2xl bg-white p-4 shadow-sm border border-slate-200/90 flex flex-col gap-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="text-base font-black text-slate-900">{currentBureau.name} Report</h3>
-                        <span className={`rounded-md px-2 py-0.5 text-[9px] font-extrabold ${
-                          currentBureau.hasDiscrepancy 
-                            ? "bg-rose-50 text-rose-700 border border-rose-200" 
-                            : "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                        }`}>
-                          {currentBureau.rating}
-                        </span>
+                {/* 2. SELECTED BUREAU SUMMARY & OFFICIAL DOWNLOAD BANNER (RESPONSIVE FLEX LAYOUT) */}
+                <div className="rounded-2xl bg-white p-3.5 min-[360px]:p-4 shadow-sm border border-slate-200/90 flex flex-col gap-3">
+                  {isAllBureaus ? (
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0 pr-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h3 className="text-sm min-[360px]:text-base font-black text-slate-900 leading-tight">
+                            4-Bureau Consolidated Report
+                          </h3>
+                          <span className="shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-extrabold bg-blue-50 text-blue-700 border border-blue-200">
+                            Integrated Audit
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-slate-500 font-medium leading-snug">
+                          16 Total Accounts • 4 Discrepancies • 4/4 Synced
+                        </p>
                       </div>
-                      <p className="mt-0.5 text-xs text-slate-500 font-medium">
-                        {currentBureau.accounts} Accounts Reported • {currentBureau.active} Active • Updated 3 days ago
-                      </p>
-                    </div>
 
-                    <div className="text-right">
-                      <span className="text-2xl font-black text-slate-900">{currentBureau.score}</span>
-                      <span className="text-xs text-slate-400 font-medium">/900</span>
+                      <div className="text-right shrink-0 self-start pl-1">
+                        <span className="text-xl min-[360px]:text-2xl font-black text-slate-900 leading-none block">771</span>
+                        <span className="text-[10px] text-slate-400 font-medium block">/900</span>
+                      </div>
                     </div>
-                  </div>
+                  ) : (
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0 pr-1">
+                        <div className="flex flex-wrap items-center gap-1.5">
+                          <h3 className="text-sm min-[360px]:text-base font-black text-slate-900 leading-tight">
+                            {currentBureau.name} Report
+                          </h3>
+                          <span className={`shrink-0 rounded-md px-1.5 py-0.5 text-[9px] font-extrabold ${
+                            currentBureau.hasDiscrepancy 
+                              ? "bg-rose-50 text-rose-700 border border-rose-200" 
+                              : "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          }`}>
+                            {currentBureau.rating}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-[11px] text-slate-500 font-medium leading-snug">
+                          {currentBureau.accounts} Accounts Reported • {currentBureau.active} Active • Updated 3d ago
+                        </p>
+                      </div>
+
+                      <div className="text-right shrink-0 self-start pl-1">
+                        <span className="text-xl min-[360px]:text-2xl font-black text-slate-900 leading-none block">{currentBureau.score}</span>
+                        <span className="text-[10px] text-slate-400 font-medium block">/900</span>
+                      </div>
+                    </div>
+                  )}
 
                   {/* Official PDF Download Button */}
                   <div className="flex items-center justify-between border-t border-slate-100 pt-3 gap-2">
                     <button
-                      onClick={() => showToast(`Downloading official ${currentBureau.name} Credit Dossier (PDF)...`)}
-                      className="flex-1 rounded-xl bg-[#1882FF] py-2.5 text-xs font-bold text-white hover:bg-blue-600 active:scale-[0.98] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                      onClick={() => showToast(isAllBureaus ? "Downloading official 4-Bureau Consolidated Credit Dossier (PDF)..." : `Downloading official ${currentBureau.name} Credit Dossier (PDF)...`)}
+                      className="flex-1 min-w-0 rounded-xl bg-[#1882FF] py-2.5 px-2 text-xs font-bold text-white hover:bg-blue-600 active:scale-[0.98] transition-all cursor-pointer shadow-xs flex items-center justify-center gap-1.5 truncate"
                     >
-                      <FileDown className="h-4 w-4" />
-                      <span>Download {currentBureau.name.split(" ")[0]} Report (PDF)</span>
+                      <FileDown className="h-4 w-4 shrink-0" />
+                      <span className="truncate">{isAllBureaus ? "Download 4-Bureau Report (PDF)" : `Download ${currentBureau.name.split(" ")[0]} Report (PDF)`}</span>
                     </button>
 
                     <button
-                      onClick={() => showToast(`Syncing latest official records from ${currentBureau.name}...`)}
+                      onClick={() => showToast(isAllBureaus ? "Syncing latest live records across all 4 bureaus..." : `Syncing latest official records from ${currentBureau.name}...`)}
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-100 active:scale-95 transition-all cursor-pointer"
                       title="Sync Report"
                     >
@@ -1000,26 +1079,141 @@ export default function PrimeScoreMobileApp({
                   </div>
                 </div>
 
-                {/* 3. FILTER PILLS */}
-                <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-none no-scrollbar [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-                  {[
-                    { id: "all", label: "All 10 Accounts" },
-                    { id: "mismatch", label: "Mismatches (4)" },
-                    { id: "cards", label: "Credit Cards (5)" },
-                    { id: "loans", label: "Loans (5)" },
-                  ].map((f) => (
+                {/* 3. SEARCH & FILTER CONTROLS BAR */}
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    {/* Search Input Box */}
+                    <div className="relative flex-1 flex items-center rounded-2xl bg-white px-3.5 py-2.5 shadow-xs border border-slate-200/90 focus-within:border-[#1882FF] focus-within:ring-2 focus-within:ring-blue-500/10 transition-all">
+                      <Search className="h-4 w-4 text-slate-400 shrink-0" />
+                      <input
+                        type="text"
+                        value={bureauSearchQuery}
+                        onChange={(e) => setBureauSearchQuery(e.target.value)}
+                        placeholder="Search accounts, banks, card no..."
+                        className="w-full bg-transparent pl-2.5 pr-2 text-xs font-medium text-slate-800 placeholder-slate-400 outline-none"
+                      />
+                      {bureauSearchQuery && (
+                        <button
+                          onClick={() => setBureauSearchQuery("")}
+                          className="flex h-4 w-4 items-center justify-center rounded-full bg-slate-200 text-slate-600 hover:bg-slate-300 text-[10px] font-black cursor-pointer"
+                          title="Clear search"
+                        >
+                          ✕
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Filter Icon Button */}
                     <button
-                      key={f.id}
-                      onClick={() => setBureauMatrixFilter(f.id as any)}
-                      className={`rounded-full px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all cursor-pointer ${
-                        bureauMatrixFilter === f.id
-                          ? "bg-[#1882FF] text-white shadow-xs"
-                          : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                      onClick={() => setIsBureauFilterOpen(!isBureauFilterOpen)}
+                      className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border transition-all cursor-pointer ${
+                        isBureauFilterOpen || bureauMatrixFilters.length > 0
+                          ? "bg-[#1882FF] text-white border-[#1882FF] shadow-sm shadow-blue-500/20 ring-2 ring-blue-500/20"
+                          : "bg-white text-slate-700 border-slate-200/90 hover:bg-slate-50 shadow-xs"
                       }`}
+                      title="Filter Accounts"
                     >
-                      {f.label}
+                      <SlidersHorizontal className="h-4 w-4" />
+                      {bureauMatrixFilters.length > 0 && (
+                        <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 px-1 items-center justify-center rounded-full bg-rose-500 border-2 border-white text-[9px] font-black text-white">
+                          {bureauMatrixFilters.length}
+                        </span>
+                      )}
                     </button>
-                  ))}
+                  </div>
+
+                  {/* Expandable Multi-Select Filter Drawer */}
+                  <AnimatePresence>
+                    {isBureauFilterOpen && (
+                      <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: "auto" }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                      >
+                        <div className="flex flex-col gap-2 rounded-2xl bg-white p-3 border border-slate-200/80 shadow-xs">
+                          <div className="flex items-center justify-between text-[11px] font-extrabold text-slate-500 px-1">
+                            <span>Select Filters (Multi-Select)</span>
+                            {bureauMatrixFilters.length > 0 && (
+                              <button
+                                onClick={() => setBureauMatrixFilters([])}
+                                className="text-[#1882FF] hover:underline font-bold text-[10px] cursor-pointer"
+                              >
+                                Reset Filters ({bureauMatrixFilters.length})
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-1.5">
+                            {[
+                              { id: "all", label: "All Accounts", count: "10" },
+                              { id: "mismatch", label: "Mismatches Only", count: "4" },
+                              { id: "cards", label: "Credit Cards", count: "5" },
+                              { id: "loans", label: "Loans & EMIs", count: "5" },
+                            ].map((f) => {
+                              const isActive = f.id === "all" ? bureauMatrixFilters.length === 0 : bureauMatrixFilters.includes(f.id);
+                              return (
+                                <button
+                                  key={f.id}
+                                  onClick={() => toggleBureauFilter(f.id)}
+                                  className={`flex items-center justify-between rounded-xl px-3 py-2 text-xs font-bold transition-all cursor-pointer border ${
+                                    isActive
+                                      ? "bg-blue-50 text-[#1882FF] border-blue-200 shadow-2xs font-extrabold"
+                                      : "bg-slate-50 text-slate-700 border-slate-100 hover:bg-slate-100/80"
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-1.5 min-w-0">
+                                    <span className={`flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded border text-[9px] font-black ${
+                                      isActive ? "bg-[#1882FF] border-[#1882FF] text-white" : "border-slate-300 bg-white"
+                                    }`}>
+                                      {isActive && "✓"}
+                                    </span>
+                                    <span className="truncate">{f.label}</span>
+                                  </div>
+                                  <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-md shrink-0 ml-1 ${
+                                    isActive ? "bg-[#1882FF] text-white" : "bg-white text-slate-500 border border-slate-200"
+                                  }`}>
+                                    {f.count}
+                                  </span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+
+                  {/* Active Multi-Filter Tags when collapsed */}
+                  {!isBureauFilterOpen && (bureauMatrixFilters.length > 0 || bureauSearchQuery) && (
+                    <div className="flex items-center gap-1.5 overflow-x-auto pb-0.5 text-[11px] font-bold scrollbar-none no-scrollbar">
+                      <span className="text-slate-400 font-semibold text-[10px] shrink-0">Active:</span>
+                      {bureauMatrixFilters.map((fId) => {
+                        const label = fId === "mismatch" ? "Mismatches (4)" : fId === "cards" ? "Credit Cards (5)" : "Loans (5)";
+                        return (
+                          <span key={fId} className="flex items-center gap-1 rounded-full bg-blue-50 text-[#1882FF] border border-blue-200 px-2.5 py-0.5 text-[10px] font-extrabold shrink-0">
+                            <span>{label}</span>
+                            <button onClick={() => toggleBureauFilter(fId)} className="hover:text-blue-900 ml-0.5 cursor-pointer">✕</button>
+                          </span>
+                        );
+                      })}
+                      {bureauSearchQuery && (
+                        <span className="flex items-center gap-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200 px-2.5 py-0.5 text-[10px] font-extrabold shrink-0">
+                          <span>"{bureauSearchQuery}"</span>
+                          <button onClick={() => setBureauSearchQuery("")} className="hover:text-slate-900 ml-0.5 cursor-pointer">✕</button>
+                        </span>
+                      )}
+                      <button
+                        onClick={() => {
+                          setBureauMatrixFilters([]);
+                          setBureauSearchQuery("");
+                        }}
+                        className="text-[10px] text-slate-400 hover:text-rose-600 underline font-semibold ml-1 cursor-pointer shrink-0"
+                      >
+                        Clear all
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 {/* 4. CROSS-BUREAU COMPARISON ACCOUNT CARDS */}
@@ -1507,9 +1701,22 @@ export default function PrimeScoreMobileApp({
                     }
                   ]
                     .filter((acc) => {
-                      if (bureauMatrixFilter === "mismatch") return acc.isMismatch;
-                      if (bureauMatrixFilter === "cards") return acc.type === "cards";
-                      if (bureauMatrixFilter === "loans") return acc.type === "loans";
+                      if (bureauMatrixFilters.length > 0) {
+                        const hasMismatch = bureauMatrixFilters.includes("mismatch");
+                        const typeFilters = bureauMatrixFilters.filter((f) => f !== "mismatch");
+
+                        if (hasMismatch && !acc.isMismatch) return false;
+                        if (typeFilters.length > 0 && !typeFilters.includes(acc.type)) return false;
+                      }
+                      if (bureauSearchQuery.trim()) {
+                        const q = bureauSearchQuery.toLowerCase();
+                        const matchTitle = acc.title.toLowerCase().includes(q);
+                        const matchAccount = acc.account.toLowerCase().includes(q);
+                        const matchBank = acc.bank.toLowerCase().includes(q);
+                        const matchNote = acc.note.toLowerCase().includes(q);
+                        const matchDispute = acc.disputeTitle.toLowerCase().includes(q);
+                        if (!matchTitle && !matchAccount && !matchBank && !matchNote && !matchDispute) return false;
+                      }
                       return true;
                     })
                     .map((acc) => {
@@ -1541,36 +1748,72 @@ export default function PrimeScoreMobileApp({
                             </span>
                           </div>
 
-                          {/* 4-Bureau Status Comparison Grid */}
-                          <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
-                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                              <div className="text-slate-400 text-[9px] font-bold uppercase">TransUnion CIBIL</div>
-                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.cibil.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                                {acc.bureaus.cibil.label}
+                          {/* When "All Bureaus" is selected: Show 4-Bureau Comparison Grid */}
+                          {isAllBureaus ? (
+                            <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-3 rounded-xl border border-slate-100">
+                              <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                                <div className="text-slate-400 text-[9px] font-bold uppercase">TransUnion CIBIL</div>
+                                <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.cibil.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                  {acc.bureaus.cibil.label}
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                              <div className="text-slate-400 text-[9px] font-bold uppercase">Experian</div>
-                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.experian.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                                {acc.bureaus.experian.label}
+                              <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                                <div className="text-slate-400 text-[9px] font-bold uppercase">Experian</div>
+                                <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.experian.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                  {acc.bureaus.experian.label}
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                              <div className="text-slate-400 text-[9px] font-bold uppercase">CRIF High Mark</div>
-                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.crif.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                                {acc.bureaus.crif.label}
+                              <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                                <div className="text-slate-400 text-[9px] font-bold uppercase">CRIF High Mark</div>
+                                <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.crif.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                  {acc.bureaus.crif.label}
+                                </div>
                               </div>
-                            </div>
 
-                            <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
-                              <div className="text-slate-400 text-[9px] font-bold uppercase">Equifax</div>
-                              <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.equifax.isError ? "text-rose-600" : "text-emerald-600"}`}>
-                                {acc.bureaus.equifax.label}
+                              <div className="rounded-lg bg-white p-2 border border-slate-100 shadow-xs">
+                                <div className="text-slate-400 text-[9px] font-bold uppercase">Equifax</div>
+                                <div className={`font-extrabold text-xs mt-0.5 ${acc.bureaus.equifax.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                  {acc.bureaus.equifax.label}
+                                </div>
                               </div>
                             </div>
-                          </div>
+                          ) : (
+                            /* When Individual Bureau is selected: Show only that bureau's specific reported status */
+                            (() => {
+                              const bKey = selectedBureauId as "cibil" | "experian" | "crif" | "equifax";
+                              const bureauEntry = acc.bureaus[bKey] || { label: "Active", isError: false };
+                              const bureauName = BUREAUS.find((b) => b.id === selectedBureauId)?.name || "Selected Bureau";
+
+                              return (
+                                <div className={`p-3 rounded-xl border flex items-center justify-between shadow-2xs ${
+                                  bureauEntry.isError 
+                                    ? "bg-rose-50/80 border-rose-200" 
+                                    : "bg-slate-50 border-slate-100"
+                                }`}>
+                                  <div>
+                                    <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                                      {bureauName} Status
+                                    </div>
+                                    <div className={`text-sm font-black mt-0.5 ${bureauEntry.isError ? "text-rose-600" : "text-emerald-600"}`}>
+                                      {bureauEntry.label}
+                                    </div>
+                                  </div>
+
+                                  <div className="text-right">
+                                    <span className={`text-[10px] font-extrabold px-2.5 py-1 rounded-full border ${
+                                      bureauEntry.isError 
+                                        ? "bg-rose-100 text-rose-700 border-rose-300" 
+                                        : "bg-emerald-50 text-emerald-700 border-emerald-200"
+                                    }`}>
+                                      {bureauEntry.isError ? "⚠️ Discrepancy" : "✓ Verified Clean"}
+                                    </span>
+                                  </div>
+                                </div>
+                              );
+                            })()
+                          )}
 
                           {/* Note & Action Footer */}
                           <p className="text-xs text-slate-600 leading-snug">
@@ -1741,8 +1984,57 @@ export default function PrimeScoreMobileApp({
                         </div>
                       );
                     })}
+
+                  {/* Empty State when Search or Filter has 0 matches */}
+                  {[
+                    { id: "hdfc-card", title: "HDFC Millennia Credit Card", account: "•••• 4492", meta: "Limit ₹2,50,000", type: "cards", isMismatch: true, bank: "HDFC Bank", note: "Closed in CIBIL, CRIF & Equifax but incorrectly reported as Active in Experian.", disputeTitle: "HDFC Credit Card Status Mismatch" },
+                    { id: "axis-microloan", title: "Axis Bank / InnoFin Microloan", account: "A/c 4656", meta: "Personal Loan • ₹6,000", type: "loans", isMismatch: true, bank: "Axis Bank", note: "Reported as 30+ DPD late payment in Experian & CRIF; verified on-time in CIBIL.", disputeTitle: "Axis Two-Wheeler / Microloan DPD Discrepancy" },
+                    { id: "icici-amazon", title: "ICICI Bank Amazon Pay Credit Card", account: "•••• 8912", meta: "Limit ₹1,80,000", type: "cards", isMismatch: false, bank: "ICICI Bank", note: "100% on-time payments across all 4 bureaus.", disputeTitle: "ICICI Amazon Pay Audit" },
+                    { id: "sbi-personal-loan", title: "State Bank of India Personal Loan", account: "A/c 9940", meta: "Personal Loan • ₹1,12,000", type: "loans", isMismatch: false, bank: "SBI", note: "18 consecutive on-time EMIs.", disputeTitle: "SBI Personal Loan Audit" },
+                    { id: "bajaj-finserv-emi", title: "Bajaj Finance Consumer EMI", account: "A/c 1120", meta: "Consumer Loan • ₹0", type: "loans", isMismatch: true, bank: "Bajaj Finserv", note: "Missing NOC marked closed in CIBIL, but showing SMA-0 in CRIF.", disputeTitle: "Bajaj Finance Closed NOC Mismatch" },
+                    { id: "kotak-credit-card", title: "Kotak League Platinum Credit Card", account: "•••• 3198", meta: "Limit ₹1,20,000", type: "cards", isMismatch: false, bank: "Kotak Bank", note: "Consistently low utilization (12%).", disputeTitle: "Kotak Card Audit" },
+                    { id: "tata-capital-tw", title: "Tata Capital Two-Wheeler Loan", account: "A/c 7821", meta: "Auto Loan • ₹45,000", type: "loans", isMismatch: true, bank: "Tata Capital", note: "Overdue ₹1,200 recorded erroneously in CRIF High Mark.", disputeTitle: "Tata Capital Erroneous Overdue Remark" },
+                    { id: "idfc-first-wow", title: "IDFC FIRST WOW Credit Card", account: "•••• 6543", meta: "Limit ₹50,000", type: "cards", isMismatch: false, bank: "IDFC FIRST Bank", note: "Clean secured credit card track record.", disputeTitle: "IDFC FIRST WOW Audit" },
+                    { id: "hdb-financial-cd", title: "HDB Financial Services CD Loan", account: "A/c 5410", meta: "Consumer Durable • ₹0", type: "loans", isMismatch: false, bank: "HDBFS", note: "Closed loan with full clean repayment history.", disputeTitle: "HDB Financial Audit" },
+                    { id: "axis-neo-card", title: "Axis Bank Neo Credit Card", account: "•••• 7701", meta: "Limit ₹75,000", type: "cards", isMismatch: false, bank: "Axis Bank", note: "Active account, zero late payments reported.", disputeTitle: "Axis Neo Card Audit" },
+                  ].filter((acc) => {
+                    if (bureauMatrixFilters.length > 0) {
+                      const hasMismatch = bureauMatrixFilters.includes("mismatch");
+                      const typeFilters = bureauMatrixFilters.filter((f) => f !== "mismatch");
+
+                      if (hasMismatch && !acc.isMismatch) return false;
+                      if (typeFilters.length > 0 && !typeFilters.includes(acc.type)) return false;
+                    }
+                    if (bureauSearchQuery.trim()) {
+                      const q = bureauSearchQuery.toLowerCase();
+                      const matchTitle = acc.title.toLowerCase().includes(q);
+                      const matchAccount = acc.account.toLowerCase().includes(q);
+                      const matchBank = acc.bank.toLowerCase().includes(q);
+                      const matchNote = acc.note.toLowerCase().includes(q);
+                      const matchDispute = acc.disputeTitle.toLowerCase().includes(q);
+                      if (!matchTitle && !matchAccount && !matchBank && !matchNote && !matchDispute) return false;
+                    }
+                    return true;
+                  }).length === 0 && (
+                    <div className="rounded-2xl bg-white p-6 border border-slate-200/80 text-center shadow-xs flex flex-col items-center justify-center">
+                      <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-2">
+                        <Search className="h-5 w-5" />
+                      </div>
+                      <div className="text-sm font-extrabold text-slate-800">No matching accounts found</div>
+                      <p className="text-xs text-slate-500 mt-0.5">Try searching with a different keyword or reset filters</p>
+                      <button
+                        onClick={() => {
+                          setBureauMatrixFilters([]);
+                          setBureauSearchQuery("");
+                        }}
+                        className="mt-3 rounded-full bg-[#1882FF] px-4 py-1.5 text-xs font-bold text-white hover:bg-blue-600 transition-colors cursor-pointer"
+                      >
+                        Reset Search & Filters
+                      </button>
+                    </div>
+                  )}
                 </div>
-              </motion.div>
+              </div>
             );
           })()}
 
@@ -3164,322 +3456,729 @@ export default function PrimeScoreMobileApp({
 
           {/* TAB 5: PROFILE / SETTINGS (SWIGGY-STYLE FINTECH REDESIGN - PRIMESCORE THEME) */}
           {activeBottomNav === "profile" && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col gap-3.5 pb-28">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col pb-28">
               
-              {/* 1. TOP HEADER CARD (PrimeScore Brand Styling) */}
-              <div className="rounded-b-[28px] bg-gradient-to-b from-blue-50/80 via-slate-50/50 to-white p-4 pt-3.5 shadow-sm border-b border-slate-200/80">
-                {/* Top Action Controls */}
-                <div className="flex items-center justify-between">
-                  <button
-                    onClick={() => setActiveBottomNav("home")}
-                    className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-800 shadow-sm border border-slate-200/80 active:scale-90 hover:border-blue-200 hover:text-[#1882FF] transition-all cursor-pointer"
-                    title="Back to Home"
-                  >
-                    <ArrowLeft className="h-5 w-5" />
-                  </button>
-
-                  <div className="flex items-center gap-2">
+              {/* =========================================================
+                  SUB-VIEW 1: FULL DEDICATED MEMBERSHIP & SUBSCRIPTION PAGE
+                  ========================================================= */}
+              {profileSubView === "plans" && (
+                <div className="flex flex-col gap-4">
+                  {/* Sticky Top App Bar */}
+                  <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3 shadow-xs">
                     <button
-                      onClick={() => showToast("Opening 24x7 Priority Support")}
-                      className="rounded-full border border-blue-200 bg-white px-3.5 py-1 text-xs font-extrabold text-[#1882FF] shadow-sm hover:bg-blue-50 active:scale-95 transition-colors cursor-pointer"
+                      onClick={() => setProfileSubView("main")}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                    <div className="text-center">
+                      <h2 className="text-sm font-black text-slate-900 tracking-tight">Membership &amp; Plans</h2>
+                      <span className="text-[10px] font-bold text-[#1882FF]">PrimeScore Fintech Protection</span>
+                    </div>
+                    <button
+                      onClick={() => showToast("Opening 24x7 Priority Support Desk")}
+                      className="rounded-full border border-blue-200 bg-blue-50/70 px-3 py-1 text-[11px] font-extrabold text-[#1882FF] hover:bg-blue-100 active:scale-95 transition-all cursor-pointer"
                     >
                       Help
                     </button>
-                    <button
-                      onClick={() => showToast("Account & KYC Preferences")}
-                      className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-90 transition-colors cursor-pointer"
-                    >
-                      <MoreVertical className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-
-                {/* User Identity Details */}
-                <div className="mt-4">
-                  <div className="flex items-center gap-2">
-                    <h1 className="text-2xl font-black tracking-tight text-slate-900">Sawai Singh</h1>
-                    <span className="rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black text-[#1882FF] flex items-center gap-1">
-                      <ShieldCheck className="h-3.5 w-3.5 text-[#1882FF]" /> Prime Pro
-                    </span>
-                  </div>
-                  <div className="mt-1 text-xs font-semibold text-slate-500">
-                    +91 98••••••42 • PAN: <span className="font-mono text-slate-700 font-bold">KMMPS••••R</span>
-                  </div>
-                  <div className="text-xs text-slate-400 font-medium">
-                    sawai.singh@primescore.in
-                  </div>
-                </div>
-              </div>
-
-              {/* Padded Content Body */}
-              <div className="flex flex-col gap-3.5 px-4">
-                
-                {/* 2. PRIME CLUB & PRE-APPROVED LOAN MARQUEE CARD */}
-                <div className="rounded-[26px] bg-white border border-slate-200/80 p-4 shadow-sm hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <span className="text-lg font-black tracking-tighter text-slate-900 flex items-center">
-                        prime<span className="text-[#1882FF] font-black">club</span>
-                      </span>
-                      <button
-                        onClick={() => showToast("Prime Club Benefits Active")}
-                        className="rounded-full bg-[#1882FF] hover:bg-blue-600 px-3 py-0.5 text-[10px] font-black text-white shadow-sm active:scale-95 transition-transform cursor-pointer"
-                      >
-                        Active Pro
-                      </button>
-                    </div>
-                    <span className="text-[10px] font-bold text-slate-400">Renews: Dec 2026</span>
                   </div>
 
-                  <p className="mt-1.5 text-xs font-extrabold text-slate-900">
-                    Pre-approved loans, zero-fee disputes &amp; AI score boosters!
-                  </p>
-                  <p className="text-[10px] text-slate-500">
-                    Unlock institutional borrowing rates &amp; automated bureau remedies
-                  </p>
-
-                  {/* Single Card Auto-scrolling Looping Carousel */}
-                  <div className="mt-3 flex flex-col gap-2">
-                    <div className="flex items-center justify-between px-0.5">
-                      <span className="text-xs font-black text-slate-900 tracking-tight flex items-center gap-1.5">
-                        <Zap className="h-3.5 w-3.5 text-[#1882FF] fill-[#1882FF]" /> Pre-Approved Card Offers
-                      </span>
-                      <span className="text-[10px] font-bold text-[#1882FF] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#1882FF] animate-pulse"></span>
-                        {activeOfferIndex + 1} of 4 • Auto-Rotating
-                      </span>
-                    </div>
-
-                    {/* Single-Card Viewport with Framer Motion Slide Transition */}
-                    <div
-                      className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200/90 shadow-sm bg-slate-900 group select-none"
-                      onMouseEnter={() => setIsOfferPaused(true)}
-                      onMouseLeave={() => setIsOfferPaused(false)}
-                      onTouchStart={() => setIsOfferPaused(true)}
-                      onTouchEnd={() => setIsOfferPaused(false)}
-                    >
-                      <AnimatePresence initial={false} custom={offerDirection}>
-                        <motion.div
-                          key={offerSlide}
-                          custom={offerDirection}
-                          variants={{
-                            enter: (dir: number) => ({
-                              x: dir >= 0 ? "100%" : "-100%",
-                              opacity: 0,
-                            }),
-                            center: {
-                              zIndex: 1,
-                              x: 0,
-                              opacity: 1,
-                            },
-                            exit: (dir: number) => ({
-                              zIndex: 0,
-                              x: dir >= 0 ? "-100%" : "100%",
-                              opacity: 0,
-                            }),
-                          }}
-                          initial="enter"
-                          animate="center"
-                          exit="exit"
-                          transition={{
-                            x: { type: "spring", stiffness: 280, damping: 28 },
-                            opacity: { duration: 0.2 },
-                          }}
-                          drag="x"
-                          dragConstraints={{ left: 0, right: 0 }}
-                          dragElastic={0.6}
-                          onDragEnd={(e, { offset, velocity }) => {
-                            const swipe = Math.abs(offset.x) * velocity.x;
-                            if (swipe < -1000 || offset.x < -40) {
-                              paginateOffer(1);
-                            } else if (swipe > 1000 || offset.x > 40) {
-                              paginateOffer(-1);
-                            }
-                          }}
-                          onClick={() => {
-                            const offers = [
-                              { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
-                              { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
-                              { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
-                              { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
-                            ];
-                            showToast(`Opening application for ${offers[activeOfferIndex].title}`);
-                          }}
-                          className="absolute inset-0 w-full h-full cursor-pointer"
-                        >
-                          {(() => {
-                            const offers = [
-                              { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
-                              { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
-                              { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
-                              { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
-                            ];
-                            const current = offers[activeOfferIndex];
-                            return (
-                              <img
-                                src={current.image}
-                                alt={current.title}
-                                className="w-full h-full object-cover pointer-events-none select-none block"
-                                loading="lazy"
-                              />
-                            );
-                          })()}
-                        </motion.div>
-                      </AnimatePresence>
-
-                      {/* Previous Slide Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          paginateOffer(-1);
-                        }}
-                        className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
-                        aria-label="Previous card offer"
-                      >
-                        <ChevronLeft className="h-4 w-4" />
-                      </button>
-
-                      {/* Next Slide Button */}
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          paginateOffer(1);
-                        }}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
-                        aria-label="Next card offer"
-                      >
-                        <ChevronRight className="h-4 w-4" />
-                      </button>
-                    </div>
-
-                    {/* Pagination Indicator Dots */}
-                    <div className="flex items-center justify-center gap-1.5 pt-0.5">
-                      {[0, 1, 2, 3].map((idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            const dir = idx >= activeOfferIndex ? 1 : -1;
-                            setOfferSlide(([prev]) => [prev + (idx - activeOfferIndex), dir]);
-                          }}
-                          className={`h-1.5 rounded-full transition-all duration-300 ${
-                            activeOfferIndex === idx
-                              ? "w-6 bg-[#1882FF]"
-                              : "w-1.5 bg-slate-300 hover:bg-slate-400"
-                          }`}
-                          aria-label={`Go to card offer ${idx + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Internal Option Rows */}
-                  <div className="mt-3 border-t border-dashed border-slate-200 pt-2.5 flex flex-col gap-1.5">
-                    <div
-                      onClick={() => showToast("Opening Prime Club Benefits & Perks")}
-                      className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-blue-50/50 rounded-xl px-2 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 text-xs font-bold text-slate-800">
-                        <Sparkles className="h-4 w-4 text-[#1882FF]" />
-                        <span>Join Prime Club Perks</span>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
-                    </div>
-
-                    <div
-                      onClick={() => showToast("Enter Bureau Coupon Code")}
-                      className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-blue-50/50 rounded-xl px-2 transition-colors"
-                    >
-                      <div className="flex items-center gap-2.5 text-xs font-bold text-slate-800">
-                        <Ticket className="h-4 w-4 text-[#1882FF]" />
-                        <span>Redeem Membership Coupon</span>
-                      </div>
-                      <ChevronRight className="h-4 w-4 text-slate-400" />
-                    </div>
-                  </div>
-                </div>
-
-                {/* 3. 4 SQUIRCLE QUICK ACTION TILES (Matching reference grid) */}
-                <div className="grid grid-cols-4 gap-2">
-                  <button
-                    onClick={() => showToast("Generating automated score analysis video...")}
-                    className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px] relative overflow-hidden"
-                  >
-                    <div className="relative mb-1 flex items-center justify-center">
-                      <Video className="h-5 w-5 text-[#1882FF]" />
-                      <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                    </div>
-                    <span className="text-[10px] font-extrabold text-slate-800 leading-tight">Score Video</span>
-                    <span className="text-[8px] font-black text-[#1882FF] uppercase mt-0.5">NEW</span>
-                  </button>
-
-                  <button
-                    onClick={() => showToast("Viewing Linked Accounts & Autopay")}
-                    className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px]"
-                  >
-                    <CreditCard className="h-5 w-5 text-slate-700 mb-1" />
-                    <span className="text-[10px] font-extrabold text-slate-800 leading-tight">Payment Modes</span>
-                  </button>
-
-                  <button
-                    onClick={() => setActiveBottomNav("disputes")}
-                    className="relative flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px]"
-                  >
-                    <RotateCcw className="h-5 w-5 text-slate-700 mb-1" />
-                    <span className="text-[10px] font-extrabold text-slate-800 leading-tight">My Disputes</span>
-                    <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1882FF] px-1 text-[8px] font-black text-white shadow-sm ring-1 ring-white">
-                      4
-                    </span>
-                  </button>
-
-                  <button
-                    onClick={() => showToast("Prime Wallet: ₹2,450 Coins Available")}
-                    className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-sm border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px]"
-                  >
-                    <Wallet className="h-5 w-5 text-slate-700 mb-1" />
-                    <span className="text-[10px] font-extrabold text-slate-800 leading-tight">Prime Wallet</span>
-                  </button>
-                </div>
-
-                {/* 4. STRUCTURED LIST MENU CARD (Matching reference list group) */}
-                <div className="rounded-[26px] bg-white border border-slate-200/80 divide-y divide-slate-100 shadow-sm overflow-hidden mb-6">
-                  {[
-                    { icon: Video, label: "Automated Score Analysis Video", tag: "Watch 1-Min", onClick: () => showToast("Preparing your personalized 1-minute credit report breakdown video...") },
-                    { icon: CreditCard, label: "PrimeScore HDFC Bank Credit Card", tag: "Pre-Approved", onClick: () => showToast("Opening HDFC Credit Card Application") },
-                    { icon: Ticket, label: "My Credit Vouchers & Benefits", tag: "₹2,450 Bal", onClick: () => showToast("Viewing Credit Vouchers") },
-                    { icon: FileText, label: "Account & 4-Bureau Statement (PDF)", onClick: () => showToast("Downloading 4-Bureau PDF Dossier...") },
-                    { icon: Briefcase, label: "Corporate Rewards & Salary Perks", onClick: () => showToast("Viewing Corporate Perks") },
-                    { icon: GraduationCap, label: "Credit Score Academy & Guides", onClick: () => showToast("Opening Credit Academy") },
-                    { icon: Bookmark, label: "Saved Dispute Filings & Dossiers", onClick: () => setActiveBottomNav("disputes") },
-                    { icon: Lock, label: "Security, Biometrics & PIN Lock", onClick: () => showToast("Biometric Lock Active") },
-                    { icon: LogOut, label: "Log Out", isDestructive: true, onClick: () => showToast("Logging out...") }
-                  ].map((item, idx) => {
-                    const Icon = item.icon;
-                    return (
-                      <div
-                        key={idx}
-                        onClick={item.onClick}
-                        className="flex items-center justify-between p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3.5">
-                          <Icon className={`h-5 w-5 ${item.isDestructive ? "text-rose-600" : "text-slate-700"}`} strokeWidth={1.8} />
-                          <span className={`text-xs font-bold ${item.isDestructive ? "text-rose-600" : "text-slate-800"}`}>
-                            {item.label}
+                  <div className="flex flex-col gap-4 px-4">
+                    {/* 1. Active Subscription Hero Card (PrimeScore White & Blue Theme) */}
+                    <div className="rounded-[26px] bg-white p-4.5 border border-blue-200/90 shadow-xs relative overflow-hidden">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-black tracking-tighter text-slate-900 flex items-center">
+                            prime<span className="text-[#1882FF] font-black">club</span>
+                          </span>
+                          <span className="rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black text-[#1882FF] flex items-center gap-1">
+                            <Crown className="h-3 w-3 text-[#1882FF]" /> Prime Care
                           </span>
                         </div>
-                        <div className="flex items-center gap-2">
-                          {item.tag && (
-                            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[9px] font-black text-emerald-700 border border-emerald-200">
-                              {item.tag}
-                            </span>
-                          )}
-                          <ChevronRight className="h-4 w-4 text-slate-300" />
+                        <span className="rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-0.5 text-[10px] font-black text-emerald-700">
+                          ACTIVE ✓
+                        </span>
+                      </div>
+
+                      <div className="mt-2.5">
+                        <h3 className="text-base font-black tracking-tight text-slate-900">Prime Care VIP Membership</h3>
+                        <p className="text-xs text-slate-500 font-medium mt-0.5">
+                          All 4 Bureaus Real-Time Sync • Dedicated Priority Legal Advocate Desk • ₹1L Protection
+                        </p>
+                      </div>
+
+                      {/* Renewal and Autopay summary box */}
+                      <div className="mt-3 rounded-2xl bg-slate-50 p-3 border border-slate-100 flex flex-col gap-2">
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-slate-500 font-semibold">Next Renewal: <span className="font-extrabold text-slate-900">15-Dec-2026</span></span>
+                          <span className="text-slate-500 font-semibold">Billing: <span className="font-extrabold text-[#1882FF]">₹2,499/yr</span></span>
+                        </div>
+                        <div className="flex items-center justify-between border-t border-slate-200/70 pt-2 text-[11px]">
+                          <div className="flex items-center gap-1.5 text-slate-700">
+                            <CreditCard className="h-3.5 w-3.5 text-[#1882FF]" />
+                            <span>Autopay on <span className="font-bold text-slate-900">HDFC Bank •••• 4012</span></span>
+                          </div>
+                          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                            ACTIVE
+                          </span>
                         </div>
                       </div>
-                    );
-                  })}
-                </div>
 
-              </div>
+                      <div className="mt-3.5 grid grid-cols-2 gap-2">
+                        <button
+                          onClick={() => showToast("Downloading GST Invoices (FY 2025-26)...")}
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 py-2.5 text-xs font-bold text-slate-700 transition-all cursor-pointer active:scale-95 border border-slate-200/60"
+                        >
+                          <FileText className="h-3.5 w-3.5" /> GST Invoices
+                        </button>
+                        <button
+                          onClick={() => showToast("Opening Autopay & Card Management")}
+                          className="flex items-center justify-center gap-1.5 rounded-xl bg-[#1882FF] hover:bg-blue-600 py-2.5 text-xs font-bold text-white transition-all cursor-pointer shadow-sm active:scale-95"
+                        >
+                          <CreditCard className="h-3.5 w-3.5" /> Payment Modes
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* 2. All 3 Subscription Plans Breakdown */}
+                    <div className="flex flex-col gap-3">
+                      <div className="flex items-center justify-between px-1">
+                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">
+                          Compare &amp; Switch Subscription Plans
+                        </h4>
+                        <span className="text-[10px] font-bold text-slate-400">Annual Billing</span>
+                      </div>
+
+                      {/* Tier 1: Prime One */}
+                      <div className="rounded-2xl bg-white p-4 border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h5 className="text-base font-extrabold text-slate-900">Prime One</h5>
+                              <span className="text-[9px] font-black text-slate-600 bg-slate-100 px-2 py-0.5 rounded-md">
+                                STARTER
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">Essential single-bureau credit tracking</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-black text-slate-900">₹499</span>
+                            <span className="text-[10px] text-slate-400"> /yr</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-col gap-1.5 border-t border-slate-100 pt-2.5 text-xs text-slate-600">
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 1 Bureau Monthly Refresh (CIBIL)
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 1 Dispute Filing / Month
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Basic Score Simulator &amp; Monthly Email
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => showToast("Downgrade to Prime One scheduled for 15-Dec-2026")}
+                          className="mt-3.5 w-full rounded-xl bg-slate-100 hover:bg-slate-200 py-2.5 text-xs font-bold text-slate-700 transition-all active:scale-98 cursor-pointer"
+                        >
+                          Switch to Prime One
+                        </button>
+                      </div>
+
+                      {/* Tier 2: Prime 360 */}
+                      <div className="rounded-2xl bg-white p-4 border border-slate-200 shadow-xs hover:border-blue-300 transition-all">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h5 className="text-base font-extrabold text-slate-900">Prime 360</h5>
+                              <span className="text-[9px] font-black text-[#1882FF] bg-blue-50 border border-blue-200 px-2 py-0.5 rounded-md">
+                                POPULAR
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5">All 4 credit bureaus monitoring &amp; rectifications</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-black text-slate-900">₹1,499</span>
+                            <span className="text-[10px] text-slate-400"> /yr</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-col gap-1.5 border-t border-slate-100 pt-2.5 text-xs text-slate-600">
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> All 4 Bureaus (CIBIL, CRIF, Experian, Equifax)
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Unlimited AI Rectification Filings
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 4-Bureau Comparison Matrix &amp; Simulator
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 48-Hour Bureau Redressal Guarantee
+                          </span>
+                        </div>
+
+                        <button
+                          onClick={() => showToast("Plan change to Prime 360 scheduled for next cycle")}
+                          className="mt-3.5 w-full rounded-xl bg-blue-50 hover:bg-blue-100 text-[#1882FF] border border-blue-200 py-2.5 text-xs font-bold transition-all active:scale-98 cursor-pointer"
+                        >
+                          Switch to Prime 360
+                        </button>
+                      </div>
+
+                      {/* Tier 3: Prime Care VIP (Active) */}
+                      <div className="rounded-2xl bg-gradient-to-b from-blue-50/90 to-white p-4 border-2 border-[#1882FF] shadow-md relative">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h5 className="text-base font-extrabold text-slate-900">Prime Care VIP</h5>
+                              <span className="text-[9px] font-black text-white bg-[#1882FF] px-2 py-0.5 rounded-md shadow-xs">
+                                CURRENT PLAN
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-slate-600 mt-0.5">Lawyer-Assisted Disputes &amp; Real-Time Sync</p>
+                          </div>
+                          <div className="text-right">
+                            <span className="text-lg font-black text-[#1882FF]">₹2,499</span>
+                            <span className="text-[10px] text-slate-500"> /yr</span>
+                          </div>
+                        </div>
+
+                        <div className="mt-3 flex flex-col gap-1.5 border-t border-blue-200/60 pt-2.5 text-xs text-slate-700 font-medium">
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> All 4 Bureaus Instant Real-Time Sync
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Dedicated Priority Legal Advocate Desk (Lawyer Notices)
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Unlimited Priority Bureau Escalations
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> WhatsApp &amp; SMS Instant Sync Alerts
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> ₹1,00,000 Credit Score Protection Insurance
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Pre-Approved Loan &amp; Card Concierge
+                          </span>
+                        </div>
+
+                        <div className="mt-3.5 w-full rounded-xl bg-[#1882FF] py-2.5 text-xs font-black text-white text-center shadow-sm">
+                          Current Active Plan ✓
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. Feature Comparison Table */}
+                    <div className="rounded-2xl bg-white border border-slate-200/90 p-4 shadow-xs">
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-tight mb-3">
+                        Tier Comparison Matrix
+                      </h4>
+                      <div className="overflow-x-auto">
+                        <table className="w-full text-left text-xs">
+                          <thead>
+                            <tr className="border-b border-slate-200 text-[10px] font-black uppercase text-slate-400">
+                              <th className="pb-2">Feature</th>
+                              <th className="pb-2 text-center">One</th>
+                              <th className="pb-2 text-center">360</th>
+                              <th className="pb-2 text-center text-[#1882FF]">Care VIP</th>
+                            </tr>
+                          </thead>
+                          <tbody className="divide-y divide-slate-100 text-slate-700 text-[11px]">
+                            <tr>
+                              <td className="py-2 font-medium">Bureaus Monitored</td>
+                              <td className="py-2 text-center">1 (CIBIL)</td>
+                              <td className="py-2 text-center">All 4</td>
+                              <td className="py-2 text-center font-bold text-[#1882FF]">4 (Real-time)</td>
+                            </tr>
+                            <tr>
+                              <td className="py-2 font-medium">Dispute Filings</td>
+                              <td className="py-2 text-center">1 / mo</td>
+                              <td className="py-2 text-center">Unlimited</td>
+                              <td className="py-2 text-center font-bold text-[#1882FF]">Advocate Assisted</td>
+                            </tr>
+                            <tr>
+                              <td className="py-2 font-medium">WhatsApp Sync Alerts</td>
+                              <td className="py-2 text-center text-slate-300">—</td>
+                              <td className="py-2 text-center text-slate-300">—</td>
+                              <td className="py-2 text-center font-bold text-emerald-600">✓ Instant</td>
+                            </tr>
+                            <tr>
+                              <td className="py-2 font-medium">Score Insurance</td>
+                              <td className="py-2 text-center text-slate-300">—</td>
+                              <td className="py-2 text-center text-slate-300">—</td>
+                              <td className="py-2 text-center font-bold text-[#1882FF]">₹1,00,000</td>
+                            </tr>
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+
+                    {/* 4. GST Tax Invoices History */}
+                    <div className="rounded-2xl bg-white border border-slate-200/90 p-4 shadow-xs mb-4">
+                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-tight mb-2.5">
+                        Billing &amp; Tax Invoices (GST)
+                      </h4>
+                      <div className="flex flex-col divide-y divide-slate-100">
+                        <div className="flex items-center justify-between py-2.5">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block">Prime Care VIP (Annual)</span>
+                            <span className="text-[10px] text-slate-400">15-Dec-2025 • ₹2,499 • INV-2025-8942</span>
+                          </div>
+                          <button
+                            onClick={() => showToast("Downloading Invoice INV-2025-8942 (PDF)...")}
+                            className="rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-200 cursor-pointer"
+                          >
+                            PDF ↓
+                          </button>
+                        </div>
+                        <div className="flex items-center justify-between py-2.5">
+                          <div>
+                            <span className="text-xs font-bold text-slate-800 block">Prime 360 Plan (Annual)</span>
+                            <span className="text-[10px] text-slate-400">15-Dec-2024 • ₹1,499 • INV-2024-3419</span>
+                          </div>
+                          <button
+                            onClick={() => showToast("Downloading Invoice INV-2024-3419 (PDF)...")}
+                            className="rounded-lg bg-slate-100 px-2.5 py-1 text-[10px] font-bold text-slate-700 hover:bg-slate-200 cursor-pointer"
+                          >
+                            PDF ↓
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =========================================================
+                  SUB-VIEW 2: DEDICATED SCORE ANALYSIS VIDEO PAGE
+                  ========================================================= */}
+              {profileSubView === "video" && (
+                <div className="flex flex-col gap-4">
+                  {/* Sticky Top App Bar */}
+                  <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200/80 bg-white/95 backdrop-blur-md px-4 py-3 shadow-xs">
+                    <button
+                      onClick={() => setProfileSubView("main")}
+                      className="flex h-9 w-9 items-center justify-center rounded-full bg-slate-100 text-slate-800 hover:bg-slate-200 active:scale-95 transition-all cursor-pointer"
+                    >
+                      <ArrowLeft className="h-5 w-5" />
+                    </button>
+                    <div className="text-center">
+                      <h2 className="text-sm font-black text-slate-900 tracking-tight">Score Analysis Video</h2>
+                      <span className="text-[10px] font-bold text-[#1882FF]">Personalized 1-Min Breakdown</span>
+                    </div>
+                    <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                  </div>
+
+                  <div className="flex flex-col gap-4 px-4">
+                    {/* Interactive Video Player Mockup */}
+                    <div className="relative aspect-[16/9] w-full rounded-2xl bg-slate-950 overflow-hidden shadow-lg border border-slate-800 flex flex-col justify-between p-4">
+                      <div className="flex items-center justify-between z-10">
+                        <span className="rounded-full bg-white/20 backdrop-blur-md px-2.5 py-0.5 text-[9px] font-black text-white uppercase">
+                          AI Dossier Breakdown
+                        </span>
+                        <span className="text-[10px] font-bold text-slate-300">1:14 Min</span>
+                      </div>
+
+                      {/* Play Button Overlay */}
+                      <div className="my-auto flex flex-col items-center justify-center z-10">
+                        <button
+                          onClick={() => showToast("Playing personalized 4-bureau credit audit video...")}
+                          className="flex h-14 w-14 items-center justify-center rounded-full bg-[#1882FF] text-white shadow-xl hover:scale-105 active:scale-95 transition-all cursor-pointer"
+                        >
+                          <Play className="h-6 w-6 fill-white ml-0.5" />
+                        </button>
+                        <span className="mt-2 text-xs font-bold text-white tracking-wide">
+                          Sawai Singh • Composite 771/900
+                        </span>
+                      </div>
+
+                      {/* Video Player Scrub Bar */}
+                      <div className="z-10 flex items-center gap-2">
+                        <div className="h-1.5 flex-1 rounded-full bg-slate-700 overflow-hidden">
+                          <div className="h-full w-1/3 bg-[#1882FF] rounded-full" />
+                        </div>
+                        <span className="text-[9px] font-mono text-slate-400">0:24 / 1:14</span>
+                      </div>
+                    </div>
+
+                    {/* Key Chapters & Insights */}
+                    <div className="rounded-2xl bg-white p-4 border border-slate-200/90 shadow-xs flex flex-col gap-3">
+                      <h4 className="text-xs font-black uppercase tracking-wider text-slate-800">
+                        Video Chapters &amp; Takeaways
+                      </h4>
+
+                      <div className="flex flex-col gap-2.5 text-xs text-slate-700">
+                        <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 p-2.5 border border-slate-100">
+                          <span className="rounded-md bg-blue-100 px-1.5 py-0.5 text-[10px] font-mono font-bold text-[#1882FF]">0:00</span>
+                          <div>
+                            <span className="font-bold text-slate-900 block">4-Bureau Cross-Audit</span>
+                            <span className="text-[11px] text-slate-500">CIBIL 785 • CRIF 762 • Experian 720 • Equifax 817</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 rounded-xl bg-amber-50/70 p-2.5 border border-amber-200/60">
+                          <span className="rounded-md bg-amber-100 px-1.5 py-0.5 text-[10px] font-mono font-bold text-amber-800">0:25</span>
+                          <div>
+                            <span className="font-bold text-slate-900 block">4 Critical Discrepancies Identified</span>
+                            <span className="text-[11px] text-amber-800">Late mark mismatch, outdated credit limit &amp; ghost inquiry.</span>
+                          </div>
+                        </div>
+
+                        <div className="flex items-start gap-2.5 rounded-xl bg-emerald-50/70 p-2.5 border border-emerald-200/60">
+                          <span className="rounded-md bg-emerald-100 px-1.5 py-0.5 text-[10px] font-mono font-bold text-emerald-800">0:50</span>
+                          <div>
+                            <span className="font-bold text-slate-900 block">Advocate Escalation Strategy</span>
+                            <span className="text-[11px] text-emerald-800">Direct Section 21 legal notices will boost composite score to 819+.</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => setActiveBottomNav("disputes")}
+                        className="mt-1 w-full rounded-xl bg-[#1882FF] py-3 text-xs font-extrabold text-white text-center shadow-md shadow-blue-500/20 active:scale-98 transition-all cursor-pointer"
+                      >
+                        File Priority Advocate Rectification (+48 Pts) →
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* =========================================================
+                  SUB-VIEW 3: MAIN PROFILE & SETTINGS HUB
+                  ========================================================= */}
+              {profileSubView === "main" && (
+                <>
+                  {/* 1. TOP HEADER CARD (PrimeScore Brand Styling) */}
+                  <div className="rounded-b-[28px] bg-gradient-to-b from-blue-50/80 via-slate-50/50 to-white p-4 pt-3.5 shadow-xs border-b border-slate-200/80">
+                    {/* Top Action Controls */}
+                    <div className="flex items-center justify-between">
+                      <button
+                        onClick={() => setActiveBottomNav("home")}
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-white text-slate-800 shadow-xs border border-slate-200/80 active:scale-90 hover:border-blue-200 hover:text-[#1882FF] transition-all cursor-pointer"
+                        title="Back to Home"
+                      >
+                        <ArrowLeft className="h-5 w-5" />
+                      </button>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => showToast("Opening 24x7 Priority Support")}
+                          className="rounded-full border border-blue-200 bg-white px-3.5 py-1 text-xs font-extrabold text-[#1882FF] shadow-xs hover:bg-blue-50 active:scale-95 transition-colors cursor-pointer"
+                        >
+                          Help
+                        </button>
+                        <button
+                          onClick={() => showToast("Account & KYC Preferences")}
+                          className="flex h-8 w-8 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-900 active:scale-90 transition-colors cursor-pointer"
+                        >
+                          <MoreVertical className="h-4 w-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* User Identity Details */}
+                    <div className="mt-4">
+                      <div className="flex items-center gap-2">
+                        <h1 className="text-2xl font-black tracking-tight text-slate-900">Sawai Singh</h1>
+                        <button
+                          onClick={() => setProfileSubView("plans")}
+                          className="rounded-full bg-blue-50 border border-blue-200 px-2.5 py-0.5 text-[10px] font-black text-[#1882FF] flex items-center gap-1 hover:bg-blue-100 active:scale-95 transition-all cursor-pointer shadow-xs"
+                        >
+                          <Crown className="h-3.5 w-3.5 text-[#1882FF]" /> Prime Care VIP
+                        </button>
+                      </div>
+                      <div className="mt-1 text-xs font-semibold text-slate-500">
+                        +91 98••••••42 • PAN: <span className="font-mono text-slate-700 font-bold">KMMPS••••R</span>
+                      </div>
+                      <div className="text-xs text-slate-400 font-medium">
+                        sawai.singh@primescore.in
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Padded Content Body */}
+                  <div className="flex flex-col gap-3.5 px-4 mt-3.5">
+                    
+                    {/* 2. PRIME CLUB & PRE-APPROVED LOAN MARQUEE CARD */}
+                    <div className="rounded-[26px] bg-white border border-slate-200/80 p-4 shadow-xs hover:shadow-sm transition-shadow">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-black tracking-tighter text-slate-900 flex items-center">
+                            prime<span className="text-[#1882FF] font-black">club</span>
+                          </span>
+                          <button
+                            onClick={() => setProfileSubView("plans")}
+                            className="rounded-full bg-[#1882FF] hover:bg-blue-600 px-3 py-0.5 text-[10px] font-black text-white shadow-xs active:scale-95 transition-transform cursor-pointer flex items-center gap-1"
+                          >
+                            <Crown className="h-3 w-3" /> Prime Care
+                          </button>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">Renews: Dec 2026</span>
+                      </div>
+
+                      <p className="mt-1.5 text-xs font-extrabold text-slate-900">
+                        Pre-approved loans, zero-fee disputes &amp; AI score boosters!
+                      </p>
+                      <p className="text-[10px] text-slate-500">
+                        Unlock institutional borrowing rates &amp; automated bureau remedies
+                      </p>
+
+                      {/* Single Card Auto-scrolling Looping Carousel */}
+                      <div className="mt-3 flex flex-col gap-2">
+                        <div className="flex items-center justify-between px-0.5">
+                          <span className="text-xs font-black text-slate-900 tracking-tight flex items-center gap-1.5">
+                            <Zap className="h-3.5 w-3.5 text-[#1882FF] fill-[#1882FF]" /> Pre-Approved Card Offers
+                          </span>
+                          <span className="text-[10px] font-bold text-[#1882FF] bg-blue-50 border border-blue-200/80 px-2 py-0.5 rounded-full flex items-center gap-1">
+                            <span className="h-1.5 w-1.5 rounded-full bg-[#1882FF] animate-pulse"></span>
+                            {activeOfferIndex + 1} of 4 • Auto-Rotating
+                          </span>
+                        </div>
+
+                        {/* Single-Card Viewport with Framer Motion Slide Transition */}
+                        <div
+                          className="relative w-full aspect-[16/10] overflow-hidden rounded-2xl border border-slate-200/90 shadow-xs bg-slate-900 group select-none"
+                          onMouseEnter={() => setIsOfferPaused(true)}
+                          onMouseLeave={() => setIsOfferPaused(false)}
+                          onTouchStart={() => setIsOfferPaused(true)}
+                          onTouchEnd={() => setIsOfferPaused(false)}
+                        >
+                          <AnimatePresence initial={false} custom={offerDirection}>
+                            <motion.div
+                              key={offerSlide}
+                              custom={offerDirection}
+                              variants={{
+                                enter: (dir: number) => ({
+                                  x: dir >= 0 ? "100%" : "-100%",
+                                  opacity: 0,
+                                }),
+                                center: {
+                                  zIndex: 1,
+                                  x: 0,
+                                  opacity: 1,
+                                },
+                                exit: (dir: number) => ({
+                                  zIndex: 0,
+                                  x: dir >= 0 ? "-100%" : "100%",
+                                  opacity: 0,
+                                }),
+                              }}
+                              initial="enter"
+                              animate="center"
+                              exit="exit"
+                              transition={{
+                                x: { type: "spring", stiffness: 280, damping: 28 },
+                                opacity: { duration: 0.2 },
+                              }}
+                              drag="x"
+                              dragConstraints={{ left: 0, right: 0 }}
+                              dragElastic={0.6}
+                              onDragEnd={(e, { offset, velocity }) => {
+                                const swipe = Math.abs(offset.x) * velocity.x;
+                                if (swipe < -1000 || offset.x < -40) {
+                                  paginateOffer(1);
+                                } else if (swipe > 1000 || offset.x > 40) {
+                                  paginateOffer(-1);
+                                }
+                              }}
+                              onClick={() => {
+                                const offers = [
+                                  { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
+                                  { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
+                                  { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
+                                  { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
+                                ];
+                                showToast(`Opening application for ${offers[activeOfferIndex].title}`);
+                              }}
+                              className="absolute inset-0 w-full h-full cursor-pointer"
+                            >
+                              {(() => {
+                                const offers = [
+                                  { id: "sbi-cashback", title: "SBI Cashback Card", image: "/offers-carousel/sbi-cashback.png" },
+                                  { id: "tata-neu-hdfc", title: "Tata Neu HDFC Card", image: "/offers-carousel/tata-neu-hdfc.png" },
+                                  { id: "hdfc-regalia-gold", title: "HDFC Regalia Gold Card", image: "/offers-carousel/hdfc-regalia-gold.png" },
+                                  { id: "axis-privilege", title: "Axis Bank Privilege Card", image: "/offers-carousel/axis-privilege.png" }
+                                ];
+                                const current = offers[activeOfferIndex];
+                                return (
+                                  <img
+                                    src={current.image}
+                                    alt={current.title}
+                                    className="w-full h-full object-cover pointer-events-none select-none block"
+                                    loading="lazy"
+                                  />
+                                );
+                              })()}
+                            </motion.div>
+                          </AnimatePresence>
+
+                          {/* Previous Slide Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              paginateOffer(-1);
+                            }}
+                            className="absolute left-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
+                            aria-label="Previous card offer"
+                          >
+                            <ChevronLeft className="h-4 w-4" />
+                          </button>
+
+                          {/* Next Slide Button */}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              paginateOffer(1);
+                            }}
+                            className="absolute right-2 top-1/2 -translate-y-1/2 z-10 h-7 w-7 rounded-full bg-black/45 backdrop-blur-sm text-white flex items-center justify-center opacity-70 hover:opacity-100 hover:bg-black/70 transition-all active:scale-95 shadow-md"
+                            aria-label="Next card offer"
+                          >
+                            <ChevronRight className="h-4 w-4" />
+                          </button>
+                        </div>
+
+                        {/* Pagination Indicator Dots */}
+                        <div className="flex items-center justify-center gap-1.5 pt-0.5">
+                          {[0, 1, 2, 3].map((idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                const dir = idx >= activeOfferIndex ? 1 : -1;
+                                setOfferSlide(([prev]) => [prev + (idx - activeOfferIndex), dir]);
+                              }}
+                              className={`h-1.5 rounded-full transition-all duration-300 ${
+                                activeOfferIndex === idx
+                                  ? "w-6 bg-[#1882FF]"
+                                  : "w-1.5 bg-slate-300 hover:bg-slate-400"
+                              }`}
+                              aria-label={`Go to card offer ${idx + 1}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Internal Option Rows */}
+                      <div className="mt-3 border-t border-dashed border-slate-200 pt-2.5 flex flex-col gap-1.5">
+                        <div
+                          onClick={() => setProfileSubView("plans")}
+                          className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-blue-50/50 rounded-xl px-2 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 text-xs font-bold text-slate-800">
+                            <Sparkles className="h-4 w-4 text-[#1882FF]" />
+                            <span>Join Prime Club Perks &amp; Plans</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-slate-400" />
+                        </div>
+
+                        <div
+                          onClick={() => showToast("Enter Bureau Coupon Code")}
+                          className="flex items-center justify-between py-1.5 cursor-pointer hover:bg-blue-50/50 rounded-xl px-2 transition-colors"
+                        >
+                          <div className="flex items-center gap-2.5 text-xs font-bold text-slate-800">
+                            <Ticket className="h-4 w-4 text-[#1882FF]" />
+                            <span>Redeem Membership Coupon</span>
+                          </div>
+                          <ChevronRight className="h-4 w-4 text-slate-400" />
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* 3. 4 SQUIRCLE QUICK ACTION TILES (Authentic, no duplicates) */}
+                    <div className="grid grid-cols-4 gap-2">
+                      <button
+                        onClick={() => setProfileSubView("plans")}
+                        className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-blue-200 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/60 hover:border-blue-300 min-h-[76px] relative overflow-hidden"
+                      >
+                        <div className="relative mb-1 flex items-center justify-center">
+                          <Crown className="h-5 w-5 text-[#1882FF]" />
+                          <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-blue-500 animate-ping" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-900 leading-tight">My Plan</span>
+                        <span className="text-[8px] font-black text-[#1882FF] uppercase mt-0.5">Care VIP</span>
+                      </button>
+
+                      <button
+                        onClick={() => setProfileSubView("video")}
+                        className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px] relative overflow-hidden"
+                      >
+                        <div className="relative mb-1 flex items-center justify-center">
+                          <Video className="h-5 w-5 text-[#1882FF]" />
+                          <span className="absolute -top-1 -right-1 flex h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                        </div>
+                        <span className="text-[10px] font-extrabold text-slate-800 leading-tight">Score Video</span>
+                        <span className="text-[8px] font-black text-[#1882FF] uppercase mt-0.5">NEW</span>
+                      </button>
+
+                      <button
+                        onClick={() => setActiveBottomNav("disputes")}
+                        className="relative flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px]"
+                      >
+                        <RotateCcw className="h-5 w-5 text-slate-700 mb-1" />
+                        <span className="text-[10px] font-extrabold text-slate-800 leading-tight">My Disputes</span>
+                        <span className="absolute -top-1 -right-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#1882FF] px-1 text-[8px] font-black text-white shadow-xs ring-1 ring-white">
+                          4
+                        </span>
+                      </button>
+
+                      <button
+                        onClick={() => showToast("Prime Points: 2,450 Points Available (₹1 = 1 Pt)")}
+                        className="flex flex-col items-center justify-center rounded-2xl bg-white p-2.5 shadow-xs border border-slate-200/80 active:scale-95 transition-all text-center cursor-pointer hover:bg-blue-50/40 hover:border-blue-200 min-h-[76px]"
+                      >
+                        <Coins className="h-5 w-5 text-amber-500 mb-1" />
+                        <span className="text-[10px] font-extrabold text-slate-800 leading-tight">Prime Points</span>
+                        <span className="text-[8px] font-bold text-amber-600 mt-0.5">2,450 Pts</span>
+                      </button>
+                    </div>
+
+                    {/* 4. STRUCTURED LIST MENU CARD (Fintech subscription settings & features) */}
+                    <div className="rounded-[26px] bg-white border border-slate-200/80 divide-y divide-slate-100 shadow-xs overflow-hidden mb-6">
+                      {[
+                        { icon: Crown, label: "Membership & Subscription Plans", tag: "Prime Care VIP", tagColor: "bg-blue-50 text-[#1882FF] border-blue-200", onClick: () => setProfileSubView("plans") },
+                        { icon: Video, label: "Automated Score Analysis Video", tag: "Watch 1-Min", tagColor: "bg-indigo-50 text-indigo-700 border-indigo-200", onClick: () => setProfileSubView("video") },
+                        { icon: CreditCard, label: "PrimeScore HDFC Bank Credit Card", tag: "Pre-Approved", tagColor: "bg-emerald-50 text-emerald-700 border-emerald-200", onClick: () => showToast("Opening HDFC Credit Card Application") },
+                        { icon: CreditCard, label: "Payment Modes & Autopay Settings", tag: "Autopay ON", tagColor: "bg-emerald-50 text-emerald-700 border-emerald-200", onClick: () => showToast("Managing Autopay & Payment Methods") },
+                        { icon: FileText, label: "Account & 4-Bureau Statement (PDF)", tag: "Download", tagColor: "bg-slate-100 text-slate-700 border-slate-200", onClick: () => showToast("Downloading 4-Bureau PDF Dossier...") },
+                        { icon: Gavel, label: "Priority Legal Advocate Escalation Desk", tag: "VIP Care", tagColor: "bg-amber-50 text-amber-700 border-amber-200", onClick: () => showToast("Connecting to Priority Legal Advocate Escalation Desk...") },
+                        { icon: ShieldCheck, label: "KYC & Verified Credit Identity", tag: "PAN Verified ✓", tagColor: "bg-emerald-50 text-emerald-700 border-emerald-200", onClick: () => showToast("PAN and KYC status: Verified") },
+                        { icon: Bell, label: "WhatsApp & Bureau Sync Notifications", onClick: () => showToast("Notification settings opened") },
+                        { icon: Lock, label: "Security, Biometrics & PIN Lock", onClick: () => showToast("Biometric Lock Active") },
+                        { icon: LogOut, label: "Log Out", isDestructive: true, onClick: () => showToast("Logging out...") }
+                      ].map((item, idx) => {
+                        const Icon = item.icon;
+                        return (
+                          <div
+                            key={idx}
+                            onClick={item.onClick}
+                            className="flex items-center justify-between p-4 hover:bg-slate-50 active:bg-slate-100 transition-colors cursor-pointer"
+                          >
+                            <div className="flex items-center gap-3.5">
+                              <Icon className={`h-5 w-5 ${item.isDestructive ? "text-rose-600" : "text-slate-700"}`} strokeWidth={1.8} />
+                              <span className={`text-xs font-bold ${item.isDestructive ? "text-rose-600" : "text-slate-800"}`}>
+                                {item.label}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              {item.tag && (
+                                <span className={`rounded-full px-2 py-0.5 text-[9px] font-black border ${item.tagColor || "bg-emerald-50 text-emerald-700 border-emerald-200"}`}>
+                                  {item.tag}
+                                </span>
+                              )}
+                              <ChevronRight className="h-4 w-4 text-slate-300" />
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                  </div>
+                </>
+              )}
             </motion.div>
           )}
 
