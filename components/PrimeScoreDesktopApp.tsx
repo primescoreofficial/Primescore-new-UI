@@ -1092,24 +1092,26 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
           </div>
         </div>
 
-        {/* Sidebar Footer (User row with Prime Care VIP, Points, Help) */}
+        {/* Sidebar Footer (User profile button) */}
         <div className="border-t border-[#E4E9F2] p-3 bg-white">
           <button
             onClick={() => {
               setActiveNav("account");
               setAccountSubNav("profile");
             }}
-            className="flex w-full items-center gap-3 rounded-xl p-2 hover:bg-[#F4F7FC] transition-colors text-left cursor-pointer"
+            className="group flex w-full items-center gap-3 rounded-xl p-2 hover:bg-[#F4F7FC] transition-colors text-left cursor-pointer"
           >
             <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#1882FF] text-[13px] font-bold text-white shadow-xs">
               SS
             </div>
             <div className="flex-1 min-w-0">
-              <div className="truncate text-[14px] font-semibold text-[#101828]">Sawai Singh</div>
-              <div className="flex items-center gap-1.5 text-[12px] text-[#667085]">
-                <span className="text-[#1882FF] font-medium">Prime Care VIP</span>
+              <div className="truncate text-[14px] font-semibold text-[#101828] group-hover:text-[#1882FF] transition-colors">
+                Sawai Singh
+              </div>
+              <div className="flex items-center gap-1.5 text-[12px] text-[#667085] truncate">
+                <span className="font-semibold text-[#1882FF]">Prime VIP</span>
                 <span>·</span>
-                <span className="font-semibold text-[#101828]">2,450 pts</span>
+                <span className="font-medium text-[#475467] tabular-nums">2,450 pts</span>
               </div>
             </div>
           </button>
