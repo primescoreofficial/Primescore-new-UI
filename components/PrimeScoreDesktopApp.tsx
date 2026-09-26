@@ -3671,48 +3671,48 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                   </div>
                 </div>
 
-                {/* 2. Payment history (last 36 months) DPD grid */}
-                <div>
-                  <h3 className="text-[14px] font-bold text-[#101828] mb-2.5">Payment history (last 36 months)</h3>
-                  <div className="space-y-2 rounded-xl border border-[#E4E9F2] p-3.5 bg-[#F4F7FC]">
-                    {(["cibil", "crif", "experian", "equifax"] as const).map((b) => (
-                      <div key={b} className="flex items-center gap-2.5">
-                        <span className="w-16 text-[11px] font-bold uppercase text-[#667085]">{b}</span>
-                        <div className="flex-1 flex gap-0.5 overflow-x-auto py-1">
-                          {selectedDrawerAccount.dpdHistory[b].map((dpd, i) => (
-                            <div
-                              key={i}
-                              onMouseEnter={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setHoveredDpd({
-                                  bureau: b.toUpperCase(),
-                                  month: MONTH_LABELS[i],
-                                  dpd,
-                                  x: rect.left + rect.width / 2,
-                                  y: rect.top - 6,
-                                });
-                              }}
-                              onMouseMove={(e) => {
-                                const rect = e.currentTarget.getBoundingClientRect();
-                                setHoveredDpd({
-                                  bureau: b.toUpperCase(),
-                                  month: MONTH_LABELS[i],
-                                  dpd,
-                                  x: rect.left + rect.width / 2,
-                                  y: rect.top - 6,
-                                });
-                              }}
-                              onMouseLeave={() => setHoveredDpd(null)}
-                              className={`h-[18px] w-[10px] min-w-[10px] min-h-[18px] shrink-0 rounded-xs cursor-pointer transition-transform duration-75 hover:scale-125 hover:z-20 hover:shadow-md ${
-                                dpd === "000"
-                                  ? "bg-[#067647] hover:bg-[#08965a]"
-                                  : "bg-[#B42318] hover:bg-[#d92d20]"
-                              }`}
-                            />
-                          ))}
+                  {/* 2. Payment history (last 36 months) DPD grid */}
+                  <div>
+                    <h3 className="text-[14px] font-bold text-[#101828] mb-2.5">Payment history (last 36 months)</h3>
+                    <div className="space-y-2 rounded-xl border border-[#E4E9F2] p-3.5 bg-[#F4F7FC]">
+                      {(["cibil", "crif", "experian", "equifax"] as const).map((b) => (
+                        <div key={b} className="flex items-center gap-2.5">
+                          <span className="w-14 shrink-0 text-[11px] font-bold uppercase text-[#667085]">{b}</span>
+                          <div className="flex-1 flex items-center gap-[2px] w-full py-0.5">
+                            {selectedDrawerAccount.dpdHistory[b].map((dpd, i) => (
+                              <div
+                                key={i}
+                                onMouseEnter={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setHoveredDpd({
+                                    bureau: b.toUpperCase(),
+                                    month: MONTH_LABELS[i],
+                                    dpd,
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 6,
+                                  });
+                                }}
+                                onMouseMove={(e) => {
+                                  const rect = e.currentTarget.getBoundingClientRect();
+                                  setHoveredDpd({
+                                    bureau: b.toUpperCase(),
+                                    month: MONTH_LABELS[i],
+                                    dpd,
+                                    x: rect.left + rect.width / 2,
+                                    y: rect.top - 6,
+                                  });
+                                }}
+                                onMouseLeave={() => setHoveredDpd(null)}
+                                className={`flex-1 h-[18px] min-w-0 rounded-[1.5px] cursor-pointer transition-transform duration-75 hover:scale-125 hover:z-20 hover:shadow-md ${
+                                  dpd === "000"
+                                    ? "bg-[#067647] hover:bg-[#08965a]"
+                                    : "bg-[#B42318] hover:bg-[#d92d20]"
+                                }`}
+                              />
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                     <div className="mt-2.5 flex items-center justify-between text-[11px] text-[#667085] pt-2.5 border-t border-[#E4E9F2]">
                       <span>Oct 2023</span>
                       <span className="font-semibold text-[#101828]">Green = On time · Red = 30 days late</span>
