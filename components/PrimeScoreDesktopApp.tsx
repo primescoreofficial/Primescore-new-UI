@@ -3967,9 +3967,9 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
       <AnimatePresence>
         {hoveredDpd && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.92, y: 3 }}
+            initial={{ opacity: 0, scale: 0.95, y: 2 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.92, y: 3 }}
+            exit={{ opacity: 0, scale: 0.95, y: 2 }}
             transition={{ duration: 0.05 }}
             style={{
               position: "fixed",
@@ -3977,29 +3977,29 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
               top: hoveredDpd.y,
               transform: "translate(-50%, -100%)",
             }}
-            className="pointer-events-none z-[120] flex flex-col gap-0.5 rounded-xl bg-[#0B1220] px-3 py-2 text-white shadow-2xl border border-slate-700 whitespace-nowrap"
+            className="pointer-events-none z-[120] flex items-center gap-2 rounded-xl bg-white/92 backdrop-blur-md px-3 py-1.5 text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,0.1)] border border-[#E4E9F2] whitespace-nowrap text-[12px]"
           >
-            <div className="flex items-center justify-between gap-3 text-[11px] font-bold text-slate-300">
+            <div className="flex items-center gap-1.5 font-bold text-[#344054]">
               <span>{hoveredDpd.bureau}</span>
-              <span className="font-mono text-slate-400 font-medium">{hoveredDpd.month}</span>
+              <span className="text-[#CBD5E1]">·</span>
+              <span className="font-medium text-[#667085]">{hoveredDpd.month}</span>
             </div>
-            <div className="flex items-center gap-1.5 mt-0.5 text-[12px] font-bold">
+            <div className="h-3 w-[1px] bg-[#E4E9F2]" />
+            <div className="flex items-center gap-1.5">
               {hoveredDpd.dpd === "000" ? (
                 <>
-                  <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
-                  <span className="text-emerald-400">On time payment</span>
-                  <span className="text-[11px] font-mono text-slate-400 font-normal">· 0 days late</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#067647]" />
+                  <span className="font-semibold text-[#067647]">On time</span>
                 </>
               ) : (
                 <>
-                  <span className="h-2 w-2 rounded-full bg-rose-400 shrink-0 animate-pulse" />
-                  <span className="text-rose-400">30 days late</span>
-                  <span className="text-[11px] font-mono text-slate-400 font-normal">· DPD: {hoveredDpd.dpd}</span>
+                  <span className="h-1.5 w-1.5 rounded-full bg-[#B42318]" />
+                  <span className="font-semibold text-[#B42318]">30 days late</span>
                 </>
               )}
             </div>
-            {/* Tooltip bottom pointer arrow */}
-            <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 border-4 border-transparent border-t-[#0B1220]" />
+            {/* Subtle bottom arrow */}
+            <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 border-4 border-transparent border-t-white/95" />
           </motion.div>
         )}
       </AnimatePresence>
