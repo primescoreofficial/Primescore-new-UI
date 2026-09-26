@@ -2455,7 +2455,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                           <td className="py-4 px-3 text-[#475467]">{o.fee}</td>
                           <td className="py-4 px-4 text-right">
                             <button
-                              onClick={() => showToast(`Applied for ${o.lender} ${o.prod}. Advocate follow-up initiated.`)}
+                              onClick={() => showToast(`Applied for ${o.lender} ${o.prod}. Primescore Helper follow-up initiated.`)}
                               className="h-9 rounded-xl bg-[#0B1220] px-4 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
                             >
                               Apply
@@ -2889,7 +2889,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                     { id: "notifications", label: "Notifications", icon: Bell },
                     { id: "security", label: "Security & Privacy", icon: Lock },
                     { id: "documents", label: "Documents & Statements", icon: FileText },
-                    { id: "priority_help", label: "Priority help (VIP)", icon: Headphones },
+                    { id: "priority_help", label: "Primescore Helper", icon: Headphones },
                     { id: "help", label: "Help & Support", icon: HelpCircle },
                   ].map((sub) => {
                     const Icon = sub.icon;
@@ -3115,7 +3115,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                           <div className="mt-5 grid grid-cols-2 gap-2 text-[13px] text-[#101828]">
                             <div className="flex items-center gap-2">✓ All 4 credit bureaus updated daily</div>
                             <div className="flex items-center gap-2">✓ Zero-fee unlimited legal disputes</div>
-                            <div className="flex items-center gap-2">✓ Dedicated senior credit advocate</div>
+                            <div className="flex items-center gap-2">✓ Dedicated senior Primescore helper</div>
                             <div className="flex items-center gap-2">✓ Priority RBI Ombudsman escalation</div>
                           </div>
                         </div>
@@ -3148,7 +3148,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                               <div className="mt-3 text-[#101828] font-medium space-y-1.5">
                                 <div>• All 4 bureaus live sync</div>
                                 <div>• Unlimited legal disputes</div>
-                                <div>• 1-on-1 legal advocate</div>
+                                <div>• 1-on-1 Primescore helper</div>
                               </div>
                             </div>
                           </div>
@@ -3315,24 +3315,24 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                       <div className="rounded-2xl border border-[#E4E9F2] bg-white p-6 shadow-xs space-y-5">
                         <div>
                           <div className="flex items-center gap-2">
-                            <h2 className="text-[18px] font-bold text-[#101828]">Priority Legal Advocate Desk</h2>
+                            <h2 className="text-[18px] font-bold text-[#101828]">Primescore Helper</h2>
                             <span className="rounded-full bg-[#ECFDF3] px-2.5 py-0.5 text-[11px] font-bold text-[#067647]">
                               Included in Prime Care VIP
                             </span>
                           </div>
                           <p className="text-[13px] text-[#475467] mt-1">
-                            Direct 1-on-1 legal consultation with Chief Credit Advocate for complex rectifications & ombudsman filings.
+                            Direct 1-on-1 consultation with your dedicated Primescore Helper for complex rectifications & ombudsman filings.
                           </p>
                         </div>
 
                         <div className="p-5 rounded-2xl bg-[#EEF4FF]/50 border border-[#D0E2FF] flex items-center justify-between">
                           <div>
-                            <div className="text-[14px] font-bold text-[#101828]">Senior Advocate Assigned: Adv. Parth Sharma</div>
+                            <div className="text-[14px] font-bold text-[#101828]">Senior Helper Assigned: Parth Sharma</div>
                             <div className="text-[12px] text-[#667085] mt-0.5">Average response time: &lt; 2 hours on business days</div>
                           </div>
                           <button
-                            onClick={() => showToast("Priority consultation booked for tomorrow 11:00 AM.")}
-                            className="rounded-xl bg-[#1882FF] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#1474E8]"
+                            onClick={() => showToast("Priority consultation booked with your Primescore Helper.")}
+                            className="rounded-xl bg-[#1882FF] px-4 py-2.5 text-[13px] font-semibold text-white hover:bg-[#1474E8] cursor-pointer"
                           >
                             Schedule call →
                           </button>
