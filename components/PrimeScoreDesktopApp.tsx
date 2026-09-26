@@ -2911,6 +2911,16 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                       </button>
                     );
                   })}
+
+                  <div className="pt-1 mt-1 border-t border-[#E4E9F2]">
+                    <button
+                      onClick={() => showToast("Signed out of your Primescore account.")}
+                      className="flex w-full items-center gap-3 rounded-xl px-3.5 py-2.5 text-[14px] font-semibold text-[#D92D20] hover:bg-[#FEF3F2] transition-colors cursor-pointer text-left group"
+                    >
+                      <LogOut className="h-4 w-4 shrink-0 text-[#F04438] group-hover:text-[#D92D20] transition-colors" />
+                      <span className="truncate">Sign out</span>
+                    </button>
+                  </div>
                 </div>
 
                 {/* Center Content Area (6 Cols / Max 880px) + Right Rail (3 Cols / 320px) */}
