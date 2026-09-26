@@ -3689,7 +3689,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                                     month: MONTH_LABELS[i],
                                     dpd,
                                     x: rect.left + rect.width / 2,
-                                    y: rect.top - 6,
+                                    y: rect.bottom + 8,
                                   });
                                 }}
                                 onMouseMove={(e) => {
@@ -3699,7 +3699,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                                     month: MONTH_LABELS[i],
                                     dpd,
                                     x: rect.left + rect.width / 2,
-                                    y: rect.top - 6,
+                                    y: rect.bottom + 8,
                                   });
                                 }}
                                 onMouseLeave={() => setHoveredDpd(null)}
@@ -3963,43 +3963,43 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
         )}
       </AnimatePresence>
 
-      {/* Instant Floating Tooltip for DPD Grid Cursor Tracking */}
+      {/* Instant Floating Tooltip for DPD Grid Cursor Tracking (Below Cursor) */}
       <AnimatePresence>
         {hoveredDpd && (
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 2 }}
+            initial={{ opacity: 0, scale: 0.95, y: -3 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: 2 }}
+            exit={{ opacity: 0, scale: 0.95, y: -3 }}
             transition={{ duration: 0.05 }}
             style={{
               position: "fixed",
               left: hoveredDpd.x,
               top: hoveredDpd.y,
-              transform: "translate(-50%, -100%)",
+              transform: "translate(-50%, 0)",
             }}
-            className="pointer-events-none z-[120] flex items-center gap-2 rounded-xl bg-white/92 backdrop-blur-md px-3 py-1.5 text-[#101828] shadow-[0_4px_16px_rgba(16,24,40,0.1)] border border-[#E4E9F2] whitespace-nowrap text-[12px]"
+            className="pointer-events-none z-[120] flex flex-col gap-1 rounded-xl bg-white/95 backdrop-blur-md px-3.5 py-2 text-[#101828] shadow-[0_8px_24px_rgba(16,24,40,0.12)] border border-[#E4E9F2] whitespace-nowrap text-[12px]"
           >
-            <div className="flex items-center gap-1.5 font-bold text-[#344054]">
+            {/* Top pointing arrow */}
+            <div className="absolute left-1/2 -top-1 -translate-x-1/2 border-4 border-transparent border-b-white" />
+
+            <div className="flex items-center justify-between gap-4 text-[11px] font-bold text-[#344054]">
               <span>{hoveredDpd.bureau}</span>
-              <span className="text-[#CBD5E1]">·</span>
-              <span className="font-medium text-[#667085]">{hoveredDpd.month}</span>
+              <span className="font-mono text-[#667085] font-medium">{hoveredDpd.month}</span>
             </div>
-            <div className="h-3 w-[1px] bg-[#E4E9F2]" />
-            <div className="flex items-center gap-1.5">
+
+            <div className="flex items-center gap-1.5 text-[12px] font-semibold pt-1 border-t border-[#F2F4F7]">
               {hoveredDpd.dpd === "000" ? (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#067647]" />
-                  <span className="font-semibold text-[#067647]">On time</span>
+                  <span className="h-2 w-2 rounded-full bg-[#067647]" />
+                  <span className="text-[#067647]">On time payment</span>
                 </>
               ) : (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-[#B42318]" />
-                  <span className="font-semibold text-[#B42318]">30 days late</span>
+                  <span className="h-2 w-2 rounded-full bg-[#B42318]" />
+                  <span className="text-[#B42318]">30 days late</span>
                 </>
               )}
             </div>
-            {/* Subtle bottom arrow */}
-            <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 border-4 border-transparent border-t-white/95" />
           </motion.div>
         )}
       </AnimatePresence>
