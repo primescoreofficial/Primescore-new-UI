@@ -2,46 +2,62 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Universal scrollbar styling for Firefox, Chrome, Edge, Safari */
+html,
+body,
+:root {
+  background-color: #F4F7FC;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 #F4F7FC;
+}
+
+* {
+  box-sizing: border-box;
+  -webkit-tap-highlight-color: transparent;
+  scrollbar-width: thin;
+  scrollbar-color: #CBD5E1 transparent;
+}
+
+/* Universal WebKit Custom Scrollbars */
+::-webkit-scrollbar,
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track {
+  background: #F4F7FC;
+}
+
+::-webkit-scrollbar-thumb,
+*::-webkit-scrollbar-thumb {
+  background-color: #CBD5E1;
+  border-radius: 9999px;
+  border: 2px solid #F4F7FC;
+  transition: background-color 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover,
+*::-webkit-scrollbar-thumb:hover {
+  background-color: #94A3B8;
+}
+
+::-webkit-scrollbar-thumb:active,
+*::-webkit-scrollbar-thumb:active {
+  background-color: #1882FF;
+}
+
+::-webkit-scrollbar-corner,
+*::-webkit-scrollbar-corner {
+  background: #F4F7FC;
+}
+
 @layer base {
-  * {
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-    scrollbar-width: thin;
-    scrollbar-color: #CBD5E1 transparent;
-  }
   body {
-    background-color: #080D1A;
+    background-color: #F4F7FC;
     color: #0F172A;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11", "tnum" on;
-  }
-
-  /* Universal WebKit Custom Scrollbars (Chrome, Edge, Safari) */
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-
-  ::-webkit-scrollbar-track {
-    background: transparent;
-    border-radius: 9999px;
-  }
-
-  ::-webkit-scrollbar-thumb {
-    background-color: #CBD5E1;
-    border-radius: 9999px;
-    transition: background-color 0.2s ease-in-out;
-  }
-
-  ::-webkit-scrollbar-thumb:hover {
-    background-color: #94A3B8;
-  }
-
-  ::-webkit-scrollbar-thumb:active {
-    background-color: #1882FF;
-  }
-
-  ::-webkit-scrollbar-corner {
-    background: transparent;
   }
 }
 

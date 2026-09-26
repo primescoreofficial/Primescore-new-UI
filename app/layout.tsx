@@ -40,7 +40,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className={jakarta.variable}>
-      <body className="antialiased min-h-screen bg-[#080D1A] font-sans">
+      <body className="antialiased min-h-screen bg-[#F4F7FC] font-sans">
         <PwaRegister />
         {children}
       </body>
