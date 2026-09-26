@@ -694,6 +694,15 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
   const [disputeEvidenceName, setDisputeEvidenceName] = useState<string | null>(null);
   const [disputeDraftNotice, setDisputeDraftNotice] = useState<string>("");
 
+  // Instant DPD Grid Hover Tooltip State
+  const [hoveredDpd, setHoveredDpd] = useState<{
+    bureau: string;
+    month: string;
+    dpd: string;
+    x: number;
+    y: number;
+  } | null>(null);
+
   // Bureaus table filters
   const [bureauTab, setBureauTab] = useState<"all" | "cibil" | "crif" | "experian" | "equifax">("all");
   const [bureauSearch, setBureauSearch] = useState<string>("");
@@ -3669,13 +3678,35 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                     {(["cibil", "crif", "experian", "equifax"] as const).map((b) => (
                       <div key={b} className="flex items-center gap-2.5">
                         <span className="w-16 text-[11px] font-bold uppercase text-[#667085]">{b}</span>
-                        <div className="flex-1 flex gap-0.5 overflow-x-auto">
+                        <div className="flex-1 flex gap-0.5 overflow-x-auto py-1">
                           {selectedDrawerAccount.dpdHistory[b].map((dpd, i) => (
                             <div
                               key={i}
-                              title={`${MONTH_LABELS[i]}: ${dpd === "000" ? "On time" : "30 days late"}`}
-                              className={`h-4 w-2.5 rounded-xs flex items-center justify-center text-[7px] font-bold ${
-                                dpd === "000" ? "bg-[#067647] text-white" : "bg-[#B42318] text-white"
+                              onMouseEnter={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoveredDpd({
+                                  bureau: b.toUpperCase(),
+                                  month: MONTH_LABELS[i],
+                                  dpd,
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top - 6,
+                                });
+                              }}
+                              onMouseMove={(e) => {
+                                const rect = e.currentTarget.getBoundingClientRect();
+                                setHoveredDpd({
+                                  bureau: b.toUpperCase(),
+                                  month: MONTH_LABELS[i],
+                                  dpd,
+                                  x: rect.left + rect.width / 2,
+                                  y: rect.top - 6,
+                                });
+                              }}
+                              onMouseLeave={() => setHoveredDpd(null)}
+                              className={`h-[18px] w-[10px] min-w-[10px] min-h-[18px] shrink-0 rounded-xs cursor-pointer transition-transform duration-75 hover:scale-125 hover:z-20 hover:shadow-md ${
+                                dpd === "000"
+                                  ? "bg-[#067647] hover:bg-[#08965a]"
+                                  : "bg-[#B42318] hover:bg-[#d92d20]"
                               }`}
                             />
                           ))}
@@ -3929,6 +3960,47 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
               </div>
             </motion.div>
           </div>
+        )}
+      </AnimatePresence>
+
+      {/* Instant Floating Tooltip for DPD Grid Cursor Tracking */}
+      <AnimatePresence>
+        {hoveredDpd && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.92, y: 3 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.92, y: 3 }}
+            transition={{ duration: 0.05 }}
+            style={{
+              position: "fixed",
+              left: hoveredDpd.x,
+              top: hoveredDpd.y,
+              transform: "translate(-50%, -100%)",
+            }}
+            className="pointer-events-none z-[120] flex flex-col gap-0.5 rounded-xl bg-[#0B1220] px-3 py-2 text-white shadow-2xl border border-slate-700 whitespace-nowrap"
+          >
+            <div className="flex items-center justify-between gap-3 text-[11px] font-bold text-slate-300">
+              <span>{hoveredDpd.bureau}</span>
+              <span className="font-mono text-slate-400 font-medium">{hoveredDpd.month}</span>
+            </div>
+            <div className="flex items-center gap-1.5 mt-0.5 text-[12px] font-bold">
+              {hoveredDpd.dpd === "000" ? (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-emerald-400 shrink-0" />
+                  <span className="text-emerald-400">On time payment</span>
+                  <span className="text-[11px] font-mono text-slate-400 font-normal">· 0 days late</span>
+                </>
+              ) : (
+                <>
+                  <span className="h-2 w-2 rounded-full bg-rose-400 shrink-0 animate-pulse" />
+                  <span className="text-rose-400">30 days late</span>
+                  <span className="text-[11px] font-mono text-slate-400 font-normal">· DPD: {hoveredDpd.dpd}</span>
+                </>
+              )}
+            </div>
+            {/* Tooltip bottom pointer arrow */}
+            <div className="absolute left-1/2 -bottom-1 -translate-x-1/2 border-4 border-transparent border-t-[#0B1220]" />
+          </motion.div>
         )}
       </AnimatePresence>
     </div>
