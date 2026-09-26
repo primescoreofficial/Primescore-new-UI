@@ -1864,14 +1864,14 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                   <table className="w-full text-left text-[14px]">
                     <thead>
                       <tr className="border-b border-[#E4E9F2] text-[12px] font-bold uppercase tracking-wider text-[#667085]">
-                        <th className="pb-3 pl-2">Account / lender</th>
-                        <th className="pb-3">Type</th>
-                        <th className="pb-3">Sanctioned</th>
-                        <th className="pb-3">CIBIL</th>
-                        <th className="pb-3">CRIF</th>
-                        <th className="pb-3">Experian</th>
-                        <th className="pb-3">Equifax</th>
-                        <th className="pb-3 pr-2 text-right">Action</th>
+                        <th className="pb-3 pl-3 whitespace-nowrap">Account / lender</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">Type</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">Sanctioned</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">CIBIL</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">CRIF</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">Experian</th>
+                        <th className="pb-3 px-3 whitespace-nowrap">Equifax</th>
+                        <th className="pb-3 pr-3 text-right whitespace-nowrap">Action</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-[#E4E9F2]">
@@ -1881,50 +1881,50 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                           onClick={() => setSelectedDrawerAccount(acc)}
                           className="hover:bg-[#F4F7FC] cursor-pointer transition-colors"
                         >
-                          <td className="py-4 pl-2">
+                          <td className="py-4 pl-3">
                             <div className="flex items-center gap-3">
-                              <BankLogo lender={acc.lender} className="w-8 h-8" />
-                              <div>
-                                <strong className="font-bold text-[#101828] block">{acc.lender}</strong>
-                                <span className="text-[12px] text-[#667085]">{acc.product} <span className="font-mono">{acc.accountNo}</span></span>
+                              <BankLogo lender={acc.lender} className="w-8 h-8 shrink-0" />
+                              <div className="min-w-0">
+                                <strong className="font-bold text-[#101828] block truncate">{acc.lender}</strong>
+                                <span className="text-[12px] text-[#667085] truncate block">{acc.product} <span className="font-mono">{acc.accountNo}</span></span>
                               </div>
                             </div>
                           </td>
-                          <td className="py-4 text-[#475467]">{acc.typeLabel}</td>
-                          <td className="py-4 font-mono tabular-nums text-[#101828] font-semibold">{acc.sanctionLimitFormatted}</td>
-                          <td className="py-4">
-                            <span className={acc.cibilMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                              {acc.cibilStatus} {acc.cibilMismatch && "⚠"}
+                          <td className="py-4 px-3 text-[#475467] whitespace-nowrap">{acc.typeLabel}</td>
+                          <td className="py-4 px-3 font-mono tabular-nums text-[#101828] font-semibold whitespace-nowrap">{acc.sanctionLimitFormatted}</td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.cibilMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.cibilStatus} {acc.cibilMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
                             </span>
                           </td>
-                          <td className="py-4">
-                            <span className={acc.crifMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                              {acc.crifStatus} {acc.crifMismatch && "⚠"}
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.crifMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.crifStatus} {acc.crifMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
                             </span>
                           </td>
-                          <td className="py-4">
-                            <span className={acc.experianMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                              {acc.experianStatus} {acc.experianMismatch && "⚠"}
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.experianMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.experianStatus} {acc.experianMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
                             </span>
                           </td>
-                          <td className="py-4">
-                            <span className={acc.equifaxMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                              {acc.equifaxStatus} {acc.equifaxMismatch && "⚠"}
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.equifaxMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.equifaxStatus} {acc.equifaxMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
                             </span>
                           </td>
-                          <td className="py-4 pr-2 text-right">
+                          <td className="py-4 pr-3 text-right whitespace-nowrap">
                             {acc.status === "Mismatch" ? (
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
                                   openDisputeModalForAccount(acc);
                                 }}
-                                className="h-8 rounded-xl bg-[#0B1220] px-3.5 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                                className="inline-flex items-center justify-center h-8 rounded-xl bg-[#0B1220] px-4 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer whitespace-nowrap shrink-0 shadow-xs"
                               >
                                 Fix this
                               </button>
                             ) : (
-                              <span className="rounded-full bg-[#ECFDF3] px-2.5 py-1 text-[12px] font-bold text-[#067647]">
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ECFDF3] px-2.5 py-1 text-[12px] font-bold text-[#067647] border border-[#ABEFC6] whitespace-nowrap">
                                 Matched ✓
                               </span>
                             )}
@@ -2046,94 +2046,94 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                 <table className="w-full text-left text-[14px]">
                   <thead>
                     <tr className="border-b border-[#E4E9F2] bg-[#F4F7FC] text-[12px] font-bold uppercase tracking-wider text-[#667085]">
-                      <th className="py-3.5 px-4">Account / lender</th>
-                      <th className="py-3.5 px-3">Type</th>
-                      <th className="py-3.5 px-3">Limit / Sanctioned</th>
-                      <th className="py-3.5 px-3">CIBIL (743)</th>
-                      <th className="py-3.5 px-3">CRIF (757)</th>
-                      <th className="py-3.5 px-3">Experian (770)</th>
-                      <th className="py-3.5 px-3">Equifax (817)</th>
-                      <th className="py-3.5 px-3">Status</th>
-                      <th className="py-3.5 px-4 text-right">Action</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-[#E4E9F2]">
-                    {filteredBureausAccounts.map((acc) => (
-                      <tr
-                        key={acc.id}
-                        onClick={() => setSelectedDrawerAccount(acc)}
-                        className="hover:bg-[#F4F7FC] cursor-pointer transition-colors"
-                      >
-                        <td className="py-4 px-4">
-                          <div className="flex items-center gap-3">
-                            <BankLogo lender={acc.lender} className="w-9 h-9" />
-                            <div>
-                              <strong className="font-bold text-[#101828] block">{acc.lender}</strong>
-                              <span className="text-[12px] text-[#667085]">{acc.product} <span className="font-mono">{acc.accountNo}</span></span>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-4 px-3 text-[#475467]">{acc.typeLabel}</td>
-                        <td className="py-4 px-3 font-mono tabular-nums text-[#101828] font-bold">{acc.sanctionLimitFormatted}</td>
-                        <td className="py-4 px-3">
-                          <span className={acc.cibilMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                            {acc.cibilStatus} {acc.cibilMismatch && "⚠"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-3">
-                          <span className={acc.crifMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                            {acc.crifStatus} {acc.crifMismatch && "⚠"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-3">
-                          <span className={acc.experianMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                            {acc.experianStatus} {acc.experianMismatch && "⚠"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-3">
-                          <span className={acc.equifaxMismatch ? "rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px]" : "text-[#475467]"}>
-                            {acc.equifaxStatus} {acc.equifaxMismatch && "⚠"}
-                          </span>
-                        </td>
-                        <td className="py-4 px-3">
-                          {acc.status === "Mismatch" ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[12px] font-bold text-[#B42318]">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#B42318]" />
-                              Doesn&apos;t match
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ECFDF3] px-2.5 py-1 text-[12px] font-bold text-[#067647]">
-                              <span className="h-1.5 w-1.5 rounded-full bg-[#067647]" />
-                              Matched
-                            </span>
-                          )}
-                        </td>
-                        <td className="py-4 px-4 text-right">
-                          {acc.status === "Mismatch" ? (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                openDisputeModalForAccount(acc);
-                              }}
-                              className="h-8 rounded-xl bg-[#0B1220] px-3.5 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                              Fix this
-                            </button>
-                          ) : (
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setSelectedDrawerAccount(acc);
-                              }}
-                              className="text-[13px] text-[#667085] hover:text-[#101828] font-semibold"
-                            >
-                              Details →
-                            </button>
-                          )}
-                        </td>
+                      <th className="py-3.5 px-4 whitespace-nowrap">Account / lender</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">Type</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">Limit / Sanctioned</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">CIBIL (743)</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">CRIF (757)</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">Experian (770)</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">Equifax (817)</th>
+                        <th className="py-3.5 px-3 whitespace-nowrap">Status</th>
+                        <th className="py-3.5 px-4 text-right whitespace-nowrap">Action</th>
                       </tr>
-                    ))}
-                  </tbody>
+                    </thead>
+                    <tbody className="divide-y divide-[#E4E9F2]">
+                      {filteredBureausAccounts.map((acc) => (
+                        <tr
+                          key={acc.id}
+                          onClick={() => setSelectedDrawerAccount(acc)}
+                          className="hover:bg-[#F4F7FC] cursor-pointer transition-colors"
+                        >
+                          <td className="py-4 px-4">
+                            <div className="flex items-center gap-3">
+                              <BankLogo lender={acc.lender} className="w-9 h-9 shrink-0" />
+                              <div className="min-w-0">
+                                <strong className="font-bold text-[#101828] block truncate">{acc.lender}</strong>
+                                <span className="text-[12px] text-[#667085] truncate block">{acc.product} <span className="font-mono">{acc.accountNo}</span></span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-4 px-3 text-[#475467] whitespace-nowrap">{acc.typeLabel}</td>
+                          <td className="py-4 px-3 font-mono tabular-nums text-[#101828] font-bold whitespace-nowrap">{acc.sanctionLimitFormatted}</td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.cibilMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.cibilStatus} {acc.cibilMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
+                            </span>
+                          </td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.crifMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.crifStatus} {acc.crifMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
+                            </span>
+                          </td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.experianMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.experianStatus} {acc.experianMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
+                            </span>
+                          </td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            <span className={acc.equifaxMismatch ? "inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-2.5 py-1 text-[#B42318] font-semibold text-[12px] border border-[#FECDCA] whitespace-nowrap" : "text-[#475467] text-[13px] whitespace-nowrap"}>
+                              {acc.equifaxStatus} {acc.equifaxMismatch && <AlertTriangle className="h-3.5 w-3.5 text-[#B42318] shrink-0" />}
+                            </span>
+                          </td>
+                          <td className="py-4 px-3 whitespace-nowrap">
+                            {acc.status === "Mismatch" ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#FEF3F2] px-3 py-1 text-[12px] font-bold text-[#B42318] border border-[#FECDCA] whitespace-nowrap shrink-0">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#B42318] shrink-0" />
+                                Doesn&apos;t match
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#ECFDF3] px-3 py-1 text-[12px] font-bold text-[#067647] border border-[#ABEFC6] whitespace-nowrap shrink-0">
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#067647] shrink-0" />
+                                Matched
+                              </span>
+                            )}
+                          </td>
+                          <td className="py-4 px-4 text-right whitespace-nowrap">
+                            {acc.status === "Mismatch" ? (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openDisputeModalForAccount(acc);
+                                }}
+                                className="inline-flex items-center justify-center h-8 rounded-xl bg-[#0B1220] px-4 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer whitespace-nowrap shrink-0 shadow-xs"
+                              >
+                                Fix this
+                              </button>
+                            ) : (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setSelectedDrawerAccount(acc);
+                                }}
+                                className="inline-flex items-center justify-end text-[13px] text-[#667085] hover:text-[#101828] font-semibold whitespace-nowrap hover:underline"
+                              >
+                                Details →
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
                 </table>
               </div>
             </div>
