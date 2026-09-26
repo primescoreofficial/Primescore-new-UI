@@ -826,7 +826,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
       const lower = userText.toLowerCase();
       if (lower.includes("800") || lower.includes("reach") || lower.includes("score")) {
         reply =
-          "Hi Sawai! Your PrimeScore is 771. Reaching 800+ is well within reach with these 3 steps:\n\n1. Fix the HDFC card mismatch in Experian (+35 pts)\n2. Bring card usage down to 15% by paying ₹85,000 (+18 pts)\n3. Avoid new hard loan applications for 90 days (+8 pts).\n\nProjected score: 832/900.";
+          "Hi Sawai! Your Primescore is 771. Reaching 800+ is well within reach with these 3 steps:\n\n1. Fix the HDFC card mismatch in Experian (+35 pts)\n2. Bring card usage down to 15% by paying ₹85,000 (+18 pts)\n3. Avoid new hard loan applications for 90 days (+8 pts).\n\nProjected score: 832/900.";
         citation = "Based on your 4 reports, updated 3:48 PM";
         actionLabel = "Open Score planner";
         actionNav = "simulator";
@@ -838,7 +838,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
         actionNav = "disputes";
       } else if (lower.includes("dispute") || lower.includes("cibil") || lower.includes("fix")) {
         reply =
-          "Raising a dispute with PrimeScore takes under a minute. We prepare the formal letter under RBI CICRA norms and track the statutory 30-day resolution deadline for you.";
+          "Raising a dispute with Primescore takes under a minute. We prepare the formal letter under RBI CICRA norms and track the statutory 30-day resolution deadline for you.";
         citation = "Based on RBI CICRA guidelines";
         actionLabel = "View My disputes";
         actionNav = "disputes";
@@ -849,7 +849,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
         actionLabel = "Compare loan offers";
         actionNav = "loans";
       } else {
-        reply = `Hi Sawai, I reviewed your complete credit file (PrimeScore: 771). You have 16 accounts reported across 4 bureaus with 100% on-time payments. Everything regarding "${userText}" has been verified.`;
+        reply = `Hi Sawai, I reviewed your complete credit file (Primescore: 771). You have 16 accounts reported across 4 bureaus with 100% on-time payments. Everything regarding "${userText}" has been verified.`;
         citation = "Based on your consolidated reports";
         actionLabel = "View Bureau reports";
         actionNav = "bureaus";
@@ -971,14 +971,17 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
            A.2 APP SHELL: SIDEBAR (232px, WARM, 15px LABELS, PARTH HIGHLIGHTED)
            ========================================================= */}
       <aside className="fixed bottom-0 left-0 top-0 flex w-[232px] flex-col border-r border-[#E4E9F2] bg-white z-30 select-none">
-        {/* Top: Logo mark + wordmark only */}
-        <div className="flex h-16 items-center gap-3 border-b border-[#E4E9F2] px-5">
-          <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#1882FF] text-white font-extrabold text-base shadow-xs">
-            P
-          </div>
-          <span className="text-[17px] font-bold tracking-tight text-[#101828]">
-            Prime<span className="text-[#1882FF]">Score</span>
-          </span>
+        {/* Top: Official Primescore Logo */}
+        <div
+          onClick={() => setActiveNav("home")}
+          className="flex h-16 items-center px-5 cursor-pointer border-b border-[#E4E9F2]"
+        >
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/Logo who works on white bg.png"
+            alt="Primescore"
+            className="h-[34px] max-h-[34px] w-auto object-contain"
+          />
         </div>
 
         {/* Navigation Menu */}
@@ -1110,7 +1113,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
       <header className="fixed top-0 left-[232px] right-0 z-20 flex h-16 items-center justify-between border-b border-[#E4E9F2] bg-white px-8">
         {/* Left: Breadcrumbs */}
         <div className="flex items-center gap-2 text-[14px] text-[#667085]">
-          <span className="font-medium text-[#101828]">PrimeScore</span>
+          <span className="font-medium text-[#101828]">Primescore</span>
           <span>/</span>
           <span className="capitalize font-semibold text-[#101828]">
             {activeNav === "home"
@@ -1265,14 +1268,6 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
               )}
             </AnimatePresence>
           </div>
-
-          <button
-            onClick={() => setTheme(theme === "light" ? "dark" : "light")}
-            className="rounded-xl p-2 text-[#667085] hover:bg-[#F4F7FC] hover:text-[#101828] cursor-pointer"
-            title="Toggle theme"
-          >
-            {theme === "light" ? <Moon className="h-4 w-4" /> : <Sun className="h-4 w-4" />}
-          </button>
         </div>
       </header>
 
@@ -1292,7 +1287,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                 <div>
                   <h1 className="text-[24px] font-bold tracking-tight text-[#101828]">Home</h1>
                   <p className="text-[15px] text-[#475467] mt-1">
-                    Good afternoon, Sawai. Your PrimeScore is <strong className="text-[#101828]">771</strong>. Fixing
+                    Good afternoon, Sawai. Your Primescore is <strong className="text-[#101828]">771</strong>. Fixing
                     4 mismatches could add up to <strong className="text-[#067647]">48 points</strong>.
                   </p>
                 </div>
@@ -1326,7 +1321,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
 
                     <div className="w-full mb-1 relative z-10">
                       <span className="text-[13px] font-semibold text-[#344054]">
-                        Hey Sawai, here is your PrimeScore
+                        Hey Sawai, here is your Primescore
                       </span>
                     </div>
 
@@ -1478,7 +1473,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                           <div className="font-semibold text-[#101828]">Unweighted 4-Bureau Average</div>
                           <div>(743 + 757 + 770 + 817) ÷ 4 = 771.75 → <strong>771</strong></div>
                           <p className="text-[12px] text-[#667085] mt-1">
-                            PrimeScore is an aggregate credit index across licensed bureaus and not a single bureau-issued score.
+                            Primescore is an aggregate credit index across licensed bureaus and not a single bureau-issued score.
                           </p>
                         </div>
                       )}
