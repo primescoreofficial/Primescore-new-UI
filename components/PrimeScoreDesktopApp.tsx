@@ -4580,12 +4580,16 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
            ========================================================= */}
       <AnimatePresence>
         {isDisputeModalOpen && disputeModalAccount && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B1220]/40 p-4">
+          <div
+            onClick={() => setIsDisputeModalOpen(false)}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#0B1220]/40 backdrop-blur-[2px] p-4 cursor-pointer"
+          >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.98, opacity: 0 }}
-              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(16,24,40,0.12)] border border-[#E4E9F2]"
+              className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-[0_8px_24px_rgba(16,24,40,0.12)] border border-[#E4E9F2] cursor-default"
             >
               {/* Modal Header */}
               <div className="flex items-center justify-between border-b border-[#E4E9F2] pb-3.5">
@@ -4717,12 +4721,16 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
            ========================================================= */}
       <AnimatePresence>
         {isCommandOpen && (
-          <div className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-[#0B1220]/40 p-4">
+          <div
+            onClick={() => setIsCommandOpen(false)}
+            className="fixed inset-0 z-50 flex items-start justify-center pt-24 bg-[#0B1220]/40 backdrop-blur-[2px] p-4 cursor-pointer"
+          >
             <motion.div
+              onClick={(e) => e.stopPropagation()}
               initial={{ scale: 0.98, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.98, opacity: 0 }}
-              className="w-full max-w-xl rounded-2xl bg-white shadow-[0_8px_24px_rgba(16,24,40,0.12)] border border-[#E4E9F2] overflow-hidden"
+              className="w-full max-w-xl rounded-2xl bg-white shadow-[0_8px_24px_rgba(16,24,40,0.12)] border border-[#E4E9F2] overflow-hidden cursor-default"
             >
               <div className="flex items-center gap-3 border-b border-[#E4E9F2] px-4 py-3.5">
                 <Search className="h-5 w-5 text-[#667085]" />
