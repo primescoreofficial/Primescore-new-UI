@@ -214,6 +214,7 @@ export default function PrimeScoreMobileApp({
   const [bureauSearchQuery, setBureauSearchQuery] = useState<string>("");
   const [isBureauFilterOpen, setIsBureauFilterOpen] = useState<boolean>(false);
   const [disputeFilter, setDisputeFilter] = useState<"all" | "action" | "review" | "resolved">("all");
+  const [mobileBillingCycle, setMobileBillingCycle] = useState<"monthly" | "yearly">("yearly");
   const [expandedAccountIds, setExpandedAccountIds] = useState<Record<string, boolean>>({});
   const toggleAccountExpand = (id: string) => setExpandedAccountIds((prev) => ({ ...prev, [id]: !prev[id] }));
   const [[offerSlide, offerDirection], setOfferSlide] = useState<[number, number]>([0, 1]);
@@ -3543,10 +3544,41 @@ export default function PrimeScoreMobileApp({
                     {/* 2. All 3 Subscription Plans Breakdown */}
                     <div className="flex flex-col gap-3">
                       <div className="flex items-center justify-between px-1">
-                        <h4 className="text-xs font-black uppercase tracking-wider text-slate-500">
-                          Compare &amp; Switch Subscription Plans
-                        </h4>
-                        <span className="text-[10px] font-bold text-slate-400">Annual Billing</span>
+                        <div>
+                          <h4 className="text-xs font-black uppercase tracking-wider text-slate-900">
+                            Subscription Plans
+                          </h4>
+                          <p className="text-[11px] text-slate-500">Transparent 4-bureau credit tiers</p>
+                        </div>
+
+                        {/* Mobile Billing Toggle */}
+                        <div className="inline-flex items-center rounded-xl bg-slate-100 p-0.5 border border-slate-200">
+                          <button
+                            onClick={() => setMobileBillingCycle("monthly")}
+                            className={`px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                              mobileBillingCycle === "monthly"
+                                ? "bg-white text-slate-900 shadow-xs"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            Monthly
+                          </button>
+                          <button
+                            onClick={() => setMobileBillingCycle("yearly")}
+                            className={`flex items-center gap-1 px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all ${
+                              mobileBillingCycle === "yearly"
+                                ? "bg-[#1882FF] text-white shadow-xs"
+                                : "text-slate-500"
+                            }`}
+                          >
+                            <span>Yearly</span>
+                            <span className={`text-[9px] font-black px-1 rounded-full ${
+                              mobileBillingCycle === "yearly" ? "bg-white/20 text-white" : "bg-emerald-50 text-emerald-700"
+                            }`}>
+                              -20%
+                            </span>
+                          </button>
+                        </div>
                       </div>
 
                       {/* Tier 1: Prime One */}
@@ -3559,28 +3591,38 @@ export default function PrimeScoreMobileApp({
                                 STARTER
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">Essential single-bureau credit tracking</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">1 Bureau (CRIF) baseline monitoring</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-lg font-black text-slate-900">₹499</span>
-                            <span className="text-[10px] text-slate-400"> /yr</span>
+                            <span className="text-lg font-black text-slate-900">
+                              {mobileBillingCycle === "yearly" ? "₹499" : "₹49"}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {mobileBillingCycle === "yearly" ? " /yr" : " /mo"}
+                            </span>
+                            {mobileBillingCycle === "yearly" && (
+                              <div className="text-[9px] text-emerald-600 font-bold">Save 15% (₹41/mo)</div>
+                            )}
                           </div>
                         </div>
 
                         <div className="mt-3 flex flex-col gap-1.5 border-t border-slate-100 pt-2.5 text-xs text-slate-600">
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 1 Bureau Monthly Refresh (CIBIL)
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 1 Bureau Scope (CRIF)
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 1 Dispute Filing / Month
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Single-bureau baseline master report
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Basic Score Simulator &amp; Monthly Email
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Basic active/closed account list
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> BBPS &amp; Loan Marketplace + Standard PDF
                           </span>
                         </div>
 
                         <button
-                          onClick={() => showToast("Downgrade to Prime One scheduled for 15-Dec-2026")}
+                          onClick={() => showToast("Downgrade to Prime One scheduled for next cycle")}
                           className="mt-3.5 w-full rounded-xl bg-slate-100 hover:bg-slate-200 py-2.5 text-xs font-bold text-slate-700 transition-all active:scale-98 cursor-pointer"
                         >
                           Switch to Prime One
@@ -3588,7 +3630,7 @@ export default function PrimeScoreMobileApp({
                       </div>
 
                       {/* Tier 2: Prime 360 */}
-                      <div className="rounded-2xl bg-white p-4 border border-slate-200 shadow-xs hover:border-blue-300 transition-all">
+                      <div className="rounded-2xl bg-white p-4 border border-blue-200 shadow-xs hover:border-blue-300 transition-all">
                         <div className="flex items-start justify-between">
                           <div>
                             <div className="flex items-center gap-2">
@@ -3597,26 +3639,36 @@ export default function PrimeScoreMobileApp({
                                 POPULAR
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-500 mt-0.5">All 4 credit bureaus monitoring &amp; rectifications</p>
+                            <p className="text-[11px] text-slate-500 mt-0.5">All 4 credit bureaus + Basic AI Chatbot</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-lg font-black text-slate-900">₹1,499</span>
-                            <span className="text-[10px] text-slate-400"> /yr</span>
+                            <span className="text-lg font-black text-slate-900">
+                              {mobileBillingCycle === "yearly" ? "₹1,499" : "₹149"}
+                            </span>
+                            <span className="text-[10px] text-slate-400">
+                              {mobileBillingCycle === "yearly" ? " /yr" : " /mo"}
+                            </span>
+                            {mobileBillingCycle === "yearly" && (
+                              <div className="text-[9px] text-emerald-600 font-bold">Save 16% (₹125/mo)</div>
+                            )}
                           </div>
                         </div>
 
                         <div className="mt-3 flex flex-col gap-1.5 border-t border-slate-100 pt-2.5 text-xs text-slate-600">
-                          <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> All 4 Bureaus (CIBIL, CRIF, Experian, Equifax)
+                          <span className="flex items-center gap-2 font-medium text-slate-900">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> All 4 Bureaus (CIBIL, Experian, Equifax, CRIF)
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Unlimited AI Rectification Filings
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Consolidated 4-Bureau Master Summary
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 4-Bureau Comparison Matrix &amp; Simulator
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Full active/closed &amp; payment history
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> 48-Hour Bureau Redressal Guarantee
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Basic AI Chatbot Assistant
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-emerald-600 shrink-0" /> Master Summary PDF + Standard PDF
                           </span>
                         </div>
 
@@ -3638,83 +3690,48 @@ export default function PrimeScoreMobileApp({
                                 CURRENT PLAN
                               </span>
                             </div>
-                            <p className="text-[11px] text-slate-600 mt-0.5">Lawyer-Assisted Disputes &amp; Real-Time Sync</p>
+                            <p className="text-[11px] text-slate-600 mt-0.5">Real-Time Sync, Red-Flags &amp; Primescore Helper</p>
                           </div>
                           <div className="text-right">
-                            <span className="text-lg font-black text-[#1882FF]">₹2,499</span>
-                            <span className="text-[10px] text-slate-500"> /yr</span>
+                            <span className="text-lg font-black text-[#1882FF]">
+                              {mobileBillingCycle === "yearly" ? "₹2,199" : "₹219"}
+                            </span>
+                            <span className="text-[10px] text-slate-500">
+                              {mobileBillingCycle === "yearly" ? " /yr" : " /mo"}
+                            </span>
+                            {mobileBillingCycle === "yearly" && (
+                              <div className="text-[9px] text-[#1882FF] font-bold">Save 16% (₹183/mo)</div>
+                            )}
                           </div>
                         </div>
 
                         <div className="mt-3 flex flex-col gap-1.5 border-t border-blue-200/60 pt-2.5 text-xs text-slate-700 font-medium">
-                          <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> All 4 Bureaus Instant Real-Time Sync
+                          <span className="flex items-center gap-2 text-[#067647]">
+                            <Check className="h-3.5 w-3.5 text-[#067647] shrink-0" /> All 4 Bureaus Live Sync &amp; Red-Flag Analysis
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Dedicated Priority Legal Advocate Desk (Lawyer Notices)
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Cross-bureau mismatch &amp; error flags
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Unlimited Priority Bureau Escalations
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> 1-on-1 Dedicated Primescore Helper
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> WhatsApp &amp; SMS Instant Sync Alerts
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> DIY Dispute Generator + RBI Legal Drafts
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> ₹1,00,000 Credit Score Protection Insurance
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> 750+ Score Simulator + Debt Waterfall
                           </span>
                           <span className="flex items-center gap-2">
-                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Pre-Approved Loan &amp; Card Concierge
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Bureau AI Video Summary &amp; Guardian Alerts
+                          </span>
+                          <span className="flex items-center gap-2">
+                            <Check className="h-3.5 w-3.5 text-[#1882FF] shrink-0" /> Bank-Ready Health Dossier + 2x Coins
                           </span>
                         </div>
 
                         <div className="mt-3.5 w-full rounded-xl bg-[#1882FF] py-2.5 text-xs font-black text-white text-center shadow-sm">
                           Current Active Plan ✓
                         </div>
-                      </div>
-                    </div>
-
-                    {/* 3. Feature Comparison Table */}
-                    <div className="rounded-2xl bg-white border border-slate-200/90 p-4 shadow-xs">
-                      <h4 className="text-xs font-extrabold text-slate-900 uppercase tracking-tight mb-3">
-                        Tier Comparison Matrix
-                      </h4>
-                      <div className="overflow-x-auto">
-                        <table className="w-full text-left text-xs">
-                          <thead>
-                            <tr className="border-b border-slate-200 text-[10px] font-black uppercase text-slate-400">
-                              <th className="pb-2">Feature</th>
-                              <th className="pb-2 text-center">One</th>
-                              <th className="pb-2 text-center">360</th>
-                              <th className="pb-2 text-center text-[#1882FF]">Care VIP</th>
-                            </tr>
-                          </thead>
-                          <tbody className="divide-y divide-slate-100 text-slate-700 text-[11px]">
-                            <tr>
-                              <td className="py-2 font-medium">Bureaus Monitored</td>
-                              <td className="py-2 text-center">1 (CIBIL)</td>
-                              <td className="py-2 text-center">All 4</td>
-                              <td className="py-2 text-center font-bold text-[#1882FF]">4 (Real-time)</td>
-                            </tr>
-                            <tr>
-                              <td className="py-2 font-medium">Dispute Filings</td>
-                              <td className="py-2 text-center">1 / mo</td>
-                              <td className="py-2 text-center">Unlimited</td>
-                              <td className="py-2 text-center font-bold text-[#1882FF]">Advocate Assisted</td>
-                            </tr>
-                            <tr>
-                              <td className="py-2 font-medium">WhatsApp Sync Alerts</td>
-                              <td className="py-2 text-center text-slate-300">—</td>
-                              <td className="py-2 text-center text-slate-300">—</td>
-                              <td className="py-2 text-center font-bold text-emerald-600">✓ Instant</td>
-                            </tr>
-                            <tr>
-                              <td className="py-2 font-medium">Score Insurance</td>
-                              <td className="py-2 text-center text-slate-300">—</td>
-                              <td className="py-2 text-center text-slate-300">—</td>
-                              <td className="py-2 text-center font-bold text-[#1882FF]">₹1,00,000</td>
-                            </tr>
-                          </tbody>
-                        </table>
                       </div>
                     </div>
 

@@ -748,6 +748,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
   const [profileAddress, setProfileAddress] = useState<string>("Flat 402, Royal Palms, Goregaon East, Mumbai 400063");
   const [showFullPan, setShowFullPan] = useState<boolean>(false);
   const [couponCode, setCouponCode] = useState<string>("");
+  const [membershipCycle, setMembershipCycle] = useState<"monthly" | "yearly">("yearly");
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -2926,8 +2927,8 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                 {/* Center Content Area (6 Cols / Max 880px) + Right Rail (3 Cols / 320px) */}
                 <div className="col-span-12 lg:col-span-9 grid grid-cols-12 gap-6">
                   
-                  {/* Center Column (8 of 12) */}
-                  <div className="col-span-12 xl:col-span-8 space-y-6">
+                  {/* Center Column */}
+                  <div className={`col-span-12 ${accountSubNav === "membership" ? "xl:col-span-12" : "xl:col-span-8"} space-y-6`}>
                     
                     {/* B.4 SECTION: PROFILE */}
                     {accountSubNav === "profile" && (
@@ -3111,14 +3112,16 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                               <span className="rounded-full bg-[#1882FF] px-2.5 py-0.5 text-[11px] font-bold text-white">
                                 ACTIVE MEMBERSHIP
                               </span>
-                              <h2 className="text-[20px] font-bold text-[#101828] mt-2">Prime Care VIP (Annual)</h2>
+                              <h2 className="text-[20px] font-bold text-[#101828] mt-2">
+                                Prime Care VIP ({membershipCycle === "yearly" ? "Annual" : "Monthly"})
+                              </h2>
                               <p className="text-[14px] text-[#475467] mt-0.5">
-                                Renews 12 Dec 2026 · ₹2,999/year (Autopay ON)
+                                Renews 12 Dec 2026 · {membershipCycle === "yearly" ? "₹2,199/year" : "₹219/month"} (Autopay ON)
                               </p>
                             </div>
                             <button
                               onClick={() => showToast("Opening plan change options...")}
-                              className="rounded-xl border border-[#1882FF] bg-white px-4 py-2 text-[13px] font-semibold text-[#1882FF] hover:bg-[#EEF4FF]"
+                              className="rounded-xl border border-[#1882FF] bg-white px-4 py-2 text-[13px] font-semibold text-[#1882FF] hover:bg-[#EEF4FF] cursor-pointer"
                             >
                               Manage plan
                             </button>
@@ -3132,35 +3135,185 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
                           </div>
                         </div>
 
-                        {/* Compare Plans Table */}
-                        <div className="rounded-2xl border border-[#E4E9F2] bg-white p-6 shadow-xs">
-                          <h3 className="text-[16px] font-bold text-[#101828] mb-4">Membership Tiers</h3>
-                          <div className="grid grid-cols-3 gap-4 text-[13px]">
-                            <div className="p-4 rounded-xl border border-[#E4E9F2] bg-[#F4F7FC]">
-                              <div className="font-bold text-[#667085]">Prime One</div>
-                              <div className="text-[18px] font-extrabold text-[#101828] mt-1">₹499/yr</div>
-                              <div className="mt-3 text-[#667085] space-y-1.5">
-                                <div>• CIBIL monthly score</div>
-                                <div>• Basic score simulator</div>
-                              </div>
+                        {/* Membership Tiers with Monthly / Yearly Toggle */}
+                        <div className="rounded-2xl border border-[#E4E9F2] bg-white p-6 shadow-xs space-y-6">
+                          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                            <div>
+                              <h3 className="text-[18px] font-bold text-[#101828]">Membership Tiers</h3>
+                              <p className="text-[13px] text-[#667085] mt-0.5">
+                                Select the credit intelligence plan that matches your monitoring and dispute needs.
+                              </p>
                             </div>
 
-                            <div className="p-4 rounded-xl border border-[#E4E9F2] bg-[#F4F7FC]">
-                              <div className="font-bold text-[#1882FF]">Prime 360</div>
-                              <div className="text-[18px] font-extrabold text-[#101828] mt-1">₹1,499/yr</div>
-                              <div className="mt-3 text-[#667085] space-y-1.5">
-                                <div>• All 4 bureau reports</div>
-                                <div>• 3 dispute filings/yr</div>
+                            {/* Monthly vs Yearly Toggle Pill */}
+                            <div className="inline-flex items-center rounded-xl bg-[#F4F7FC] p-1 border border-[#E4E9F2] self-start sm:self-auto">
+                              <button
+                                onClick={() => setMembershipCycle("monthly")}
+                                className={`px-3 py-1.5 text-[12px] font-bold rounded-lg transition-all cursor-pointer ${
+                                  membershipCycle === "monthly"
+                                    ? "bg-white text-[#101828] shadow-xs"
+                                    : "text-[#667085] hover:text-[#101828]"
+                                }`}
+                              >
+                                Monthly
+                              </button>
+                              <button
+                                onClick={() => setMembershipCycle("yearly")}
+                                className={`flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-bold rounded-lg transition-all cursor-pointer ${
+                                  membershipCycle === "yearly"
+                                    ? "bg-[#1882FF] text-white shadow-xs"
+                                    : "text-[#667085] hover:text-[#101828]"
+                                }`}
+                              >
+                                <span>Yearly</span>
+                                <span className={`text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                                  membershipCycle === "yearly" ? "bg-white/20 text-white" : "bg-[#ECFDF3] text-[#067647]"
+                                }`}>
+                                  SAVE ~20%
+                                </span>
+                              </button>
+                            </div>
+                          </div>
+
+                          {/* 3 Tier Cards */}
+                          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 text-[13px]">
+                            {/* Prime One */}
+                            <div className="p-6 rounded-2xl border border-[#E4E9F2] bg-[#F4F7FC] flex flex-col justify-between hover:border-slate-300 transition-all">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="font-bold text-[#475467] text-[16px]">Prime One</div>
+                                  <span className="rounded-md bg-[#E4E9F2] px-2 py-0.5 text-[10px] font-bold text-[#475467]">
+                                    STARTER
+                                  </span>
+                                </div>
+                                <div className="mt-3 flex items-baseline gap-1.5">
+                                  <span className="text-[28px] font-extrabold text-[#101828]">
+                                    {membershipCycle === "yearly" ? "₹499" : "₹49"}
+                                  </span>
+                                  <span className="text-[13px] text-[#667085]">
+                                    {membershipCycle === "yearly" ? "/yr" : "/mo"}
+                                  </span>
+                                  {membershipCycle === "yearly" && (
+                                    <>
+                                      <span className="text-[13px] text-[#98A2B3] line-through ml-1.5">₹588</span>
+                                      <span className="text-[10px] font-bold text-[#067647] bg-[#ECFDF3] px-1.5 py-0.5 rounded">
+                                        Save 15%
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                {membershipCycle === "yearly" && (
+                                  <div className="text-[12px] text-[#667085] mt-0.5">₹41/mo billed annually</div>
+                                )}
+                                <p className="text-[13px] text-[#667085] mt-2.5 pb-3.5 border-b border-[#E4E9F2]">
+                                  Essential single-bureau baseline tracking.
+                                </p>
+                                <div className="mt-4 text-[#475467] space-y-2.5 text-[13px]">
+                                  <div className="flex items-center gap-2">✓ 1 Bureau Scope (CRIF)</div>
+                                  <div className="flex items-center gap-2">✓ Single-bureau baseline report</div>
+                                  <div className="flex items-center gap-2">✓ Basic active/closed account list</div>
+                                  <div className="flex items-center gap-2">✓ BBPS &amp; Loan Marketplace</div>
+                                  <div className="flex items-center gap-2">✓ Standard PDF Dossier</div>
+                                </div>
                               </div>
+                              <button
+                                onClick={() => showToast("Downgrade to Prime One scheduled for next cycle.")}
+                                className="mt-6 w-full rounded-xl bg-white border border-[#D0D5DD] py-2.5 text-[13px] font-semibold text-[#344054] hover:bg-[#F8FAFC] transition-colors cursor-pointer"
+                              >
+                                Switch to Prime One
+                              </button>
                             </div>
 
-                            <div className="p-4 rounded-xl border-2 border-[#1882FF] bg-[#EEF4FF]/40">
-                              <div className="font-bold text-[#067647]">Prime Care VIP</div>
-                              <div className="text-[18px] font-extrabold text-[#101828] mt-1">₹2,999/yr</div>
-                              <div className="mt-3 text-[#101828] font-medium space-y-1.5">
-                                <div>• All 4 bureaus live sync</div>
-                                <div>• Unlimited legal disputes</div>
-                                <div>• 1-on-1 Primescore helper</div>
+                            {/* Prime 360 */}
+                            <div className="p-6 rounded-2xl border border-[#D0E2FF] bg-[#F0F5FF]/60 flex flex-col justify-between relative hover:border-[#1882FF] transition-all">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="font-bold text-[#1882FF] text-[16px]">Prime 360</div>
+                                  <span className="rounded-md bg-[#1882FF] px-2 py-0.5 text-[10px] font-bold text-white">
+                                    POPULAR
+                                  </span>
+                                </div>
+                                <div className="mt-3 flex items-baseline gap-1.5">
+                                  <span className="text-[28px] font-extrabold text-[#101828]">
+                                    {membershipCycle === "yearly" ? "₹1,499" : "₹149"}
+                                  </span>
+                                  <span className="text-[13px] text-[#667085]">
+                                    {membershipCycle === "yearly" ? "/yr" : "/mo"}
+                                  </span>
+                                  {membershipCycle === "yearly" && (
+                                    <>
+                                      <span className="text-[13px] text-[#98A2B3] line-through ml-1.5">₹1,788</span>
+                                      <span className="text-[10px] font-bold text-[#067647] bg-[#ECFDF3] px-1.5 py-0.5 rounded">
+                                        Save 16%
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                {membershipCycle === "yearly" && (
+                                  <div className="text-[12px] text-[#667085] mt-0.5">₹125/mo billed annually</div>
+                                )}
+                                <p className="text-[13px] text-[#667085] mt-2.5 pb-3.5 border-b border-[#D0E2FF]">
+                                  Full 4-Bureau consolidated monitoring &amp; AI assistant.
+                                </p>
+                                <div className="mt-4 text-[#344054] space-y-2.5 text-[13px]">
+                                  <div className="flex items-center gap-2 font-medium text-[#101828]">✓ All 4 Bureaus (CIBIL, Experian, Equifax, CRIF)</div>
+                                  <div className="flex items-center gap-2">✓ Consolidated 4-Bureau Master Summary</div>
+                                  <div className="flex items-center gap-2">✓ Full active, closed &amp; payment history</div>
+                                  <div className="flex items-center gap-2">✓ Basic AI Chatbot Assistant</div>
+                                  <div className="flex items-center gap-2">✓ Master Summary PDF + Standard PDF</div>
+                                </div>
+                              </div>
+                              <button
+                                onClick={() => showToast("Plan change to Prime 360 scheduled for next cycle.")}
+                                className="mt-6 w-full rounded-xl bg-[#1882FF] py-2.5 text-[13px] font-bold text-white hover:bg-[#1474E8] transition-colors cursor-pointer shadow-xs"
+                              >
+                                Switch to Prime 360
+                              </button>
+                            </div>
+
+                            {/* Prime Care VIP */}
+                            <div className="p-6 rounded-2xl border-2 border-[#1882FF] bg-[#EEF4FF]/70 flex flex-col justify-between relative shadow-sm">
+                              <div>
+                                <div className="flex items-center justify-between">
+                                  <div className="font-bold text-[#067647] text-[16px]">Prime Care VIP</div>
+                                  <span className="rounded-md bg-[#ECFDF3] border border-[#ABEFC6] px-2 py-0.5 text-[10px] font-bold text-[#067647]">
+                                    ACTIVE PLAN
+                                  </span>
+                                </div>
+                                <div className="mt-3 flex items-baseline gap-1.5">
+                                  <span className="text-[28px] font-extrabold text-[#1882FF]">
+                                    {membershipCycle === "yearly" ? "₹2,199" : "₹219"}
+                                  </span>
+                                  <span className="text-[13px] text-[#667085]">
+                                    {membershipCycle === "yearly" ? "/yr" : "/mo"}
+                                  </span>
+                                  {membershipCycle === "yearly" && (
+                                    <>
+                                      <span className="text-[13px] text-[#98A2B3] line-through ml-1.5">₹2,628</span>
+                                      <span className="text-[10px] font-bold text-[#067647] bg-[#ECFDF3] px-1.5 py-0.5 rounded">
+                                        Save 16%
+                                      </span>
+                                    </>
+                                  )}
+                                </div>
+                                {membershipCycle === "yearly" && (
+                                  <div className="text-[12px] text-[#1882FF] font-medium mt-0.5">₹183/mo billed annually</div>
+                                )}
+                                <p className="text-[13px] text-[#475467] mt-2.5 pb-3.5 border-b border-[#D0E2FF]">
+                                  Lawyer-assisted disputes, real-time sync &amp; 1-on-1 helper.
+                                </p>
+                                <div className="mt-4 text-[#101828] space-y-2.5 text-[13px] font-medium">
+                                  <div className="flex items-center gap-2 text-[#067647]">✓ All 4 Bureaus Live Sync &amp; Red-Flag Analysis</div>
+                                  <div className="flex items-center gap-2">✓ Full view + cross-bureau mismatch flags</div>
+                                  <div className="flex items-center gap-2">✓ 1-on-1 Primescore Helper Assigned</div>
+                                  <div className="flex items-center gap-2">✓ DIY Dispute Generator + RBI Legal Drafts</div>
+                                  <div className="flex items-center gap-2">✓ 750+ Simulator &amp; Debt Waterfall Planner</div>
+                                  <div className="flex items-center gap-2">✓ Bureau AI Video Summary &amp; Guardian Alerts</div>
+                                  <div className="flex items-center gap-2">✓ Bank-Ready Dossier + 2x Prime Coins</div>
+                                </div>
+                              </div>
+                              <div className="mt-6 w-full rounded-xl bg-[#1882FF] py-2.5 text-[13px] font-bold text-white text-center shadow-xs">
+                                Current Active Plan ✓
                               </div>
                             </div>
                           </div>
@@ -3374,63 +3527,65 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
 
                   </div>
 
-                  {/* Right Rail (4 of 12 / 320px) */}
-                  <div className="col-span-12 xl:col-span-4 space-y-5">
-                    
-                    {/* Your Plan Card */}
-                    <div className="rounded-2xl border border-[#D0E2FF] bg-[#EEF4FF]/50 p-5 shadow-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[11px] font-bold text-[#1882FF] uppercase tracking-wider">
-                          primeclub
-                        </span>
-                        <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#067647] border border-[#D0E2FF]">
-                          Active
-                        </span>
+                  {/* Right Rail (4 of 12 / 320px) - Hidden on Membership view for full-width layout */}
+                  {accountSubNav !== "membership" && (
+                    <div className="col-span-12 xl:col-span-4 space-y-5">
+                      
+                      {/* Your Plan Card */}
+                      <div className="rounded-2xl border border-[#D0E2FF] bg-[#EEF4FF]/50 p-5 shadow-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold text-[#1882FF] uppercase tracking-wider">
+                            primeclub
+                          </span>
+                          <span className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-[#067647] border border-[#D0E2FF]">
+                            Active
+                          </span>
+                        </div>
+                        <h3 className="text-[16px] font-bold text-[#101828] mt-2">Prime Care VIP</h3>
+                        <p className="text-[12px] text-[#667085] mt-0.5">Renews 12 Dec 2026</p>
+                        <button
+                          onClick={() => setAccountSubNav("membership")}
+                          className="mt-4 w-full rounded-xl bg-white border border-[#D0E2FF] py-2 text-[13px] font-semibold text-[#1882FF] hover:bg-white/80 cursor-pointer"
+                        >
+                          Manage plan
+                        </button>
                       </div>
-                      <h3 className="text-[16px] font-bold text-[#101828] mt-2">Prime Care VIP</h3>
-                      <p className="text-[12px] text-[#667085] mt-0.5">Renews 12 Dec 2026</p>
-                      <button
-                        onClick={() => setAccountSubNav("membership")}
-                        className="mt-4 w-full rounded-xl bg-white border border-[#D0E2FF] py-2 text-[13px] font-semibold text-[#1882FF] hover:bg-white/80 cursor-pointer"
-                      >
-                        Manage plan
-                      </button>
-                    </div>
 
-                    {/* Prime Points Card */}
-                    <div className="rounded-2xl border border-[#E4E9F2] bg-white p-5 shadow-xs">
-                      <div className="flex items-center justify-between">
-                        <span className="text-[12px] font-semibold text-[#667085]">Prime Points</span>
-                        <Coins className="h-4 w-4 text-[#067647]" />
+                      {/* Prime Points Card */}
+                      <div className="rounded-2xl border border-[#E4E9F2] bg-white p-5 shadow-xs">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[12px] font-semibold text-[#667085]">Prime Points</span>
+                          <Coins className="h-4 w-4 text-[#067647]" />
+                        </div>
+                        <div className="text-[26px] font-extrabold text-[#101828] tabular-nums mt-1">2,450 pts</div>
+                        <p className="text-[12px] text-[#667085] mt-0.5">Redeem for discounts or gift vouchers</p>
+                        <button
+                          onClick={() => showToast("Points redemption catalog opening...")}
+                          className="mt-4 w-full rounded-xl border border-[#E4E9F2] bg-white py-2 text-[13px] font-semibold text-[#101828] hover:bg-[#F4F7FC] cursor-pointer"
+                        >
+                          Redeem points
+                        </button>
                       </div>
-                      <div className="text-[26px] font-extrabold text-[#101828] tabular-nums mt-1">2,450 pts</div>
-                      <p className="text-[12px] text-[#667085] mt-0.5">Redeem for discounts or gift vouchers</p>
-                      <button
-                        onClick={() => showToast("Points redemption catalog opening...")}
-                        className="mt-4 w-full rounded-xl border border-[#E4E9F2] bg-white py-2 text-[13px] font-semibold text-[#101828] hover:bg-[#F4F7FC] cursor-pointer"
-                      >
-                        Redeem points
-                      </button>
-                    </div>
 
-                    {/* Partner Offer Card (Single Static Card) */}
-                    <div className="rounded-2xl border border-[#E4E9F2] bg-white p-5 shadow-xs">
-                      <span className="rounded-full bg-[#F4F7FC] px-2 py-0.5 text-[10px] font-bold text-[#667085]">
-                        Partner offer
-                      </span>
-                      <h4 className="text-[14px] font-bold text-[#101828] mt-2">Axis Bank Airtel Card</h4>
-                      <p className="text-[12px] text-[#475467] mt-0.5">
-                        Pre-approved credit card with 25% cashback on mobile bills.
-                      </p>
-                      <button
-                        onClick={() => showToast("Opening partner offer details...")}
-                        className="mt-3.5 w-full rounded-xl bg-[#0B1220] py-2 text-[12px] font-semibold text-white hover:bg-slate-800 cursor-pointer"
-                      >
-                        See offer
-                      </button>
-                    </div>
+                      {/* Partner Offer Card (Single Static Card) */}
+                      <div className="rounded-2xl border border-[#E4E9F2] bg-white p-5 shadow-xs">
+                        <span className="rounded-full bg-[#F4F7FC] px-2 py-0.5 text-[10px] font-bold text-[#667085]">
+                          Partner offer
+                        </span>
+                        <h4 className="text-[14px] font-bold text-[#101828] mt-2">Axis Bank Airtel Card</h4>
+                        <p className="text-[12px] text-[#475467] mt-0.5">
+                          Pre-approved credit card with 25% cashback on mobile bills.
+                        </p>
+                        <button
+                          onClick={() => showToast("Opening partner offer details...")}
+                          className="mt-3.5 w-full rounded-xl bg-[#0B1220] py-2 text-[12px] font-semibold text-white hover:bg-slate-800 cursor-pointer"
+                        >
+                          See offer
+                        </button>
+                      </div>
 
-                  </div>
+                    </div>
+                  )}
 
                 </div>
 
