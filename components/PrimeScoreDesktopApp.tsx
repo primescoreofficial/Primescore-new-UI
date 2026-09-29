@@ -714,6 +714,7 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
 
   // Cards view toggle
   const [cardsViewMode, setCardsViewMode] = useState<"grid" | "table">("grid");
+  const [cardSubTab, setCardSubTab] = useState<"your_cards" | "get_card">("your_cards");
 
   // Loans tab
   const [loansTab, setLoansTab] = useState<"active" | "offers" | "calculator">("active");
@@ -2242,328 +2243,966 @@ export default function PrimeScoreDesktopApp({ initialNav = "home" }: { initialN
           )}
 
           {/* =========================================================
-               PAGE 4: CARDS
+               PAGE 4: CARDS (DETAILED UNIFIED PRIMESCORE FINTECH DESK)
                ========================================================= */}
           {activeNav === "cards" && (
             <div className="flex flex-col gap-6">
+              {/* Header & Subtabs */}
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-[24px] font-bold tracking-tight text-[#101828]">Cards</h1>
-                  <p className="text-[15px] text-[#475467] mt-1">
-                    You&apos;re using <strong className="text-[#101828]">28%</strong> of your card limit. Under 30% is healthy.
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-[24px] font-bold tracking-tight text-[#101828]">Manage Your Cards</h1>
+                    <span className="rounded-full bg-[#EEF4FF] border border-[#D0E2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#1882FF]">
+                      3 Active
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#475467] mt-1">
+                    3 Linked Credit Cards · 100% On-Time Record · Total Credit Limit: ₹11,50,000
                   </p>
                 </div>
 
-                <button
-                  onClick={() => setActiveNav("simulator")}
-                  className="flex h-10 items-center gap-2 rounded-xl bg-[#0B1220] px-4 text-[14px] font-semibold text-white hover:bg-slate-800 cursor-pointer shadow-xs"
-                >
-                  <span>See how to lower it</span>
-                  <ArrowRight className="h-4 w-4" />
-                </button>
+                {/* Subtab Segmented Switcher */}
+                <div className="inline-flex items-center rounded-xl border border-[#E4E9F2] bg-white p-1 text-[13px] shadow-2xs">
+                  <button
+                    onClick={() => setCardSubTab("your_cards")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+                      cardSubTab === "your_cards" ? "bg-[#1882FF] text-white shadow-xs" : "text-[#667085] hover:text-[#101828]"
+                    }`}
+                  >
+                    <CreditCard className="h-4 w-4" />
+                    <span>Your Cards (3)</span>
+                  </button>
+                  <button
+                    onClick={() => setCardSubTab("get_card")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+                      cardSubTab === "get_card" ? "bg-[#1882FF] text-white shadow-xs" : "text-[#667085] hover:text-[#101828]"
+                    }`}
+                  >
+                    <span>Get a Card</span>
+                    <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                      cardSubTab === "get_card" ? "bg-white/20 text-white" : "bg-[#ECFDF3] text-[#067647]"
+                    }`}>
+                      PRE-APPROVED
+                    </span>
+                  </button>
+                </div>
               </div>
 
-              {/* 3 Active Card Tiles */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-                {[
-                  { lender: "ICICI Bank", name: "Amazon Pay Credit Card", number: "•••• 7811", limit: 500000, balance: 68500, due: 68500, minDue: 3425, dueDate: "18 Oct 2026", bg: "bg-amber-700" },
-                  { lender: "Axis Bank", name: "Magnus Credit Card", number: "•••• 5519", limit: 250000, balance: 51200, due: 51200, minDue: 2560, dueDate: "22 Oct 2026", bg: "bg-rose-800" },
-                  { lender: "Kotak Mahindra", name: "League Platinum Card", number: "•••• 2209", limit: 400000, balance: 62247, due: 62247, minDue: 3110, dueDate: "28 Oct 2026", bg: "bg-red-700" },
-                ].map((c, idx) => {
-                  const pct = Math.round((c.balance / c.limit) * 100);
-                  return (
-                    <div key={idx} className="rounded-2xl border border-[#E4E9F2] bg-white p-5 flex flex-col justify-between shadow-xs">
-                      <div>
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2.5">
-                            <BankLogo lender={c.lender} className="w-7 h-7" />
-                            <span className="text-[13px] font-bold text-[#101828]">{c.lender}</span>
-                          </div>
-                          <span className="font-mono text-[12px] text-[#667085]">{c.number}</span>
-                        </div>
-                        <h3 className="text-[15px] font-bold text-[#101828] mt-2">{c.name}</h3>
-
-                        <div className="mt-4 flex items-baseline justify-between">
-                          <div>
-                            <div className="text-[12px] text-[#667085]">Current balance</div>
-                            <div className="text-[20px] font-bold text-[#101828] tabular-nums font-mono">
-                              ₹{c.balance.toLocaleString("en-IN")}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-[12px] text-[#667085]">Limit</div>
-                            <div className="text-[14px] font-medium text-[#475467] tabular-nums font-mono">
-                              ₹{c.limit.toLocaleString("en-IN")}
-                            </div>
-                          </div>
-                        </div>
-
-                        {/* Progress Bar with 30% Marker */}
-                        <div className="relative mt-3.5 h-2 w-full rounded-full bg-[#E4E9F2]">
-                          <div className="h-full rounded-full bg-[#1882FF]" style={{ width: `${pct}%` }} />
-                          <div className="absolute top-0 bottom-0 left-[30%] w-[1.5px] bg-slate-900" title="30% threshold" />
-                        </div>
-                        <div className="mt-1.5 flex justify-between text-[12px] text-[#667085]">
-                          <span>{pct}% utilised</span>
-                          <span>Due {c.dueDate}</span>
-                        </div>
+              {/* VIEW 1: YOUR CARDS */}
+              {cardSubTab === "your_cards" && (
+                <div className="space-y-6">
+                  {/* Integrated Status Banner */}
+                  <div className="rounded-2xl bg-gradient-to-r from-[#EEF4FF] via-white to-[#ECFDF3]/50 p-5 border border-[#D0E2FF] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white border border-[#D0E2FF] text-[#067647] shadow-xs">
+                        <CheckCircle2 className="h-6 w-6 text-[#067647]" />
                       </div>
-
-                      <div className="mt-5 pt-3.5 border-t border-[#E4E9F2] flex items-center justify-between">
-                        <span className="text-[12px] text-[#667085]">Min due: ₹{c.minDue.toLocaleString("en-IN")}</span>
-                        <button
-                          onClick={() => showToast(`Initiating instant bill payment for ${c.lender}...`)}
-                          className="h-9 rounded-xl bg-[#0B1220] px-4 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                        >
-                          Pay now
-                        </button>
+                      <div>
+                        <h3 className="text-[16px] font-bold text-[#101828] flex items-center gap-2">
+                          0 dues found
+                          <span className="rounded-full bg-[#ECFDF3] px-2.5 py-0.5 text-[11px] font-bold text-[#067647] border border-[#ABEFC6]">
+                            100% Clean Record
+                          </span>
+                        </h3>
+                        <p className="text-[13px] text-[#667085] mt-0.5">
+                          All credit accounts reported active and clean across CIBIL, Experian, Equifax, and CRIF.
+                        </p>
                       </div>
                     </div>
-                  );
-                })}
-              </div>
 
-              {/* Partner Offer: Axis Bank Card */}
-              <div className="rounded-2xl border border-[#E4E9F2] bg-white p-5 flex items-center justify-between shadow-xs">
-                <div>
-                  <span className="rounded-full bg-[#EEF4FF] px-2.5 py-0.5 text-[11px] font-bold text-[#1882FF]">
-                    Partner offer
-                  </span>
-                  <h3 className="text-[15px] font-bold text-[#101828] mt-1.5">Axis Bank Airtel Credit Card · Pre-Approved</h3>
-                  <p className="text-[13px] text-[#475467] mt-0.5">
-                    25% cashback on Airtel bills, 10% on Swiggy/Zomato. Zero joining fee for Prime Care VIP members.
-                  </p>
-                </div>
-                <button
-                  onClick={() => showToast("Opening partner application link...")}
-                  className="rounded-xl border border-[#E4E9F2] bg-white px-4 py-2.5 text-[13px] font-semibold text-[#101828] hover:bg-[#F4F7FC] cursor-pointer"
-                >
-                  See offer →
-                </button>
-              </div>
-            </div>
-          )}
+                    <div className="flex items-center gap-6 text-[13px] border-t md:border-t-0 md:border-l border-[#D0E2FF] pt-3 md:pt-0 md:pl-6">
+                      <div>
+                        <div className="text-[#667085] text-[11px] font-bold uppercase tracking-wider">Total Limit</div>
+                        <div className="font-extrabold text-[#101828] text-[16px] font-mono tabular-nums">₹11,50,000</div>
+                      </div>
+                      <div>
+                        <div className="text-[#667085] text-[11px] font-bold uppercase tracking-wider">Used Balance</div>
+                        <div className="font-extrabold text-[#1882FF] text-[16px] font-mono tabular-nums">₹2,97,110</div>
+                      </div>
+                      <div>
+                        <div className="text-[#667085] text-[11px] font-bold uppercase tracking-wider">Overall Util</div>
+                        <div className="font-extrabold text-[#067647] text-[16px] font-mono tabular-nums">26% <span className="text-[11px] font-normal text-[#667085]">(&lt;30% Optimal)</span></div>
+                      </div>
+                    </div>
+                  </div>
 
-          {/* =========================================================
-               PAGE 5: LOANS & EMI CALCULATOR
-               ========================================================= */}
-          {activeNav === "loans" && (
-            <div className="flex flex-col gap-6">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h1 className="text-[24px] font-bold tracking-tight text-[#101828]">Loans</h1>
-                  <p className="text-[15px] text-[#475467] mt-1">
-                    You have 2 active loans and 4 pre-approved offers. Checking offers won&apos;t affect your score.
-                  </p>
-                </div>
-
-                {/* Sub tabs */}
-                <div className="flex items-center rounded-xl border border-[#E4E9F2] bg-white p-1 text-[13px]">
-                  <button
-                    onClick={() => setLoansTab("active")}
-                    className={`px-3.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
-                      loansTab === "active" ? "bg-[#0B1220] text-white" : "text-[#667085]"
-                    }`}
-                  >
-                    Active loans
-                  </button>
-                  <button
-                    onClick={() => setLoansTab("offers")}
-                    className={`px-3.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
-                      loansTab === "offers" ? "bg-[#0B1220] text-white" : "text-[#667085]"
-                    }`}
-                  >
-                    Pre-approved offers
-                  </button>
-                  <button
-                    onClick={() => setLoansTab("calculator")}
-                    className={`px-3.5 py-1.5 rounded-lg font-semibold cursor-pointer ${
-                      loansTab === "calculator" ? "bg-[#0B1220] text-white" : "text-[#667085]"
-                    }`}
-                  >
-                    EMI calculator
-                  </button>
-                </div>
-              </div>
-
-              {/* Active Loans */}
-              {loansTab === "active" && (
-                <div className="rounded-2xl border border-[#E4E9F2] bg-white overflow-hidden shadow-xs">
-                  <table className="w-full text-left text-[14px]">
-                    <thead>
-                      <tr className="border-b border-[#E4E9F2] bg-[#F4F7FC] text-[12px] font-bold uppercase tracking-wider text-[#667085]">
-                        <th className="py-3.5 px-4">Lender & Facility</th>
-                        <th className="py-3.5 px-3">Type</th>
-                        <th className="py-3.5 px-3">Sanctioned</th>
-                        <th className="py-3.5 px-3">Outstanding</th>
-                        <th className="py-3.5 px-3">Monthly EMI</th>
-                        <th className="py-3.5 px-4 text-right">Status</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E4E9F2]">
-                      {ACCOUNTS_DATA.filter((a) => a.type !== "card").map((acc) => (
-                        <tr key={acc.id} className="hover:bg-[#F4F7FC]">
-                          <td className="py-4 px-4 font-bold text-[#101828]">
+                  {/* 3 Active Card Tiles */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      {
+                        bank: "ICICI Bank",
+                        cardName: "Sapphiro Visa Signature",
+                        logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
+                        mask: "•••• 4821",
+                        limit: 500000,
+                        balance: 172947,
+                        utilization: 34,
+                        dueDate: "18 Oct 2026",
+                        minDue: 8650,
+                        badge: "Active",
+                        badgeColor: "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                      },
+                      {
+                        bank: "Axis Bank",
+                        cardName: "Atlas Rewards Card",
+                        logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
+                        mask: "•••• 8912",
+                        limit: 250000,
+                        balance: 99853,
+                        utilization: 39,
+                        dueDate: "22 Oct 2026",
+                        minDue: 4990,
+                        badge: "Active",
+                        badgeColor: "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                      },
+                      {
+                        bank: "Kotak Mahindra Bank",
+                        cardName: "Zen Signature Visa",
+                        logo: "/banks small logo icons svg/Bank Name=Kotak Mahindra Bank.svg",
+                        mask: "•••• 1042",
+                        limit: 400000,
+                        balance: 24310,
+                        utilization: 6,
+                        dueDate: "28 Oct 2026",
+                        minDue: 1200,
+                        badge: "Optimal (6%)",
+                        badgeColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                      },
+                    ].map((card, idx) => (
+                      <div
+                        key={idx}
+                        className="rounded-2xl border border-[#E4E9F2] bg-white p-6 flex flex-col justify-between shadow-xs hover:border-[#1882FF] hover:shadow-md transition-all"
+                      >
+                        <div>
+                          {/* Top Row: Logo, Bank, Mask, Badge */}
+                          <div className="flex items-center justify-between border-b border-[#E4E9F2] pb-3.5">
                             <div className="flex items-center gap-3">
-                              <BankLogo lender={acc.lender} className="w-8 h-8" />
+                              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-1.5">
+                                <img src={card.logo} alt={card.bank} className="h-full w-full object-contain" />
+                              </div>
                               <div>
-                                <div>{acc.lender}</div>
-                                <span className="text-[12px] text-[#667085] font-normal">{acc.product} <span className="font-mono">{acc.accountNo}</span></span>
+                                <h4 className="text-[14px] font-bold text-[#101828] leading-tight">{card.bank}</h4>
+                                <span className="font-mono text-[11px] text-[#667085]">{card.mask}</span>
                               </div>
                             </div>
-                          </td>
-                          <td className="py-4 px-3 text-[#475467]">{acc.typeLabel}</td>
-                          <td className="py-4 px-3 font-mono tabular-nums text-[#101828] font-bold">{acc.sanctionLimitFormatted}</td>
-                          <td className="py-4 px-3 font-mono tabular-nums text-[#475467]">{acc.outstandingBalanceFormatted}</td>
-                          <td className="py-4 px-3 text-[#475467]">{acc.emiFormatted || "Closed"}</td>
-                          <td className="py-4 px-4 text-right">
-                            <span className="rounded-full bg-[#ECFDF3] px-2.5 py-1 text-[12px] font-bold text-[#067647]">
-                              {acc.status}
+                            <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${card.badgeColor}`}>
+                              {card.badge}
                             </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+                          </div>
 
-              {/* Pre-Approved Offers Comparison Table */}
-              {loansTab === "offers" && (
-                <div className="rounded-2xl border border-[#E4E9F2] bg-white overflow-hidden shadow-xs">
-                  <table className="w-full text-left text-[14px]">
-                    <thead>
-                      <tr className="border-b border-[#E4E9F2] bg-[#F4F7FC] text-[12px] font-bold uppercase tracking-wider text-[#667085]">
-                        <th className="py-3.5 px-4">Lender</th>
-                        <th className="py-3.5 px-3">Product</th>
-                        <th className="py-3.5 px-3">Pre-approved limit</th>
-                        <th className="py-3.5 px-3">Interest rate</th>
-                        <th className="py-3.5 px-3">Tenure</th>
-                        <th className="py-3.5 px-3">Processing fee</th>
-                        <th className="py-3.5 px-4 text-right">Action</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-[#E4E9F2]">
-                      {[
-                        { lender: "HDFC Bank", prod: "Insta Personal Loan", limit: "₹8,50,000", rate: "10.25% p.a.", tenure: "12–60 mos", fee: "Zero", note: "0 hard inquiries to check" },
-                        { lender: "ICICI Bank", prod: "Express Credit Line", limit: "₹5,00,000", rate: "10.50% p.a.", tenure: "6–36 mos", fee: "₹999", note: "Instant disbursal" },
-                        { lender: "SBI", prod: "Home Loan Balance Transfer", limit: "₹35,00,000", rate: "8.35% p.a.", tenure: "Up to 20 yrs", fee: "0.25%", note: "Save ~₹3,400/mo EMI" },
-                      ].map((o, idx) => (
-                        <tr key={idx} className="hover:bg-[#F4F7FC]">
-                          <td className="py-4 px-4 font-bold text-[#101828]">{o.lender}</td>
-                          <td className="py-4 px-3 text-[#475467]">{o.prod}</td>
-                          <td className="py-4 px-3 font-mono font-bold text-[#101828]">{o.limit}</td>
-                          <td className="py-4 px-3 text-[#067647] font-bold">{o.rate}</td>
-                          <td className="py-4 px-3 text-[#475467]">{o.tenure}</td>
-                          <td className="py-4 px-3 text-[#475467]">{o.fee}</td>
-                          <td className="py-4 px-4 text-right">
-                            <button
-                              onClick={() => showToast(`Applied for ${o.lender} ${o.prod}. Primescore Helper follow-up initiated.`)}
-                              className="h-9 rounded-xl bg-[#0B1220] px-4 text-[13px] font-semibold text-white hover:bg-slate-800 transition-colors cursor-pointer"
-                            >
-                              Apply
-                            </button>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                  <div className="p-3.5 border-t border-[#E4E9F2] bg-[#F4F7FC] text-[13px] text-[#667085]">
-                    Checking pre-approved loan offers generates 0 hard credit enquiries.
-                  </div>
-                </div>
-              )}
+                          <h3 className="text-[15px] font-bold text-[#101828] mt-3">{card.cardName}</h3>
 
-              {/* EMI Calculator */}
-              {loansTab === "calculator" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="rounded-2xl border border-[#E4E9F2] bg-white p-6 space-y-5 shadow-xs">
-                    <h3 className="text-[16px] font-bold text-[#101828]">Loan details</h3>
+                          {/* Balance & Limit Row */}
+                          <div className="mt-4 flex items-baseline justify-between">
+                            <div>
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#667085]">Current balance</div>
+                              <div className="text-[22px] font-extrabold text-[#101828] font-mono tabular-nums mt-0.5">
+                                ₹{card.balance.toLocaleString("en-IN")}
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#667085]">Card Limit</div>
+                              <div className="text-[14px] font-semibold text-[#475467] font-mono tabular-nums mt-0.5">
+                                ₹{card.limit.toLocaleString("en-IN")}
+                              </div>
+                            </div>
+                          </div>
 
-                    <div>
-                      <div className="flex justify-between text-[14px] font-semibold text-[#101828]">
-                        <span>Loan amount</span>
-                        <span className="font-mono text-[#1882FF]">₹{emiAmount.toLocaleString("en-IN")}</span>
+                          {/* Progress Bar with 30% Marker */}
+                          <div className="relative mt-3.5 h-2 w-full rounded-full bg-[#E4E9F2]">
+                            <div
+                              className={`h-full rounded-full ${card.utilization > 30 ? "bg-[#F79009]" : "bg-[#1882FF]"}`}
+                              style={{ width: `${card.utilization}%` }}
+                            />
+                            <div className="absolute top-0 bottom-0 left-[30%] w-[2px] bg-[#101828]" title="30% threshold" />
+                          </div>
+                          <div className="mt-2 flex justify-between text-[12px] text-[#667085]">
+                            <span className={`font-semibold ${card.utilization > 30 ? "text-[#B54708]" : "text-[#067647]"}`}>
+                              {card.utilization}% utilised
+                            </span>
+                            <span>Due {card.dueDate}</span>
+                          </div>
+                        </div>
+
+                        {/* Bottom Row: Min Due & Pay Button */}
+                        <div className="mt-5 pt-4 border-t border-[#E4E9F2] flex items-center justify-between">
+                          <span className="text-[12px] font-medium text-[#667085]">
+                            Min due: <strong className="text-[#101828] font-mono font-bold">₹{card.minDue.toLocaleString("en-IN")}</strong>
+                          </span>
+                          <button
+                            onClick={() => showToast(`Initiating instant bill payment for ${card.bank} (₹${card.balance.toLocaleString("en-IN")})`)}
+                            className="h-9 rounded-xl bg-[#0B1220] px-4 text-[13px] font-bold text-white hover:bg-[#1882FF] transition-colors cursor-pointer shadow-xs"
+                          >
+                            Pay now
+                          </button>
+                        </div>
                       </div>
-                      <input
-                        type="range"
-                        min="50000"
-                        max="5000000"
-                        step="25000"
-                        value={emiAmount}
-                        onChange={(e) => setEmiAmount(Number(e.target.value))}
-                        className="w-full mt-3 accent-[#1882FF] cursor-pointer"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-[14px] font-semibold text-[#101828]">
-                        <span>Interest rate (% p.a.)</span>
-                        <span className="font-mono text-[#1882FF]">{emiRate}%</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="7.5"
-                        max="24.0"
-                        step="0.25"
-                        value={emiRate}
-                        onChange={(e) => setEmiRate(Number(e.target.value))}
-                        className="w-full mt-3 accent-[#1882FF] cursor-pointer"
-                      />
-                    </div>
-
-                    <div>
-                      <div className="flex justify-between text-[14px] font-semibold text-[#101828]">
-                        <span>Tenure</span>
-                        <span className="font-mono text-[#1882FF]">{emiTenure} months ({Math.round(emiTenure / 12)} yrs)</span>
-                      </div>
-                      <input
-                        type="range"
-                        min="6"
-                        max="240"
-                        step="6"
-                        value={emiTenure}
-                        onChange={(e) => setEmiTenure(Number(e.target.value))}
-                        className="w-full mt-3 accent-[#1882FF] cursor-pointer"
-                      />
-                    </div>
+                    ))}
                   </div>
 
-                  <div className="rounded-2xl border border-[#E4E9F2] bg-white p-6 flex flex-col justify-between shadow-xs">
-                    <div>
-                      <h3 className="text-[16px] font-bold text-[#101828]">Monthly repayment</h3>
-                      <div className="mt-4">
-                        <div className="text-[12px] text-[#667085]">Calculated EMI</div>
-                        <div className="text-[36px] font-extrabold text-[#101828] font-mono tabular-nums">
-                          ₹{calculatedEmi.toLocaleString("en-IN")}
-                        </div>
+                  {/* Prime Coins Instant Discount Strip */}
+                  <div
+                    onClick={() => showToast("Prime Coins applied: ₹7.90 instant discount ready at checkout")}
+                    className="rounded-2xl bg-[#FFFAEB] border border-[#FEDF89] p-4 shadow-xs flex items-center justify-between cursor-pointer hover:bg-[#FEF0C7] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F79009] text-white font-bold text-sm shadow-xs">
+                        🪙
                       </div>
-
-                      <div className="mt-5 space-y-2.5 text-[13px]">
-                        <div className="flex justify-between border-b border-[#F4F7FC] py-1.5">
-                          <span className="text-[#667085]">Principal loan</span>
-                          <span className="font-mono font-semibold text-[#101828]">₹{emiAmount.toLocaleString("en-IN")}</span>
-                        </div>
-                        <div className="flex justify-between border-b border-[#F4F7FC] py-1.5">
-                          <span className="text-[#667085]">Total interest payable</span>
-                          <span className="font-mono font-semibold text-[#B54708]">₹{totalInterest.toLocaleString("en-IN")}</span>
-                        </div>
-                        <div className="flex justify-between py-1.5 font-bold">
-                          <span className="text-[#101828]">Total amount payable</span>
-                          <span className="font-mono text-[#101828]">₹{(emiAmount + totalInterest).toLocaleString("en-IN")}</span>
+                      <div>
+                        <span className="text-[14px] font-bold text-[#7A2E0E]">
+                          Use your Prime Coins and get an instant discount of ₹7.90 on card bill payments
+                        </span>
+                        <div className="text-[12px] text-[#B54708] mt-0.5">
+                          2,450 Prime Coins available in your wallet.
                         </div>
                       </div>
                     </div>
-
-                    <button
-                      onClick={() => showToast("Amortisation schedule exported to CSV.")}
-                      className="mt-6 h-10 w-full rounded-xl border border-[#E4E9F2] text-[13px] font-semibold text-[#101828] hover:bg-[#F4F7FC] cursor-pointer"
-                    >
-                      Download schedule (CSV)
+                    <button className="rounded-xl bg-[#B54708] px-3.5 py-1.5 text-[12px] font-bold text-white shadow-xs cursor-pointer">
+                      Apply Coins →
                     </button>
                   </div>
                 </div>
               )}
+
+              {/* VIEW 2: GET A CARD (PRE-APPROVED OFFERS) */}
+              {cardSubTab === "get_card" && (
+                <div className="space-y-6">
+                  {/* Pre-Approved Hero Banner */}
+                  <div className="rounded-2xl border border-[#D0E2FF] bg-[#EEF4FF]/50 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-[#1882FF] px-2.5 py-0.5 text-[10px] font-black text-white uppercase tracking-wider">
+                          PRE-APPROVED CARDS
+                        </span>
+                        <span className="rounded-full bg-[#ECFDF3] border border-[#ABEFC6] px-2 py-0.5 text-[11px] font-bold text-[#067647]">
+                          771+ Credit Score Unlocked
+                        </span>
+                      </div>
+                      <h3 className="text-[18px] font-bold text-[#101828] mt-2">Pre-Approved Credit Cards for You</h3>
+                      <p className="text-[13px] text-[#667085] mt-0.5">
+                        Zero paperwork · Instant digital card generation · Zero hard credit enquiries to check eligibility.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 3 Pre-Approved Card Tiles */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {[
+                      {
+                        bank: "ICICI Bank",
+                        card: "Sapphiro Card",
+                        logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
+                        type: "Lifetime Free • Visa Signature",
+                        perks: "₹5,000 Gift Vouchers + 2 Free Airport Lounge Visits per Quarter",
+                        tag: "Pre-Approved",
+                        tagColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                      },
+                      {
+                        bank: "HDFC Bank",
+                        card: "Diners Club Black",
+                        logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
+                        type: "Premium Travel & Rewards",
+                        perks: "10x Reward Points on SmartBuy + Unlimited International Airport Lounges",
+                        tag: "High Reward",
+                        tagColor: "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                      },
+                      {
+                        bank: "Axis Bank",
+                        card: "Atlas Card",
+                        logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
+                        type: "Frequent Flyer Miles",
+                        perks: "5,000 Bonus EDGE Miles on 1st Transaction + Luxury Hotel Tier Upgrades",
+                        tag: "Special Offer",
+                        tagColor: "bg-[#F9F5FF] text-[#6941C6] border-[#E9D7FE]"
+                      }
+                    ].map((offer, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border border-[#E4E9F2] bg-white p-6 shadow-xs hover:border-[#1882FF] hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className={`rounded-md px-2.5 py-0.5 text-[11px] font-bold border ${offer.tagColor}`}>
+                              {offer.tag}
+                            </span>
+                          </div>
+
+                          <div className="mt-4 flex items-center gap-3">
+                            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-2 shadow-xs">
+                              <img src={offer.logo} alt={offer.bank} className="h-full w-full object-contain" />
+                            </div>
+                            <div>
+                              <span className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">{offer.bank}</span>
+                              <h4 className="text-[16px] font-bold text-[#101828] leading-tight">{offer.card}</h4>
+                            </div>
+                          </div>
+
+                          <div className="mt-3 text-[12.5px] font-bold text-[#1882FF]">{offer.type}</div>
+                          <p className="mt-1 text-[13px] text-[#475467] leading-relaxed">{offer.perks}</p>
+                        </div>
+
+                        <button
+                          onClick={() => showToast(`Applying for ${offer.card}... Zero CIBIL hard hit!`)}
+                          className="mt-6 w-full rounded-xl bg-[#1882FF] py-2.5 text-[13px] font-bold text-white hover:bg-[#1474E8] transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                        >
+                          <span>Apply in 60 Seconds</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* =========================================================
+               PAGE 5: LOANS (INSTITUTIONAL BORROWINGS & INTERACTIVE CALCULATOR)
+               ========================================================= */}
+          {activeNav === "loans" && (
+            <div className="flex flex-col gap-6">
+              {/* Header & Subtabs */}
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                  <div className="flex items-center gap-2.5">
+                    <h1 className="text-[24px] font-bold tracking-tight text-[#101828]">Manage Your Loans</h1>
+                    <span className="rounded-full bg-[#EEF4FF] border border-[#D0E2FF] px-2.5 py-0.5 text-[11px] font-bold text-[#1882FF]">
+                      2 Active Borrowings
+                    </span>
+                  </div>
+                  <p className="text-[14px] text-[#475467] mt-1">
+                    2 Institutional Borrowings · ₹17.65L Principal Remaining · 4 Pre-Approved Limits
+                  </p>
+                </div>
+
+                {/* Subtab Segmented Switcher */}
+                <div className="inline-flex items-center rounded-xl border border-[#E4E9F2] bg-white p-1 text-[13px] shadow-2xs">
+                  <button
+                    onClick={() => setLoansTab("active")}
+                    className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+                      loansTab === "active" ? "bg-[#1882FF] text-white shadow-xs" : "text-[#667085] hover:text-[#101828]"
+                    }`}
+                  >
+                    Active Loans
+                  </button>
+                  <button
+                    onClick={() => setLoansTab("offers")}
+                    className={`flex items-center gap-1.5 px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+                      loansTab === "offers" ? "bg-[#1882FF] text-white shadow-xs" : "text-[#667085] hover:text-[#101828]"
+                    }`}
+                  >
+                    <span>Pre-Approved</span>
+                    <span className={`text-[10px] font-black px-1.5 py-0.2 rounded-full ${
+                      loansTab === "offers" ? "bg-white/20 text-white" : "bg-[#ECFDF3] text-[#067647]"
+                    }`}>
+                      4 OFFERS
+                    </span>
+                  </button>
+                  <button
+                    onClick={() => setLoansTab("calculator")}
+                    className={`px-4 py-2 rounded-lg font-bold transition-all cursor-pointer ${
+                      loansTab === "calculator" ? "bg-[#1882FF] text-white shadow-xs" : "text-[#667085] hover:text-[#101828]"
+                    }`}
+                  >
+                    EMI Calculator
+                  </button>
+                </div>
+              </div>
+
+              {/* VIEW 1: ACTIVE LOANS & OVERDUES */}
+              {loansTab === "active" && (
+                <div className="space-y-6">
+                  {/* Status Banner */}
+                  <div className="rounded-2xl bg-gradient-to-r from-[#EEF4FF] via-white to-[#ECFDF3]/50 p-5 border border-[#D0E2FF] shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div className="flex items-center gap-3.5">
+                      <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white border border-[#D0E2FF] text-[#1882FF] shadow-xs">
+                        <Landmark className="h-6 w-6 text-[#1882FF]" />
+                      </div>
+                      <div>
+                        <div className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">Total Monthly EMI</div>
+                        <div className="flex items-baseline gap-2">
+                          <span className="text-[22px] font-extrabold text-[#101828] font-mono tabular-nums">₹42,500</span>
+                          <span className="text-[12px] text-[#667085]">/ month</span>
+                        </div>
+                        <div className="text-[12px] text-[#667085] mt-0.5">Next auto-debit on 5th Oct · All repayments on time</div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-4">
+                      <span className="rounded-full bg-[#ECFDF3] border border-[#ABEFC6] px-3 py-1.5 text-[12px] font-bold text-[#067647] flex items-center gap-1.5 shadow-2xs">
+                        <Check className="h-3.5 w-3.5" /> Autopay Active
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* SECTION 1: Overdue & Disputed Microloans (Attention Required) */}
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[15px] font-bold text-[#101828] uppercase tracking-wide">
+                          Overdue &amp; Disputed Borrowings
+                        </span>
+                        <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F04438] px-1.5 text-[11px] font-bold text-white shadow-xs">
+                          2
+                        </span>
+                      </div>
+                      <span className="text-[12px] font-bold text-[#D92D20] bg-[#FEF3F2] border border-[#FECDCA] px-2.5 py-0.5 rounded-full">
+                        Suppressing Score by ~48 Points
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {/* Overdue Card 1 */}
+                      <div className="rounded-2xl bg-white border border-[#E4E9F2] shadow-xs hover:border-[#FECDCA] transition-all overflow-hidden flex flex-col justify-between">
+                        <div className="p-5 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="rounded-md bg-[#F4F7FC] px-2 py-0.5 text-[11px] font-bold text-[#475467]">
+                              PERSONAL LOAN
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="rounded-md bg-[#FEF3F2] px-2 py-0.5 text-[10px] font-bold text-[#D92D20] border border-[#FECDCA]">
+                                OVERDUE
+                              </span>
+                              <span className="rounded-md bg-[#ECFDF3] px-2 py-0.5 text-[10px] font-bold text-[#067647] border border-[#ABEFC6]">
+                                ACTIVE
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-1.5">
+                                <img src="/banks small logo icons svg/Bank Name=Axis bank.svg" alt="Axis Bank" className="h-full w-full object-contain" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-bold text-[#101828]">Axis Bank / InnoFin Microloan</h4>
+                                <div className="text-[11px] font-mono text-[#667085]">A/c ending 4656</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[12px] font-bold text-[#101828]">25 Sep 2024</div>
+                              <div className="text-[10px] text-[#667085]">Issued Date</div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E4E9F2]">
+                            <div>
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#667085]">Loan Amount</div>
+                              <div className="text-[16px] font-bold text-[#101828] font-mono">₹6,000</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#D92D20]">Overdue Amount</div>
+                              <div className="text-[16px] font-bold text-[#D92D20] font-mono">₹9,729</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-[#E4E9F2] bg-[#F4F7FC]/80 px-5 py-3">
+                          <span className="text-[12px] font-semibold text-[#475467]">Incorrect data on bureau report?</span>
+                          <button
+                            onClick={() => {
+                              setActiveNav("disputes");
+                              showToast("Selected Axis Bank / InnoFin for 1-click legal dispute.");
+                            }}
+                            className="rounded-xl bg-[#1882FF] px-3.5 py-1.5 text-[12px] font-bold text-white hover:bg-[#1474E8] cursor-pointer flex items-center gap-1.5 shadow-xs"
+                          >
+                            <Gavel className="h-3.5 w-3.5" />
+                            <span>Raise Dispute</span>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Overdue Card 2 */}
+                      <div className="rounded-2xl bg-white border border-[#E4E9F2] shadow-xs hover:border-[#FECDCA] transition-all overflow-hidden flex flex-col justify-between">
+                        <div className="p-5 space-y-4">
+                          <div className="flex items-center justify-between">
+                            <span className="rounded-md bg-[#F4F7FC] px-2 py-0.5 text-[11px] font-bold text-[#475467]">
+                              PERSONAL LOAN
+                            </span>
+                            <div className="flex items-center gap-1.5">
+                              <span className="rounded-md bg-[#FEF3F2] px-2 py-0.5 text-[10px] font-bold text-[#D92D20] border border-[#FECDCA]">
+                                OVERDUE
+                              </span>
+                              <span className="rounded-md bg-[#ECFDF3] px-2 py-0.5 text-[10px] font-bold text-[#067647] border border-[#ABEFC6]">
+                                ACTIVE
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-1.5">
+                                <img src="/banks small logo icons svg/Bank Name=State Bank of India.svg" alt="SBI Bank" className="h-full w-full object-contain" />
+                              </div>
+                              <div>
+                                <h4 className="text-[14px] font-bold text-[#101828]">SBI InnoFin Solutions</h4>
+                                <div className="text-[11px] font-mono text-[#667085]">A/c ending R3DH</div>
+                              </div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[12px] font-bold text-[#101828]">28 Aug 2024</div>
+                              <div className="text-[10px] text-[#667085]">Issued Date</div>
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 pt-3 border-t border-[#E4E9F2]">
+                            <div>
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#667085]">Loan Amount</div>
+                              <div className="text-[16px] font-bold text-[#101828] font-mono">₹5,500</div>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-[11px] font-bold uppercase tracking-wider text-[#D92D20]">Overdue Amount</div>
+                              <div className="text-[16px] font-bold text-[#D92D20] font-mono">₹9,140</div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center justify-between border-t border-[#E4E9F2] bg-[#F4F7FC]/80 px-5 py-3">
+                          <span className="text-[12px] font-semibold text-[#475467]">Incorrect data on bureau report?</span>
+                          <button
+                            onClick={() => {
+                              setActiveNav("disputes");
+                              showToast("Selected SBI InnoFin for 1-click legal dispute.");
+                            }}
+                            className="rounded-xl bg-[#1882FF] px-3.5 py-1.5 text-[12px] font-bold text-white hover:bg-[#1474E8] cursor-pointer flex items-center gap-1.5 shadow-xs"
+                          >
+                            <Gavel className="h-3.5 w-3.5" />
+                            <span>Raise Dispute</span>
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* SECTION 2: Active Regular Loans (Clean Repayment) */}
+                  <div className="space-y-3 pt-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[15px] font-bold text-[#101828] uppercase tracking-wide">
+                        On-Time Institutional Loans
+                      </span>
+                      <span className="rounded-full bg-[#ECFDF3] border border-[#ABEFC6] px-2.5 py-0.5 text-[11px] font-bold text-[#067647]">
+                        Clean Repayment Record
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {[
+                        {
+                          bank: "HDFC Bank Home Loan",
+                          logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
+                          account: "•••• 9210",
+                          sanctioned: "₹25 Lakhs",
+                          roi: "8.55% p.a.",
+                          tenureLeft: "18 yrs left",
+                          outstanding: "₹14,25,000",
+                          emi: "₹24,800",
+                          tag: "Regular On-Time",
+                          tagColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                        },
+                        {
+                          bank: "ICICI Bank Personal Loan",
+                          logo: "/banks small logo icons svg/Bank Name=ICICI Bank.svg",
+                          account: "•••• 3314",
+                          sanctioned: "₹5 Lakhs",
+                          roi: "10.40% p.a.",
+                          tenureLeft: "14 mos left",
+                          outstanding: "₹3,40,000",
+                          emi: "₹17,700",
+                          tag: "Regular On-Time",
+                          tagColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                        }
+                      ].map((loan, idx) => (
+                        <div
+                          key={idx}
+                          className="rounded-2xl border border-[#E4E9F2] bg-white p-5 shadow-xs hover:border-[#1882FF] hover:shadow-md transition-all flex flex-col justify-between"
+                        >
+                          <div>
+                            <div className="flex items-center justify-between border-b border-[#E4E9F2] pb-3">
+                              <div className="flex items-center gap-3">
+                                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-1.5">
+                                  <img src={loan.logo} alt={loan.bank} className="h-full w-full object-contain" />
+                                </div>
+                                <div>
+                                  <h4 className="text-[14px] font-bold text-[#101828]">{loan.bank}</h4>
+                                  <span className="font-mono text-[11px] text-[#667085]">{loan.account}</span>
+                                </div>
+                              </div>
+                              <span className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold border ${loan.tagColor}`}>
+                                {loan.tag}
+                              </span>
+                            </div>
+
+                            <div className="mt-3.5 flex items-center justify-between text-[12px] text-[#667085]">
+                              <span>ROI: <strong className="text-[#101828]">{loan.roi}</strong></span>
+                              <span>Tenure: <strong className="text-[#101828]">{loan.tenureLeft}</strong></span>
+                              <span>Sanctioned: <strong className="text-[#101828]">{loan.sanctioned}</strong></span>
+                            </div>
+
+                            <div className="mt-4 flex items-center justify-between pt-3 border-t border-[#E4E9F2]">
+                              <div>
+                                <div className="text-[10px] font-bold uppercase tracking-wider text-[#667085]">Outstanding Principal</div>
+                                <div className="text-[20px] font-extrabold text-[#101828] font-mono tabular-nums">{loan.outstanding}</div>
+                                <div className="text-[11px] text-[#667085] mt-0.5">Monthly EMI: <strong className="text-[#101828] font-mono">{loan.emi}</strong></div>
+                              </div>
+
+                              <button
+                                onClick={() => showToast(`Opening EMI payment portal for ${loan.bank} (${loan.emi})`)}
+                                className="rounded-xl bg-[#0B1220] px-4 py-2 text-[12.5px] font-bold text-white hover:bg-[#1882FF] transition-colors cursor-pointer shadow-xs"
+                              >
+                                Pay EMI
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Prime Coins Fee Waiver Strip */}
+                  <div
+                    onClick={() => showToast("100% Processing Fee Waiver activated on your next loan disbursal")}
+                    className="rounded-2xl bg-[#FFFAEB] border border-[#FEDF89] p-4 shadow-xs flex items-center justify-between cursor-pointer hover:bg-[#FEF0C7] transition-all"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F79009] text-white font-bold text-sm shadow-xs">
+                        🪙
+                      </div>
+                      <div>
+                        <span className="text-[14px] font-bold text-[#7A2E0E]">
+                          Use Prime Coins to get a 100% processing fee waiver on institutional loan disbursals
+                        </span>
+                        <div className="text-[12px] text-[#B54708] mt-0.5">
+                          Save up to ₹4,500 in upfront processing charges.
+                        </div>
+                      </div>
+                    </div>
+                    <button className="rounded-xl bg-[#B54708] px-3.5 py-1.5 text-[12px] font-bold text-white shadow-xs cursor-pointer">
+                      Claim Waiver →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 2: PRE-APPROVED LOAN OFFERS */}
+              {loansTab === "offers" && (
+                <div className="space-y-6">
+                  {/* Banner */}
+                  <div className="rounded-2xl border border-[#D0E2FF] bg-[#EEF4FF]/50 p-6 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="rounded-full bg-[#1882FF] px-2.5 py-0.5 text-[10px] font-black text-white uppercase tracking-wider">
+                          PRE-APPROVED LIMITS
+                        </span>
+                        <span className="rounded-full bg-[#ECFDF3] border border-[#ABEFC6] px-2 py-0.5 text-[11px] font-bold text-[#067647]">
+                          0 Hard Inquiries
+                        </span>
+                      </div>
+                      <h3 className="text-[18px] font-bold text-[#101828] mt-2">Institutional Borrowing Limits</h3>
+                      <p className="text-[13px] text-[#667085] mt-0.5">
+                        Direct instant disbursal to your verified salary account with zero branch visits.
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* 4 Pre-approved Grid Cards */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    {[
+                      {
+                        bank: "HDFC Bank",
+                        logo: "/banks small logo icons svg/Bank Name=HDFC Bank.svg",
+                        title: "Instant Personal Loan",
+                        amount: "₹15,00,000",
+                        roi: "10.25% p.a.",
+                        tenure: "Flexible 12 to 60 Months",
+                        feature: "Instant 2-minute disbursal with zero paperwork and zero branch visits",
+                        tag: "Instant Disbursal",
+                        tagColor: "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                      },
+                      {
+                        bank: "Axis Bank",
+                        logo: "/banks small logo icons svg/Bank Name=Axis bank.svg",
+                        title: "Prime Auto Loan",
+                        amount: "₹8,50,000",
+                        roi: "8.75% p.a.",
+                        tenure: "Up to 7 Years",
+                        feature: "100% on-road funding + Zero foreclosure fee after 6 months",
+                        tag: "Special ROI",
+                        tagColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                      },
+                      {
+                        bank: "State Bank of India",
+                        logo: "/banks small logo icons svg/Bank Name=State Bank of India.svg",
+                        title: "Home Loan Balance Transfer",
+                        amount: "₹25,00,000",
+                        roi: "8.35% p.a.",
+                        tenure: "Up to 25 Years",
+                        feature: "Reduce current EMI rate and save up to ₹3.4L in interest charges",
+                        tag: "Save ₹3.4L Interest",
+                        tagColor: "bg-[#F9F5FF] text-[#6941C6] border-[#E9D7FE]"
+                      },
+                      {
+                        bank: "IDFC FIRST Bank",
+                        logo: "/banks small logo icons svg/Bank Name=IDFC Bank.svg",
+                        title: "Prime Consumer Durable Loan",
+                        amount: "₹1,50,000",
+                        roi: "0% No-Cost EMI",
+                        tenure: "3 to 12 Months",
+                        feature: "Zero down payment on electronics and appliances with prime score tier",
+                        tag: "0% No-Cost EMI",
+                        tagColor: "bg-[#ECFDF3] text-[#067647] border-[#ABEFC6]"
+                      }
+                    ].map((offer, i) => (
+                      <div
+                        key={i}
+                        className="rounded-2xl border border-[#E4E9F2] bg-white p-6 shadow-xs hover:border-[#1882FF] hover:shadow-md transition-all flex flex-col justify-between"
+                      >
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className={`rounded-md px-2.5 py-0.5 text-[11px] font-bold border ${offer.tagColor}`}>
+                              {offer.tag}
+                            </span>
+                            <span className="text-[14px] font-extrabold text-[#067647] font-mono">{offer.roi}</span>
+                          </div>
+
+                          <div className="mt-4 flex items-center justify-between gap-3">
+                            <div className="flex items-center gap-3">
+                              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F4F7FC] border border-[#E4E9F2] p-2 shadow-xs">
+                                <img src={offer.logo} alt={offer.bank} className="h-full w-full object-contain" />
+                              </div>
+                              <div>
+                                <span className="text-[11px] font-bold text-[#667085] uppercase tracking-wider">{offer.bank}</span>
+                                <h4 className="text-[16px] font-bold text-[#101828] leading-tight">{offer.title}</h4>
+                              </div>
+                            </div>
+                            <div className="text-[20px] font-extrabold text-[#101828] font-mono">{offer.amount}</div>
+                          </div>
+
+                          <div className="mt-3 text-[12.5px] font-medium text-[#667085]">
+                            Tenure: <strong className="text-[#101828]">{offer.tenure}</strong>
+                          </div>
+                          <p className="mt-1 text-[13px] text-[#475467] leading-relaxed">{offer.feature}</p>
+                        </div>
+
+                        <button
+                          onClick={() => showToast(`Claiming offer: ${offer.title} (${offer.amount})`)}
+                          className="mt-6 w-full rounded-xl bg-[#1882FF] py-2.5 text-[13px] font-bold text-white hover:bg-[#1474E8] transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                        >
+                          <span>Avail Pre-Approved Loan</span>
+                          <ChevronRight className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* VIEW 3: EMI CALCULATOR */}
+              {loansTab === "calculator" && (() => {
+                const monthlyRoi = emiRate / 1200;
+                const calculatedEmi = Math.round(
+                  (emiAmount * monthlyRoi * Math.pow(1 + monthlyRoi, emiTenure)) /
+                    (Math.pow(1 + monthlyRoi, emiTenure) - 1)
+                );
+                const totalPayment = calculatedEmi * emiTenure;
+                const totalInterest = Math.max(0, totalPayment - emiAmount);
+                const principalPercent = Math.min(100, Math.max(1, Math.round((emiAmount / totalPayment) * 100)));
+                const interestPercent = 100 - principalPercent;
+                const marketRateEmi = Math.round(
+                  (emiAmount * (13.5 / 1200) * Math.pow(1 + 13.5 / 1200, emiTenure)) /
+                    (Math.pow(1 + 13.5 / 1200, emiTenure) - 1)
+                );
+                const monthlySavings = Math.max(0, marketRateEmi - calculatedEmi);
+                const totalSavings = monthlySavings * emiTenure;
+
+                return (
+                  <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    {/* Controls Column (6 cols) */}
+                    <div className="lg:col-span-6 rounded-2xl border border-[#E4E9F2] bg-white p-6 space-y-6 shadow-xs">
+                      <div>
+                        <h3 className="text-[17px] font-bold text-[#101828]">Loan Parameters</h3>
+                        <p className="text-[13px] text-[#667085] mt-0.5">Customize loan amount, tenure, and interest rate to simulate EMIs.</p>
+                      </div>
+
+                      {/* Loan Amount */}
+                      <div>
+                        <div className="flex justify-between text-[14px] font-bold text-[#101828]">
+                          <span>Loan Amount</span>
+                          <span className="font-mono text-[#1882FF] text-[16px]">₹{emiAmount.toLocaleString("en-IN")}</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="50000"
+                          max="5000000"
+                          step="25000"
+                          value={emiAmount}
+                          onChange={(e) => setEmiAmount(Number(e.target.value))}
+                          className="w-full mt-3 accent-[#1882FF] cursor-pointer"
+                        />
+                        <div className="mt-2 flex gap-2">
+                          {[300000, 500000, 1000000, 2500000].map((preset) => (
+                            <button
+                              key={preset}
+                              onClick={() => setEmiAmount(preset)}
+                              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                emiAmount === preset
+                                  ? "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                                  : "bg-[#F4F7FC] text-[#475467] border-[#E4E9F2] hover:bg-white"
+                              }`}
+                            >
+                              ₹{preset >= 100000 ? `${preset / 100000}L` : `${preset / 1000}k`}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Interest Rate */}
+                      <div>
+                        <div className="flex justify-between text-[14px] font-bold text-[#101828]">
+                          <span className="flex items-center gap-1.5">
+                            Interest Rate (% p.a.)
+                            <span className="rounded-full bg-[#ECFDF3] px-2 py-0.5 text-[10px] font-bold text-[#067647]">
+                              Prime 771 Rate
+                            </span>
+                          </span>
+                          <span className="font-mono text-[#067647] text-[16px] font-bold">{emiRate}%</span>
+                        </div>
+                        <input
+                          type="range"
+                          min="7.5"
+                          max="24.0"
+                          step="0.25"
+                          value={emiRate}
+                          onChange={(e) => setEmiRate(Number(e.target.value))}
+                          className="w-full mt-3 accent-[#1882FF] cursor-pointer"
+                        />
+                        <div className="mt-2 flex justify-between text-[11px] text-[#667085]">
+                          <span>7.5% (Super-Prime)</span>
+                          <span>10.5% (Pre-Approved)</span>
+                          <span>24.0% (Sub-Prime)</span>
+                        </div>
+                      </div>
+
+                      {/* Tenure */}
+                      <div>
+                        <div className="flex justify-between text-[14px] font-bold text-[#101828]">
+                          <span>Repayment Tenure</span>
+                          <span className="font-mono text-[#1882FF] text-[16px]">
+                            {emiTenure} months ({Math.round(emiTenure / 12 * 10) / 10} yrs)
+                          </span>
+                        </div>
+                        <input
+                          type="range"
+                          min="6"
+                          max="240"
+                          step="6"
+                          value={emiTenure}
+                          onChange={(e) => setEmiTenure(Number(e.target.value))}
+                          className="w-full mt-3 accent-[#1882FF] cursor-pointer"
+                        />
+                        <div className="mt-2 flex gap-2">
+                          {[12, 36, 60, 120, 240].map((ten) => (
+                            <button
+                              key={ten}
+                              onClick={() => setEmiTenure(ten)}
+                              className={`px-2.5 py-1 text-[11px] font-bold rounded-lg border transition-all cursor-pointer ${
+                                emiTenure === ten
+                                  ? "bg-[#EEF4FF] text-[#1882FF] border-[#D0E2FF]"
+                                  : "bg-[#F4F7FC] text-[#475467] border-[#E4E9F2] hover:bg-white"
+                              }`}
+                            >
+                              {ten / 12} {ten === 12 ? "Year" : "Years"}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Results Column (6 cols) */}
+                    <div className="lg:col-span-6 rounded-2xl border border-[#E4E9F2] bg-white p-6 space-y-6 shadow-xs">
+                      <div>
+                        <div className="flex items-center justify-between">
+                          <span className="text-[11px] font-bold uppercase tracking-wider text-[#667085] flex items-center gap-1.5">
+                            <Calculator className="h-4 w-4 text-[#1882FF]" /> ESTIMATED MONTHLY EMI
+                          </span>
+                          <span className="rounded-full bg-[#ECFDF3] border border-[#ABEFC6] px-2.5 py-0.5 text-[11px] font-bold text-[#067647]">
+                            Prime Rate Unlocked
+                          </span>
+                        </div>
+
+                        <div className="mt-3 flex items-baseline gap-2">
+                          <span className="text-[36px] font-extrabold tracking-tight text-[#101828] font-mono tabular-nums">
+                            ₹{calculatedEmi.toLocaleString("en-IN")}
+                          </span>
+                          <span className="text-[14px] font-semibold text-[#667085]">/ month</span>
+                        </div>
+                      </div>
+
+                      {/* PrimeScore Savings Highlight */}
+                      <div className="flex items-center gap-3 rounded-2xl bg-[#ECFDF3] border border-[#ABEFC6] p-4 text-[13px]">
+                        <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#067647] text-white font-bold text-base shadow-xs">
+                          ₹
+                        </div>
+                        <div>
+                          <div className="font-extrabold text-[#027A48]">
+                            Save ₹{monthlySavings.toLocaleString("en-IN")}/mo with PrimeScore (₹{totalSavings.toLocaleString("en-IN")} Total Savings)
+                          </div>
+                          <div className="text-[12px] text-[#067647] mt-0.5">
+                            Standard market rate is 13.50% · Your verified 771 score qualifies you for {emiRate}%
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Payment Breakdown Bar */}
+                      <div className="space-y-3 pt-2 border-t border-[#E4E9F2]">
+                        <div className="flex items-center justify-between text-[12.5px] font-bold">
+                          <span className="text-[#1882FF] flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#1882FF]" /> Principal ({principalPercent}%)
+                          </span>
+                          <span className="text-[#067647] flex items-center gap-2">
+                            <span className="h-2.5 w-2.5 rounded-full bg-[#067647]" /> Total Interest ({interestPercent}%)
+                          </span>
+                        </div>
+
+                        <div className="flex h-3 w-full overflow-hidden rounded-full bg-[#E4E9F2]">
+                          <div style={{ width: `${principalPercent}%` }} className="h-full bg-[#1882FF]" />
+                          <div style={{ width: `${interestPercent}%` }} className="h-full bg-[#067647]" />
+                        </div>
+                      </div>
+
+                      {/* 3 Metric Cards */}
+                      <div className="grid grid-cols-3 gap-3 text-center">
+                        <div className="rounded-xl bg-[#F4F7FC] p-3 border border-[#E4E9F2]">
+                          <div className="text-[10px] font-bold text-[#667085] uppercase tracking-wider">Principal</div>
+                          <div className="text-[14px] font-bold text-[#101828] font-mono mt-1">
+                            ₹{emiAmount.toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-[#F4F7FC] p-3 border border-[#E4E9F2]">
+                          <div className="text-[10px] font-bold text-[#667085] uppercase tracking-wider">Total Interest</div>
+                          <div className="text-[14px] font-bold text-[#067647] font-mono mt-1">
+                            ₹{totalInterest.toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                        <div className="rounded-xl bg-[#F4F7FC] p-3 border border-[#E4E9F2]">
+                          <div className="text-[10px] font-bold text-[#667085] uppercase tracking-wider">Total Payable</div>
+                          <div className="text-[14px] font-bold text-[#101828] font-mono mt-1">
+                            ₹{totalPayment.toLocaleString("en-IN")}
+                          </div>
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => showToast(`Pre-approved loan application initiated for ₹${emiAmount.toLocaleString("en-IN")} @ ${emiRate}%`)}
+                        className="w-full rounded-xl bg-[#1882FF] py-3 text-[14px] font-bold text-white hover:bg-[#1474E8] transition-colors cursor-pointer shadow-xs flex items-center justify-center gap-2"
+                      >
+                        <span>Apply for ₹{emiAmount.toLocaleString("en-IN")} at {emiRate}% Rate</span>
+                        <ChevronRight className="h-4 w-4" />
+                      </button>
+                    </div>
+                  </div>
+                );
+              })()}
             </div>
           )}
 
